@@ -34,19 +34,19 @@ create type transaction_source as enum (
 );
 
 -- ========== tabelas ==========
-create table users (
-  id uuid primary key default gen_random_uuid(),
+create table profiles (
+  id uuid primary key references auth.users(id) on delete cascade default auth.uid(),
   name text not null,
   cpf text not null unique,
   mock_profile mock_profile not null,
   created_at timestamptz not null default now()
 );
 
-create index users_cpf_idx on users(cpf);
+create index profiles_cpf_idx on profiles(cpf);
 
 create table credit_requests (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references users(id) on delete cascade,
+  user_id uuid not null default auth.uid() references profiles(id) on delete cascade,
   requested_amount numeric(12,2) not null check (requested_amount > 0),
   status request_status not null default 'awaiting_consent',
   decision credit_decision,

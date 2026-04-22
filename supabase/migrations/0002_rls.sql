@@ -1,27 +1,31 @@
 -- Helper function to check if current user is admin
-create or replace function is_admin()
+create or replace function public.is_admin()
 returns boolean
-language plpgsql
+language sql
 stable
 security definer
+set search_path = public, auth
 as $$
-begin
-  return exists (
-    select 1 from auth.users
+  select exists (
+    select 1
+    from auth.users
     where id = auth.uid()
-    and raw_user_meta_data->>'role' = 'admin'
+      and raw_user_meta_data->>'role' = 'admin'
   );
-end;
 $$;
 
--- ========== users ==========
-alter table users enable row level security;
+-- ========== profiles ==========
+alter table profiles enable row level security;
 
-create policy "users_select_own" on users
+create policy "profiles_select_own" on profiles
   for select using (id = auth.uid() or is_admin());
 
-create policy "users_insert_own" on users
+create policy "profiles_insert_own" on profiles
   for insert with check (id = auth.uid());
+
+create policy "profiles_update_own" on profiles
+  for update using (id = auth.uid() or is_admin())
+  with check (id = auth.uid() or is_admin());
 
 -- ========== credit_requests ==========
 alter table credit_requests enable row level security;
