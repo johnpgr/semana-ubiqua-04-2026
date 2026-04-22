@@ -1,0 +1,69 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "typescript",
+    "unicorn",
+    "oxc",
+    "import",
+    "react",
+    "jsx-a11y",
+    "nextjs",
+    "react-perf"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "env": {
+    "builtin": true,
+    "browser": true,
+    "es2024": true
+  },
+  "globals": {
+    "React": "readonly"
+  },
+  "jsPlugins": [
+    "eslint-plugin-react-you-might-not-need-an-effect",
+    {
+      "name": "react-hooks-js",
+      "specifier": "eslint-plugin-react-hooks"
+    },
+    "eslint-plugin-react-no-manual-memo"
+  ],
+  "rules": {
+    "react/react-in-jsx-scope": "off",
+    "import/no-unassigned-import": "off",
+    "react/jsx-no-constructed-context-values": "warn",
+    "react-perf/jsx-no-new-object-as-prop": "warn",
+    "react-perf/jsx-no-new-array-as-prop": "warn",
+    "react-perf/jsx-no-new-function-as-prop": "warn",
+    "react-you-might-not-need-an-effect/no-derived-state": "warn",
+    "react-you-might-not-need-an-effect/no-chain-state-updates": "warn",
+    "react-you-might-not-need-an-effect/no-event-handler": "warn",
+    "react-you-might-not-need-an-effect/no-adjust-state-on-prop-change": "warn",
+    "react-you-might-not-need-an-effect/no-reset-all-state-on-prop-change": "warn",
+    "react-you-might-not-need-an-effect/no-pass-live-state-to-parent": "warn",
+    "react-you-might-not-need-an-effect/no-pass-data-to-parent": "warn",
+    "react-you-might-not-need-an-effect/no-initialize-state": "warn",
+    "react-you-might-not-need-an-effect/no-empty-effect": "warn",
+    "react-hooks-js/static-components": "error",
+    "react-hooks-js/use-memo": "error",
+    "react-hooks-js/void-use-memo": "error",
+    "react-hooks-js/preserve-manual-memoization": "error",
+    "react-hooks-js/incompatible-library": "warn",
+    "react-hooks-js/immutability": "error",
+    "react-hooks-js/globals": "error",
+    "react-hooks-js/refs": "error",
+    "react-hooks-js/set-state-in-effect": "error",
+    "react-hooks-js/error-boundaries": "error",
+    "react-hooks-js/purity": "error",
+    "react-hooks-js/set-state-in-render": "error",
+    "react-hooks-js/unsupported-syntax": "warn",
+    "react-hooks-js/config": "error",
+    "react-hooks-js/gating": "error",
+    "react-no-manual-memo/no-component-memo": "error",
+    "react-no-manual-memo/no-custom-memo-hook": "error",
+    "react-no-manual-memo/no-hook-memo": "error"
+  }
+}
