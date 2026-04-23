@@ -37,5 +37,6 @@ pnpm-debug.log*
 next-env.d.ts
 
 supabase/.temp/
+supabase/.branches/
 
 .codex

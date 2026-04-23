@@ -12,7 +12,7 @@
 --   #9 bigserial instead of identity on audit_logs
 -- ==========================================================
 
--- ========== #5: Custom UUIDv7 generator (no extension required) ==========
+-- ========== #5: Custom UUIDv7 generator (uses pgcrypto for gen_random_bytes) ==========
 create or replace function public.uuid_v7()
 returns uuid
 language plpgsql
@@ -110,7 +110,7 @@ create index documents_user_id_idx on documents(user_id);
 create or replace function set_user_id_from_request()
 returns trigger
 language plpgsql
-stable
+volatile
 as $$
 begin
   if new.user_id is null then

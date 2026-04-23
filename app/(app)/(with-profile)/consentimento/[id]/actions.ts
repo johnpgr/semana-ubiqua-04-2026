@@ -7,8 +7,6 @@ import { z } from "zod"
 
 import { requireCurrentProfile } from "@/lib/auth/profile"
 import { getFieldErrors, type FormActionState } from "@/lib/form-action"
-import type { Database } from "@/lib/supabase/database.types"
-import { createServiceClient } from "@/lib/supabase/service"
 import { createClient } from "@/lib/supabase/server"
 import { Consent } from "@/validation/consent"
 
@@ -82,16 +80,13 @@ export async function giveConsent(
   }
 
   const headerStore = await headers()
-  const consentInsert = {
+  const { error: consentError } = await supabase.from("consents").insert({
     request_id: request.id,
+    user_id: profile.id,
     scopes: parsedConsent.data.scopes,
     ip_address: getIpAddress(headerStore),
     user_agent: headerStore.get("user-agent"),
-  } as unknown as Database["public"]["Tables"]["consents"]["Insert"]
-
-  const { error: consentError } = await supabase
-    .from("consents")
-    .insert(consentInsert)
+  })
 
   if (consentError) {
     return {
@@ -100,8 +95,7 @@ export async function giveConsent(
     }
   }
 
-  const serviceSupabase = createServiceClient()
-  const { error: updateError } = await serviceSupabase
+  const { error: updateError } = await supabase
     .from("credit_requests")
     .update({
       status: "collecting_data",
