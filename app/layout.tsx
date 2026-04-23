@@ -1,8 +1,10 @@
 import { Space_Grotesk } from "next/font/google"
 
+import { Toaster } from "@/components/ui/sonner"
+import { cn } from "@/lib/utils"
+
 import "./globals.css"
 import { Providers } from "./providers"
-import { cn } from "@/lib/utils"
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -16,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="pt-BR"
       suppressHydrationWarning
       className={cn(
         "antialiased",
@@ -25,8 +27,11 @@ export default function RootLayout({
         spaceGrotesk.variable
       )}
     >
-      <body>
-        <Providers>{children}</Providers>
+      <body className="min-h-svh bg-background text-foreground">
+        <Providers>
+          {children}
+          <Toaster position="top-right" richColors />
+        </Providers>
       </body>
     </html>
   )

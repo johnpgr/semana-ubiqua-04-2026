@@ -17,6 +17,6 @@ export function createServiceClient() {
         detectSessionInUrl: false,
         persistSession: false,
       },
-    },
+    }
   )
 }
