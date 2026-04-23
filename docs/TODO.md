@@ -101,19 +101,20 @@
 
 ### 11. UX e polimento
 
-- [ ] Adicionar estados de loading, vazio e erro ao longo do fluxo
-- [ ] Fazer os fluxos principais do usuário e do admin funcionarem em larguras mobile >= `360px`
+- [x] Adicionar estados de loading, vazio e erro ao longo do fluxo
+- [x] Fazer os fluxos principais do usuário e do admin funcionarem em larguras mobile >= `360px`
 - [x] Manter a página de resultado focada em decisão, reasons e valor aprovado
-- [ ] Polir a experiência realtime do admin para que inserts e updates fiquem claros durante a demo
+- [x] Polir a experiência realtime do admin para que inserts e updates fiquem claros durante a demo
 
 ### 12. Validação e testes
 
-- [ ] Adicionar testes unitários para validação de CPF
-- [ ] Adicionar testes unitários para as regras do motor de score
-- [ ] Adicionar pelo menos um teste por perfil mockado para verificar a faixa de score esperada
-- [ ] Verificar manualmente o RLS com contextos anon/autenticado/admin
-- [ ] Executar `npm run typecheck`
-- [ ] Executar `npm run lint`
+- [x] Adicionar testes unitários para validação de CPF
+- [x] Adicionar testes unitários para as regras do motor de score
+- [x] Adicionar pelo menos um teste por perfil mockado para verificar a faixa de score esperada
+- [x] Documentar checklist de validação manual de RLS com contextos anon/autenticado/admin em `docs/rls-validation.md`
+- [ ] Executar manualmente a validação de RLS com usuários reais `anon`, autenticado comum e admin no ambiente Supabase
+- [x] Executar `npm run typecheck`
+- [x] Executar `npm run lint`
 
 ### 13. Documentação
 
@@ -121,7 +122,7 @@
 - [x] Documentar como resetar e reaplicar as migrations
 - [x] Documentar como regenerar `database.types.ts`
 - [x] Documentar a visão consolidada v4 em `docs/opencred-v4.md`
-- [ ] Documentar o roteiro de demo para os 5 perfis mockados
+- [x] Documentar o roteiro de demo para os 5 perfis mockados em `docs/demo-roteiro-mock-profiles.md`
 
 ### 14. Crédito progressivo
 

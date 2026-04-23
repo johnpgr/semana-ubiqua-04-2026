@@ -10,6 +10,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
+    "test": "npm run test:unit",
+    "test:unit": "tsc -p tsconfig.test.json && node -e \"const fs=require('fs'); fs.mkdirSync('.codex-test-dist',{ recursive: true }); fs.writeFileSync('.codex-test-dist/package.json', '{\\\"type\\\":\\\"commonjs\\\"}');\" && node .codex-test-dist/tests/run-unit-tests.js",
     "lint": "oxlint",
     "format": "oxfmt \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
