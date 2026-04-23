@@ -12,6 +12,21 @@ const THEMES = { light: "", dark: ".dark" } as const
 const INITIAL_DIMENSION = { width: 320, height: 200 } as const
 type TooltipNameType = number | string
 
+function getDangerousInnerHtml(html: string) {
+  return { __html: html }
+}
+
+function getIndicatorStyle(color: string | undefined) {
+  return {
+    "--color-bg": color,
+    "--color-border": color,
+  } as React.CSSProperties
+}
+
+function getSwatchStyle(color: string | undefined) {
+  return { backgroundColor: color }
+}
+
 export type ChartConfig = Record<
   string,
   {
@@ -23,20 +38,16 @@ export type ChartConfig = Record<
   )
 >
 
-type ChartContextProps = {
-  config: ChartConfig
-}
-
-const ChartContext = React.createContext<ChartContextProps | null>(null)
+const ChartContext = React.createContext<ChartConfig | null>(null)
 
 function useChart() {
-  const context = React.useContext(ChartContext)
+  const config = React.useContext(ChartContext)
 
-  if (!context) {
+  if (!config) {
     throw new Error("useChart must be used within a <ChartContainer />")
   }
 
-  return context
+  return config
 }
 
 function ChartContainer({
@@ -60,7 +71,7 @@ function ChartContainer({
   const chartId = `chart-${id ?? uniqueId.replace(/:/g, "")}`
 
   return (
-    <ChartContext.Provider value={{ config }}>
+    <ChartContext.Provider value={config}>
       <div
         data-slot="chart"
         data-chart={chartId}
@@ -83,19 +94,12 @@ function ChartContainer({
 
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
-    ([, config]) => config.theme ?? config.color
+    ([, itemConfig]) => itemConfig.theme ?? itemConfig.color
   )
 
-  if (!colorConfig.length) {
-    return null
-  }
-
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
+  const css = Object.entries(THEMES)
+    .map(
+      ([theme, prefix]) => `
 ${prefix} [data-chart=${id}] {
 ${colorConfig
   .map(([key, itemConfig]) => {
@@ -107,9 +111,16 @@ ${colorConfig
   .join("\n")}
 }
 `
-          )
-          .join("\n"),
-      }}
+    )
+    .join("\n")
+
+  if (!colorConfig.length) {
+    return null
+  }
+
+  return (
+    <style
+      dangerouslySetInnerHTML={getDangerousInnerHtml(css)}
     />
   )
 }
@@ -144,13 +155,11 @@ function ChartTooltipContent({
     >,
     "accessibilityLayer"
   >) {
-  const { config } = useChart()
+  const config = useChart()
 
-  const tooltipLabel = React.useMemo(() => {
-    if (hideLabel || !payload?.length) {
-      return null
-    }
+  let tooltipLabel: React.ReactNode = null
 
+  if (!hideLabel && payload?.length) {
     const [item] = payload
     const key = `${labelKey ?? item?.dataKey ?? item?.name ?? "value"}`
     const itemConfig = getPayloadConfigFromPayload(config, item, key)
@@ -160,27 +169,15 @@ function ChartTooltipContent({
         : itemConfig?.label
 
     if (labelFormatter) {
-      return (
+      tooltipLabel = (
         <div className={cn("font-medium", labelClassName)}>
           {labelFormatter(value, payload)}
         </div>
       )
+    } else if (value) {
+      tooltipLabel = <div className={cn("font-medium", labelClassName)}>{value}</div>
     }
-
-    if (!value) {
-      return null
-    }
-
-    return <div className={cn("font-medium", labelClassName)}>{value}</div>
-  }, [
-    label,
-    labelFormatter,
-    payload,
-    hideLabel,
-    labelClassName,
-    config,
-    labelKey,
-  ])
+  }
 
   if (!active || !payload?.length) {
     return null
@@ -203,10 +200,11 @@ function ChartTooltipContent({
             const key = `${nameKey ?? item.name ?? item.dataKey ?? "value"}`
             const itemConfig = getPayloadConfigFromPayload(config, item, key)
             const indicatorColor = color ?? item.payload?.fill ?? item.color
+            const itemKey = `${key}-${String(item.value ?? index)}`
 
             return (
               <div
-                key={index}
+                key={itemKey}
                 className={cn(
                   "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
                   indicator === "dot" && "items-center"
@@ -231,12 +229,7 @@ function ChartTooltipContent({
                               "my-0.5": nestLabel && indicator === "dashed",
                             }
                           )}
-                          style={
-                            {
-                              "--color-bg": indicatorColor,
-                              "--color-border": indicatorColor,
-                            } as React.CSSProperties
-                          }
+                          style={getIndicatorStyle(indicatorColor)}
                         />
                       )
                     )}
@@ -282,7 +275,7 @@ function ChartLegendContent({
   hideIcon?: boolean
   nameKey?: string
 } & RechartsPrimitive.DefaultLegendContentProps) {
-  const { config } = useChart()
+  const config = useChart()
 
   if (!payload?.length) {
     return null
@@ -301,10 +294,11 @@ function ChartLegendContent({
         .map((item, index) => {
           const key = `${nameKey ?? item.dataKey ?? "value"}`
           const itemConfig = getPayloadConfigFromPayload(config, item, key)
+          const itemKey = `${key}-${String(item.value ?? index)}`
 
           return (
             <div
-              key={index}
+              key={itemKey}
               className={cn(
                 "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground"
               )}
@@ -314,9 +308,7 @@ function ChartLegendContent({
               ) : (
                 <div
                   className="h-2 w-2 shrink-0 rounded-[2px]"
-                  style={{
-                    backgroundColor: item.color,
-                  }}
+                  style={getSwatchStyle(item.color)}
                 />
               )}
               {itemConfig?.label}

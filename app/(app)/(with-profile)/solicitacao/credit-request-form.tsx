@@ -1,6 +1,6 @@
 "use client"
 
-import { type ChangeEvent, useActionState, useState } from "react"
+import { useActionState, useReducer } from "react"
 
 import { Button } from "@/components/ui/button"
 import { CardContent, CardFooter } from "@/components/ui/card"
@@ -18,6 +18,17 @@ const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   currency: "BRL",
 })
 
+type CreditRequestFormState = {
+  digits: string
+  isFocused: boolean
+  isTouched: boolean
+}
+
+type CreditRequestFormAction =
+  | React.ChangeEvent<HTMLInputElement>
+  | React.FocusEvent<HTMLInputElement>
+  | React.FormEvent<HTMLFormElement>
+
 function formatEditableAmount(digits: string) {
   if (!digits) {
     return ""
@@ -34,14 +45,57 @@ function formatDisplayAmount(digits: string) {
   return currencyFormatter.format(Number(digits) / 100)
 }
 
+function creditRequestFormReducer(
+  state: CreditRequestFormState,
+  action: CreditRequestFormAction
+): CreditRequestFormState {
+  if (action.type === "submit") {
+    return { ...state, isTouched: true }
+  }
+
+  const target = action.target
+  if (!(target instanceof HTMLInputElement)) {
+    return state
+  }
+
+  if (action.type === "change") {
+    return {
+      ...state,
+      digits: target.value.replace(/\D/g, ""),
+    }
+  }
+
+  if (action.type === "focus") {
+    return {
+      ...state,
+      isFocused: true,
+    }
+  }
+
+  if (action.type === "blur") {
+    return {
+      ...state,
+      isFocused: false,
+      isTouched: true,
+    }
+  }
+
+  return state
+}
+
 export function CreditRequestForm() {
   const [state, formAction, isPending] = useActionState(
     createCreditRequest,
     CREATE_CREDIT_REQUEST_INITIAL_STATE
   )
-  const [digits, setDigits] = useState("")
-  const [isFocused, setIsFocused] = useState(false)
-  const [isTouched, setIsTouched] = useState(false)
+  const [{ digits, isFocused, isTouched }, dispatch] = useReducer(
+    creditRequestFormReducer,
+    {
+      digits: "",
+      isFocused: false,
+      isTouched: false,
+    }
+  )
   const validation = CreditRequest.safeParse({
     requested_amount: digits,
   })
@@ -52,25 +106,14 @@ export function CreditRequestForm() {
     (isTouched ? clientError : undefined) ??
     state.fieldErrors?.requested_amount?.[0]
 
-  function handleSubmit() {
-    setIsTouched(true)
-  }
-
-  function handleRequestedAmountChange(event: ChangeEvent<HTMLInputElement>) {
-    setDigits(event.target.value.replace(/\D/g, ""))
-  }
-
-  function handleRequestedAmountFocus() {
-    setIsFocused(true)
-  }
-
-  function handleRequestedAmountBlur() {
-    setIsFocused(false)
-    setIsTouched(true)
-  }
-
   return (
-    <form action={formAction} onSubmit={handleSubmit}>
+    <form
+      action={formAction}
+      onSubmit={dispatch}
+      onChange={dispatch}
+      onFocusCapture={dispatch}
+      onBlurCapture={dispatch}
+    >
       <input type="hidden" name="requested_amount" value={digits} />
       <CardContent className="space-y-5">
         <div className="space-y-2">
@@ -90,9 +133,6 @@ export function CreditRequestForm() {
                 ? formatEditableAmount(digits)
                 : formatDisplayAmount(digits)
             }
-            onChange={handleRequestedAmountChange}
-            onFocus={handleRequestedAmountFocus}
-            onBlur={handleRequestedAmountBlur}
             aria-invalid={requestedAmountError ? true : undefined}
           />
           {requestedAmountError ? (
