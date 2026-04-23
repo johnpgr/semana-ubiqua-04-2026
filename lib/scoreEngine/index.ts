@@ -19,6 +19,7 @@ export type {
   ScoreInput,
   ScoreMetrics,
   ScoreResult,
+  ScoreTransaction,
 } from "./types"
 
 const DIMENSION_WEIGHTS = {
@@ -42,13 +43,18 @@ export function calculateCreditScore({
     dataQuality: scoreDataQuality(metrics),
   }
   const value = aggregateScore(breakdown)
-  const suggestedLimit = calculateSuggestedLimit(metrics, value, requestedAmount)
+  const preliminarySuggestedLimit = calculateSuggestedLimit(
+    metrics,
+    value,
+    requestedAmount,
+  )
   const decision = decideCredit({
     score: value,
     requestedAmount,
-    suggestedLimit,
+    suggestedLimit: preliminarySuggestedLimit,
     breakdown,
   })
+  const suggestedLimit = decision === "denied" ? 0 : preliminarySuggestedLimit
   const reasons = buildReasons(breakdown, {
     decision,
     requestedAmount,
@@ -80,7 +86,8 @@ function buildReasons(
   decisionContext: Parameters<typeof buildDecisionReasons>[0],
 ) {
   const dimensionReasons = Object.values(breakdown)
-    .toSorted((first, second) => second.value - first.value)
+    // eslint-disable-next-line unicorn/no-array-sort -- Avoid ES2023 toSorted; tsconfig targets ES2017.
+    .sort((first, second) => second.value - first.value)
     .flatMap((dimension) => dimension.reasons)
     .slice(0, 5)
 

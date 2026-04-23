@@ -160,8 +160,9 @@ export function generateSyntheticTransactions({
   const startDate = shiftDays(referenceDate, -config.historyDays)
   const drafts = generateTransactionDrafts(config, startDate, referenceDate, faker)
 
-  return drafts
-    .toSorted((first, second) => first.occurredAt.localeCompare(second.occurredAt))
+  return [...drafts]
+    // eslint-disable-next-line unicorn/no-array-sort -- Avoid ES2023 toSorted; tsconfig targets ES2017.
+    .sort((first, second) => first.occurredAt.localeCompare(second.occurredAt))
     .map((transaction) => ({
       requestId,
       occurredAt: transaction.occurredAt,

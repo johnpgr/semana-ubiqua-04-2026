@@ -12,19 +12,23 @@ export function decideCredit({
   suggestedLimit: number
   breakdown: ScoreBreakdown
 }): CreditDecision {
-  if (score < 470 || breakdown.dataQuality.value < 300) {
+  if (score < 400 || breakdown.dataQuality.value < 300) {
     return "denied"
   }
 
-  if (score < 620 || breakdown.dataQuality.value < 520) {
+  if (score < 500 || breakdown.dataQuality.value < 520) {
     return "further_review"
   }
 
-  if (score < 760) {
+  if (score < 650) {
     return "approved_reduced"
   }
 
-  if (requestedAmount && suggestedLimit < requestedAmount * 0.75) {
+  if (
+    requestedAmount !== undefined &&
+    requestedAmount > 0 &&
+    suggestedLimit < requestedAmount * 0.75
+  ) {
     return "approved_reduced"
   }
 
@@ -41,7 +45,8 @@ export function calculateSuggestedLimit(
   const baseCapacity = Math.min(monthlyNet * 2.5, monthlyIncome * 0.8)
   const scoreMultiplier = 0.35 + (clamp(score, 0, 1000) / 1000) * 1.15
   const rawLimit = baseCapacity * scoreMultiplier
-  const maxLimit = requestedAmount && requestedAmount > 0 ? requestedAmount : 15_000
+  const maxLimit =
+    requestedAmount !== undefined && requestedAmount > 0 ? requestedAmount : 15_000
 
   return round(clamp(rawLimit, 0, maxLimit))
 }
@@ -57,11 +62,14 @@ export function buildDecisionReasons({
 }) {
   const reasons: string[] = []
 
-  if (decision === "approved" && requestedAmount) {
+  if (decision === "approved" && requestedAmount !== undefined && requestedAmount > 0) {
     reasons.push("Score e limite estimado sustentam a aprovação solicitada.")
   }
 
-  if (decision === "approved" && !requestedAmount) {
+  if (
+    decision === "approved" &&
+    (requestedAmount === undefined || requestedAmount <= 0)
+  ) {
     reasons.push("Score e limite estimado sustentam aprovação automática.")
   }
 
@@ -77,7 +85,12 @@ export function buildDecisionReasons({
     reasons.push("O risco observado está acima do aceitável para concessão automática.")
   }
 
-  if (requestedAmount && suggestedLimit < requestedAmount) {
+  if (
+    decision !== "denied" &&
+    requestedAmount !== undefined &&
+    requestedAmount > 0 &&
+    suggestedLimit < requestedAmount
+  ) {
     reasons.push(
       `Limite sugerido de R$ ${suggestedLimit.toFixed(2)} abaixo do valor solicitado.`,
     )

@@ -1,19 +1,18 @@
-import type { SyntheticTransaction } from "@/lib/mockData/profiles"
-
-import type { ScoreMetrics } from "./types"
+import type { ScoreMetrics, ScoreTransaction } from "./types"
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000
 const MONTH_IN_DAYS = 30
 const DISCRETIONARY_CATEGORIES = new Set(["lazer"])
 
-type DatedTransaction = SyntheticTransaction & {
+type DatedTransaction = ScoreTransaction & {
   occurredAtDate: Date
 }
 
-export function buildScoreMetrics(transactions: SyntheticTransaction[]): ScoreMetrics {
+export function buildScoreMetrics(transactions: ScoreTransaction[]): ScoreMetrics {
   const datedTransactions = toDatedTransactions(transactions)
   const credits = datedTransactions.filter((transaction) => transaction.kind === "credit")
   const debits = datedTransactions.filter((transaction) => transaction.kind === "debit")
+  const incomeGaps = getIncomeGaps(credits)
   const historyDays = getHistoryDays(datedTransactions)
   const monthFactor = Math.max(historyDays / MONTH_IN_DAYS, 1)
   const totalIncome = sumAmounts(credits)
@@ -37,9 +36,9 @@ export function buildScoreMetrics(transactions: SyntheticTransaction[]): ScoreMe
     averageMonthlyDebits: round(totalDebits / monthFactor),
     averageMonthlyNet: round((totalIncome - totalDebits) / monthFactor),
     expenseRatio: safeRatio(totalDebits, totalIncome),
-    incomeGapAverageDays: average(getIncomeGaps(credits)),
-    incomeGapMaxDays: Math.max(...getIncomeGaps(credits), 0),
-    incomeGapVolatility: coefficientOfVariation(getIncomeGaps(credits)),
+    incomeGapAverageDays: average(incomeGaps),
+    incomeGapMaxDays: Math.max(...incomeGaps, 0),
+    incomeGapVolatility: coefficientOfVariation(incomeGaps),
     incomeAmountVolatility: coefficientOfVariation(credits.map((credit) => credit.amount)),
     activeMonthCount: monthlySummaries.length,
     positiveMonthRatio: safeRatio(positiveMonths.length, monthlySummaries.length),
@@ -123,7 +122,8 @@ function getHistoryDays(transactions: DatedTransaction[]) {
     return 0
   }
 
-  const sorted = transactions.toSorted(
+  // eslint-disable-next-line unicorn/no-array-sort -- Avoid ES2023 toSorted; tsconfig targets ES2017.
+  const sorted = [...transactions].sort(
     (first, second) =>
       first.occurredAtDate.getTime() - second.occurredAtDate.getTime(),
   )
@@ -134,7 +134,8 @@ function getHistoryDays(transactions: DatedTransaction[]) {
 }
 
 function getIncomeGaps(credits: DatedTransaction[]) {
-  const sortedCredits = credits.toSorted(
+  // eslint-disable-next-line unicorn/no-array-sort -- Avoid ES2023 toSorted; tsconfig targets ES2017.
+  const sortedCredits = [...credits].sort(
     (first, second) =>
       first.occurredAtDate.getTime() - second.occurredAtDate.getTime(),
   )
@@ -164,11 +165,11 @@ function safeRatio(numerator: number, denominator: number) {
   return numerator / denominator
 }
 
-function sumAmounts(transactions: SyntheticTransaction[]) {
+function sumAmounts(transactions: ScoreTransaction[]) {
   return transactions.reduce((total, transaction) => total + transaction.amount, 0)
 }
 
-function toDatedTransactions(transactions: SyntheticTransaction[]) {
+function toDatedTransactions(transactions: ScoreTransaction[]) {
   return transactions
     .map((transaction) => ({
       ...transaction,

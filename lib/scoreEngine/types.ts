@@ -1,5 +1,3 @@
-import type { SyntheticTransaction } from "@/lib/mockData/profiles"
-
 export type ScoreDimension =
   | "regularity"
   | "capacity"
@@ -21,11 +19,22 @@ export type DimensionResult = {
 
 export type ScoreBreakdown = Record<ScoreDimension, DimensionResult>
 
+export type ScoreTransaction = {
+  occurredAt: string
+  amount: number
+  kind: "credit" | "debit"
+  category: string
+  description?: string
+  requestId?: string
+  source?: string
+}
+
 export type ScoreInput = {
-  transactions: SyntheticTransaction[]
+  transactions: ScoreTransaction[]
   /**
    * Optional because the pure engine can be used before a request is persisted.
    * When present, suggestedLimit is capped at this value.
+   * When omitted, the engine uses an internal conservative cap.
    */
   requestedAmount?: number
 }
