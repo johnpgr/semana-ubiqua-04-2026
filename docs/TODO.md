@@ -119,7 +119,51 @@
 - [x] Adicionar um `README.md` com setup, variáveis de ambiente, comandos do Supabase e fluxo de desenvolvimento local
 - [x] Documentar como resetar e reaplicar as migrations
 - [x] Documentar como regenerar `database.types.ts`
+- [x] Documentar a visão consolidada v4 em `docs/opencred-v4.md`
 - [ ] Documentar o roteiro de demo para os 5 perfis mockados
+
+### 14. Crédito progressivo
+
+- [ ] Definir modelo de níveis de limite progressivo
+- [ ] Definir critérios para evolução de limite por comportamento observado
+- [ ] Definir como ciclos de pagamento futuros afetam confiança e limite
+- [ ] Documentar como score inicial conservador deve impactar a primeira concessão
+
+### 15. Fraud Score e antifraude comportamental
+
+- [ ] Definir contrato do futuro Fraud Score Engine
+- [ ] Planejar sinais de Device Trust, Pattern Repetition e Synthetic Income Detector
+- [ ] Definir classificação de risco de fraude: baixo, moderado, alto e crítico
+- [ ] Definir como Credit Score e Fraud Score serão combinados na decisão final
+- [ ] Mapear consentimentos necessários para sinais sensíveis futuros
+
+### 16. Monitoramento pós-crédito
+
+- [ ] Definir estados de risco pós-crédito
+- [ ] Planejar rotina de reavaliação contínua de score e risco
+- [ ] Definir alertas preventivos antes de atraso
+- [ ] Planejar revisão de limite e renegociação conforme mudança de risco
+
+### 17. Explicabilidade jurídica
+
+- [ ] Criar catálogo de reasons juridicamente claras para aprovação, redução, revisão e negativa
+- [ ] Definir quais fatores principais devem ser exibidos ao usuário
+- [ ] Documentar quando uma decisão foi automática ou exige revisão adicional
+- [ ] Revisar consentimentos caso novos dados sensíveis sejam usados futuramente
+
+### 18. Comunicação oficial por email
+
+- [ ] Definir templates de email para decisão de crédito
+- [ ] Definir templates de transparência e explicabilidade
+- [ ] Definir templates de risco, segurança e operação
+- [ ] Planejar trilha de auditoria para comunicações enviadas
+
+### 19. Integrações futuras com parceiros
+
+- [ ] Definir contrato para receber indicadores agregados de parceiros
+- [ ] Planejar uso de score de desempenho, regularidade, atividade e confiança externa
+- [ ] Documentar limites de uso de dados brutos versus indicadores processados
+- [ ] Mapear impacto de indicadores externos no Credit Score e Fraud Score
 
 ## Ordem Sugerida de Implementação
 
@@ -133,3 +177,7 @@
 8. Página de resultado
 9. Dashboard admin com realtime
 10. Uploads de storage, testes e README
+11. Crédito progressivo e reavaliação de limite
+12. Fraud Score e antifraude comportamental
+13. Monitoramento pós-crédito e comunicação por email
+14. Integrações futuras com parceiros por indicadores
