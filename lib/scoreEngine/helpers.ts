@@ -124,8 +124,7 @@ function getHistoryDays(transactions: DatedTransaction[]) {
     return 0
   }
 
-  // eslint-disable-next-line unicorn/no-array-sort -- Avoid ES2023 toSorted; tsconfig targets ES2017.
-  const sorted = [...transactions].sort(
+  const sorted = [...transactions].toSorted(
     (first, second) =>
       first.occurredAtDate.getTime() - second.occurredAtDate.getTime(),
   )
@@ -136,8 +135,7 @@ function getHistoryDays(transactions: DatedTransaction[]) {
 }
 
 function getIncomeGaps(credits: DatedTransaction[]) {
-  // eslint-disable-next-line unicorn/no-array-sort -- Avoid ES2023 toSorted; tsconfig targets ES2017.
-  const sortedCredits = [...credits].sort(
+  const sortedCredits = [...credits].toSorted(
     (first, second) =>
       first.occurredAtDate.getTime() - second.occurredAtDate.getTime(),
   )

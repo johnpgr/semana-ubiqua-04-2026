@@ -86,8 +86,7 @@ function buildReasons(
   decisionContext: Parameters<typeof buildDecisionReasons>[0],
 ) {
   const dimensionReasons = Object.values(breakdown)
-    // eslint-disable-next-line unicorn/no-array-sort -- Avoid ES2023 toSorted; tsconfig targets ES2017.
-    .sort((first, second) => second.value - first.value)
+    .toSorted((first, second) => second.value - first.value)
     .flatMap((dimension) => dimension.reasons)
     .slice(0, 5)
 

@@ -161,8 +161,7 @@ export function generateSyntheticTransactions({
   const drafts = generateTransactionDrafts(config, startDate, referenceDate, faker)
 
   return [...drafts]
-    // eslint-disable-next-line unicorn/no-array-sort -- Avoid ES2023 toSorted; tsconfig targets ES2017.
-    .sort((first, second) => first.occurredAt.localeCompare(second.occurredAt))
+    .toSorted((first, second) => first.occurredAt.localeCompare(second.occurredAt))
     .map((transaction) => ({
       requestId,
       occurredAt: transaction.occurredAt,
