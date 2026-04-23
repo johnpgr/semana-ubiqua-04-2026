@@ -73,7 +73,7 @@
 
 ### 8. API route de score
 
-- [ ] Adicionar `app/api/score/route.ts`
+- [ ] Adicionar `app/api/score/route.ts` (Talvez nao haja necessidade disso aqui ser uma rota)
 - [ ] Validar `requestId`
 - [ ] Carregar os dados da solicitação, perfil e consentimento
 - [ ] Gerar as transações e inseri-las com o cliente service-role
