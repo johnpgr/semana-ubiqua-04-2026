@@ -94,10 +94,10 @@
 
 ### 10. Documentos e storage
 
-- [ ] Criar o bucket do Supabase Storage para documentos
+- [x] Criar o bucket do Supabase Storage para documentos
 - [x] Adicionar policies de storage compatíveis com o modelo de acesso do app
-- [ ] Construir o fluxo opcional de upload de documentos
-- [ ] Persistir os metadados dos uploads em `documents`
+- [x] Construir o fluxo opcional de upload de documentos
+- [x] Persistir os metadados dos uploads em `documents`
 
 ### 11. UX e polimento
 
