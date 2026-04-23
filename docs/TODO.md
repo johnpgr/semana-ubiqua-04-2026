@@ -166,6 +166,57 @@
 - [ ] Documentar limites de uso de dados brutos versus indicadores processados
 - [ ] Mapear impacto de indicadores externos no Credit Score e Fraud Score
 
+### 20. Backlog estratégico da próxima fase
+
+#### 20.1 Risco e produto
+
+- [ ] Tornar o score inicial mais conservador por padrão para primeiras concessões
+- [ ] Aumentar o peso de comportamento observado ao longo do tempo em reavaliações futuras
+- [ ] Definir regras de progressão de limite baseadas em confiança acumulada
+- [ ] Estruturar reavaliação contínua de score após concessão de crédito
+- [ ] Definir critérios para ajuste de limite conforme histórico de pagamento e manutenção de renda
+
+#### 20.2 Fraude e confiança operacional
+
+- [ ] Separar formalmente Credit Score e Fraud Score como dois eixos de decisão
+- [ ] Preparar decisão final considerando risco financeiro e risco de fraude em conjunto
+- [ ] Preparar suporte para device trust e device risk
+- [ ] Permitir correlação futura por dispositivo, IP e origem técnica
+- [ ] Cruzar dados entre usuários para identificar comportamento excessivamente semelhante
+- [ ] Sinalizar clusters suspeitos de contas relacionadas
+- [ ] Detectar fluxo circular e movimentação artificial de renda
+- [ ] Detectar entradas e saídas espelhadas com padrão suspeito
+- [ ] Marcar tentativas de inflar artificialmente renda antes da análise
+
+#### 20.3 Operação e monitoramento pós-crédito
+
+- [ ] Reavaliar risco depois da concessão de crédito
+- [ ] Detectar piora relevante do perfil financeiro após liberação
+- [ ] Preparar alertas preventivos antes de atraso ou deterioração forte do risco
+- [ ] Estruturar apoio operacional à renegociação com base em sinais de risco
+- [ ] Definir estados operacionais de monitoramento pós-crédito e suas ações esperadas
+
+#### 20.4 Compliance, jurídico e comunicação
+
+- [ ] Refinar reasons para ficarem mais claras, compreensíveis e não técnicas
+- [ ] Reforçar explicabilidade jurídica para negativas, revisões e limites reduzidos
+- [ ] Ampliar transparência sobre quais dados foram usados em cada decisão
+- [ ] Preparar consentimento expandido para sinais financeiros, comportamentais e externos
+- [ ] Separar melhor os blocos de consentimento por categoria de dado utilizado
+- [ ] Planejar emails de decisão de crédito
+- [ ] Planejar emails de transparência sobre score e uso de dados
+- [ ] Planejar emails de risco e alerta preventivo
+- [ ] Planejar emails de segurança para comportamento suspeito
+- [ ] Planejar emails operacionais e de cobrança
+
+#### 20.5 Arquitetura, escala e regulação
+
+- [ ] Preparar modularização futura entre motores de score, fraude e monitoramento
+- [ ] Deixar a arquitetura adaptável a novos mercados e regulações
+- [ ] Preparar suporte a integração com parceiros via indicadores processados
+- [ ] Enriquecer análise com indicadores externos sem depender de dados brutos
+- [ ] Definir contratos de integração que permitam crescimento com compliance e portabilidade
+
 ## Ordem Sugerida de Implementação
 
 1. Configuração do Supabase e das variáveis de ambiente
@@ -182,3 +233,4 @@
 12. Fraud Score e antifraude comportamental
 13. Monitoramento pós-crédito e comunicação por email
 14. Integrações futuras com parceiros por indicadores
+15. Backlog estratégico de risco, fraude, compliance e escala
