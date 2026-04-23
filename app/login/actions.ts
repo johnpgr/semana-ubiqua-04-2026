@@ -45,12 +45,7 @@ export async function requestOtp(
     }
   }
 
-  return {
-    ok: true,
-    data: {
-      email: parsedEmail.data,
-    },
-  }
+  redirect(`/login/verify?email=${encodeURIComponent(parsedEmail.data)}`)
 }
 
 export async function verifyOtp(

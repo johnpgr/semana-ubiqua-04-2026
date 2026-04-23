@@ -54,41 +54,6 @@ type AdminDashboardViewState = {
 
 type AdminDashboardViewAction = string | null | React.MouseEvent<HTMLButtonElement>
 
-function normalizeJoin<T>(value: T[] | T) {
-  return Array.isArray(value) ? (value[0] ?? null) : value
-}
-
-function normalizeRequestRow(row: AdminRequestRealtimeRow): AdminRequestRow {
-  return {
-    id: row.id,
-    status: row.status,
-    decision: row.decision,
-    requested_amount: row.requested_amount,
-    approved_amount: row.approved_amount,
-    created_at: row.created_at,
-    decided_at: row.decided_at,
-    profile: normalizeJoin(row.profile),
-    score: normalizeJoin(row.score),
-  }
-}
-
-function filterRequests(
-  requests: AdminRequestRow[],
-  statusFilter: string,
-  decisionFilter: string
-) {
-  return requests.filter((request) => {
-    const statusOk = statusFilter === "all" || request.status === statusFilter
-    const decisionOk =
-      decisionFilter === "all" || request.decision === decisionFilter
-    return statusOk && decisionOk
-  })
-}
-
-function buildPageNumbers(totalPages: number) {
-  return Array.from({ length: totalPages }, (_, index) => index + 1)
-}
-
 function adminDashboardViewReducer(
   state: AdminDashboardViewState,
   action: AdminDashboardViewAction
@@ -145,55 +110,32 @@ function adminDashboardViewReducer(
   }
 }
 
-function statusBadgeVariant(status: string) {
-  switch (status) {
-    case "awaiting_consent":
-      return "secondary"
-    case "collecting_data":
-      return "default"
-    case "scoring":
-      return "outline"
-    case "decided":
-      return "default"
-    default:
-      return "secondary"
-  }
+const STATUS_VARIANT: Record<string, string> = {
+  awaiting_consent: "secondary",
+  collecting_data: "default",
+  scoring: "outline",
+  decided: "default",
 }
 
-function statusLabel(status: string) {
-  const map: Record<string, string> = {
-    awaiting_consent: "Aguardando consentimento",
-    collecting_data: "Coletando dados",
-    scoring: "Scoring",
-    decided: "Decidido",
-  }
-  return map[status] ?? status
+const STATUS_LABEL: Record<string, string> = {
+  awaiting_consent: "Aguardando consentimento",
+  collecting_data: "Coletando dados",
+  scoring: "Scoring",
+  decided: "Decidido",
 }
 
-function decisionBadgeVariant(decision: string | null) {
-  switch (decision) {
-    case "approved":
-      return "default"
-    case "approved_reduced":
-      return "secondary"
-    case "further_review":
-      return "outline"
-    case "denied":
-      return "destructive"
-    default:
-      return "secondary"
-  }
+const DECISION_VARIANT: Record<string, string> = {
+  approved: "default",
+  approved_reduced: "secondary",
+  further_review: "outline",
+  denied: "destructive",
 }
 
-function decisionLabel(decision: string | null) {
-  if (!decision) return "—"
-  const map: Record<string, string> = {
-    approved: "Aprovado",
-    approved_reduced: "Aprovado reduzido",
-    further_review: "Revisão manual",
-    denied: "Negado",
-  }
-  return map[decision] ?? decision
+const DECISION_LABEL: Record<string, string> = {
+  approved: "Aprovado",
+  approved_reduced: "Aprovado reduzido",
+  further_review: "Revisão manual",
+  denied: "Negado",
 }
 
 export function AdminDashboard({
@@ -211,14 +153,40 @@ export function AdminDashboard({
     }
   )
 
-  const filtered = filterRequests(requests, statusFilter, decisionFilter)
+  const filtered = requests.filter((r) => {
+    const statusOk = statusFilter === "all" || r.status === statusFilter
+    const decisionOk = decisionFilter === "all" || r.decision === decisionFilter
+    return statusOk && decisionOk
+  })
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
-  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-  const pageNumbers = buildPageNumbers(totalPages)
+  const safePage = Math.min(page, totalPages)
+  const paged = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1)
 
   useEffect(() => {
     const supabase = createClient()
+
+    async function fetchRequestRow(id: string) {
+      const { data } = await supabase
+        .from("credit_requests")
+        .select(
+          `id, status, decision, requested_amount, approved_amount,
+           created_at, decided_at,
+           profile:profiles(name, cpf, mock_profile),
+           score:scores(value, suggested_limit)`
+        )
+        .eq("id", id)
+        .single()
+
+      return data
+        ? {
+            ...(data as AdminRequestRealtimeRow),
+            profile: Array.isArray(data.profile) ? data.profile[0] ?? null : data.profile,
+            score: Array.isArray(data.score) ? data.score[0] ?? null : data.score,
+          }
+        : null
+    }
 
     const channel = supabase
       .channel("admin:credit_requests")
@@ -234,45 +202,18 @@ export function AdminDashboard({
           }
 
           const id = payload.new.id as string
+          const row = await fetchRequestRow(id)
+
+          if (!row) return
 
           if (payload.eventType === "INSERT") {
-            const { data } = await supabase
-              .from("credit_requests")
-              .select(
-                `id, status, decision, requested_amount, approved_amount,
-                 created_at, decided_at,
-                 profile:profiles(name, cpf, mock_profile),
-                 score:scores(value, suggested_limit)`
-              )
-              .eq("id", id)
-              .single()
-
-            if (data) {
-              const row = normalizeRequestRow(data as AdminRequestRealtimeRow)
-
-              setRequests((prev) => [row, ...prev])
-              toast.success("Nova solicitação recebida")
-            }
+            setRequests((prev) => [row, ...prev])
+            toast.success("Nova solicitação recebida")
           } else if (payload.eventType === "UPDATE") {
-            const { data } = await supabase
-              .from("credit_requests")
-              .select(
-                `id, status, decision, requested_amount, approved_amount,
-                 created_at, decided_at,
-                 profile:profiles(name, cpf, mock_profile),
-                 score:scores(value, suggested_limit)`
-              )
-              .eq("id", id)
-              .single()
-
-            if (data) {
-              const row = normalizeRequestRow(data as AdminRequestRealtimeRow)
-
-              setRequests((prev) =>
-                prev.map((r) => (r.id === id ? row : r))
-              )
-              toast.info("Solicitação atualizada")
-            }
+            setRequests((prev) =>
+              prev.map((r) => (r.id === id ? row : r))
+            )
+            toast.info("Solicitação atualizada")
           }
         }
       )
@@ -364,13 +305,13 @@ export function AdminDashboard({
                   </span>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={statusBadgeVariant(row.status)}>
-                    {statusLabel(row.status)}
+                  <Badge variant={STATUS_VARIANT[row.status] ?? "secondary"}>
+                    {STATUS_LABEL[row.status] ?? row.status}
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={decisionBadgeVariant(row.decision)}>
-                    {decisionLabel(row.decision)}
+                  <Badge variant={row.decision ? (DECISION_VARIANT[row.decision] ?? "secondary") : "secondary"}>
+                    {row.decision ? (DECISION_LABEL[row.decision] ?? row.decision) : "—"}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
@@ -407,14 +348,14 @@ export function AdminDashboard({
               <PaginationPrevious
                 onClick={dispatchView}
                 data-page-action="prev"
-                aria-disabled={page === 1}
-                className={page === 1 ? "pointer-events-none opacity-50" : ""}
+                aria-disabled={safePage === 1}
+                className={safePage === 1 ? "pointer-events-none opacity-50" : ""}
               />
             </PaginationItem>
             {pageNumbers.map((p) => (
               <PaginationItem key={p}>
                 <PaginationLink
-                  isActive={p === page}
+                  isActive={p === safePage}
                   onClick={dispatchView}
                   value={p}
                 >
@@ -427,9 +368,9 @@ export function AdminDashboard({
                 onClick={dispatchView}
                 data-page-action="next"
                 data-total-pages={totalPages}
-                aria-disabled={page === totalPages}
+                aria-disabled={safePage === totalPages}
                 className={
-                  page === totalPages
+                  safePage === totalPages
                     ? "pointer-events-none opacity-50"
                     : ""
                 }

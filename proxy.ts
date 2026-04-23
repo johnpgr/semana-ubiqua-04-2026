@@ -57,7 +57,7 @@ export async function proxy(request: NextRequest) {
     return copyCookies(response, NextResponse.redirect(loginUrl))
   }
 
-  if (user && isAdminRoute && user.user_metadata?.role !== "admin") {
+  if (user && isAdminRoute && user.app_metadata?.role !== "admin") {
     const homeUrl = request.nextUrl.clone()
     homeUrl.pathname = "/"
     homeUrl.search = ""

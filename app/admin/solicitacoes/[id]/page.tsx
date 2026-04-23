@@ -1,14 +1,12 @@
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { RequestDetail } from "./request-detail"
+import { RequestDetail, type RequestDetailProps } from "./request-detail"
 
-type RequestProfile = {
-  name: string
-  cpf: string
-  mock_profile: string
-} | null
+const emptyConsents: RequestDetailProps["consents"] = []
+const emptyTransactions: RequestDetailProps["transactions"] = []
+const emptyAuditLogs: RequestDetailProps["auditLogs"] = []
 
-type RequestWithProfileJoin = {
+type RawRequest = {
   id: string
   status: string
   decision: string | null
@@ -16,28 +14,17 @@ type RequestWithProfileJoin = {
   approved_amount: number | null
   created_at: string
   decided_at: string | null
-  profile: RequestProfile[] | RequestProfile
+  profile:
+    | { name: string; cpf: string; mock_profile: string }[]
+    | { name: string; cpf: string; mock_profile: string }
+    | null
 }
 
-function normalizeJoin<T>(value: T[] | T) {
-  return Array.isArray(value) ? (value[0] ?? null) : value
-}
-
-function normalizeRequest(request: RequestWithProfileJoin) {
+function flattenProfileJoin(raw: RawRequest) {
   return {
-    id: request.id,
-    status: request.status,
-    decision: request.decision,
-    requested_amount: request.requested_amount,
-    approved_amount: request.approved_amount,
-    created_at: request.created_at,
-    decided_at: request.decided_at,
-    profile: normalizeJoin(request.profile),
+    ...raw,
+    profile: Array.isArray(raw.profile) ? raw.profile[0] ?? null : raw.profile,
   }
-}
-
-function ensureArray<T>(value: T[] | null) {
-  return value ?? []
 }
 
 export default async function SolicitacaoDetailPage({
@@ -81,31 +68,36 @@ export default async function SolicitacaoDetailPage({
         "value, suggested_limit, reasons, regularity, capacity, stability, behavior, data_quality"
       )
       .eq("request_id", id)
-      .single(),
+      .maybeSingle(),
     supabase
       .from("audit_logs")
       .select("action, actor, created_at, metadata")
       .eq("entity_type", "credit_request")
       .eq("entity_id", id)
-      .order("created_at", { ascending: false }),
+      .order("created_at", { ascending: false })
+      .limit(100),
   ])
 
   if (requestResult.error || !requestResult.data) {
     notFound()
   }
 
-  const request = normalizeRequest(requestResult.data as RequestWithProfileJoin)
-  const consents = ensureArray(consentsResult.data)
-  const transactions = ensureArray(transactionsResult.data)
-  const auditLogs = ensureArray(auditResult.data)
+  const request = flattenProfileJoin(requestResult.data as RawRequest)
+  const consents = consentsResult.data ?? emptyConsents
+  const transactions = transactionsResult.data ?? emptyTransactions
+  const auditLogs = auditResult.data ?? emptyAuditLogs
 
   return (
     <RequestDetail
       request={request}
       consents={consents}
+      consentsError={!!consentsResult.error}
       transactions={transactions}
+      transactionsError={!!transactionsResult.error}
       score={scoreResult.data ?? null}
+      scoreError={!!scoreResult.error}
       auditLogs={auditLogs}
+      auditLogsError={!!auditResult.error}
     />
   )
 }

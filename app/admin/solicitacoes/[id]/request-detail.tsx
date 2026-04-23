@@ -46,63 +46,35 @@ const dateTimeFormatter = new Intl.DateTimeFormat("pt-BR", {
 })
 const chartTick = { fontSize: 10 }
 
-function monthlyFlowTooltipFormatter(value: number) {
-  return currencyFormatter.format(value)
+const flowTooltipFormatter = ((value: number) =>
+  currencyFormatter.format(value)) as React.ComponentProps<typeof Tooltip>["formatter"]
+
+const STATUS_VARIANT: Record<string, string> = {
+  awaiting_consent: "secondary",
+  collecting_data: "default",
+  scoring: "outline",
+  decided: "default",
 }
 
-const monthlyFlowTooltipFormatterCast = monthlyFlowTooltipFormatter as unknown as React.ComponentProps<
-  typeof Tooltip
->["formatter"]
-
-function statusBadgeVariant(status: string) {
-  switch (status) {
-    case "awaiting_consent":
-      return "secondary"
-    case "collecting_data":
-      return "default"
-    case "scoring":
-      return "outline"
-    case "decided":
-      return "default"
-    default:
-      return "secondary"
-  }
+const STATUS_LABEL: Record<string, string> = {
+  awaiting_consent: "Aguardando consentimento",
+  collecting_data: "Coletando dados",
+  scoring: "Scoring",
+  decided: "Decidido",
 }
 
-function statusLabel(status: string) {
-  const map: Record<string, string> = {
-    awaiting_consent: "Aguardando consentimento",
-    collecting_data: "Coletando dados",
-    scoring: "Scoring",
-    decided: "Decidido",
-  }
-  return map[status] ?? status
+const DECISION_VARIANT: Record<string, string> = {
+  approved: "default",
+  approved_reduced: "secondary",
+  further_review: "outline",
+  denied: "destructive",
 }
 
-function decisionBadgeVariant(decision: string | null) {
-  switch (decision) {
-    case "approved":
-      return "default"
-    case "approved_reduced":
-      return "secondary"
-    case "further_review":
-      return "outline"
-    case "denied":
-      return "destructive"
-    default:
-      return "secondary"
-  }
-}
-
-function decisionLabel(decision: string | null) {
-  if (!decision) return "—"
-  const map: Record<string, string> = {
-    approved: "Aprovado",
-    approved_reduced: "Aprovado reduzido",
-    further_review: "Revisão manual",
-    denied: "Negado",
-  }
-  return map[decision] ?? decision
+const DECISION_LABEL: Record<string, string> = {
+  approved: "Aprovado",
+  approved_reduced: "Aprovado reduzido",
+  further_review: "Revisão manual",
+  denied: "Negado",
 }
 
 type ProfileJoin = {
@@ -111,7 +83,7 @@ type ProfileJoin = {
   mock_profile: string
 } | null
 
-type RequestDetailProps = {
+export type RequestDetailProps = {
   request: {
     id: string
     status: string
@@ -128,6 +100,7 @@ type RequestDetailProps = {
     user_agent: string | null
     ip_address: unknown
   }[]
+  consentsError: boolean
   transactions: {
     amount: number
     category: string
@@ -136,6 +109,7 @@ type RequestDetailProps = {
     occurred_at: string
     source: string
   }[]
+  transactionsError: boolean
   score: {
     value: number
     suggested_limit: number
@@ -146,12 +120,14 @@ type RequestDetailProps = {
     behavior: number
     data_quality: number
   } | null
+  scoreError: boolean
   auditLogs: {
     action: string
     actor: string | null
     created_at: string
     metadata: unknown
   }[]
+  auditLogsError: boolean
 }
 
 function buildMonthlyFlow(
@@ -182,9 +158,13 @@ function buildMonthlyFlow(
 export function RequestDetail({
   request,
   consents,
+  consentsError,
   transactions,
+  transactionsError,
   score,
+  scoreError,
   auditLogs,
+  auditLogsError,
 }: RequestDetailProps) {
   const monthlyFlow = buildMonthlyFlow(transactions)
 
@@ -248,14 +228,14 @@ export function RequestDetail({
               <CardContent className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Status</span>
-                  <Badge variant={statusBadgeVariant(request.status)}>
-                    {statusLabel(request.status)}
+                  <Badge variant={STATUS_VARIANT[request.status] ?? "secondary"}>
+                    {STATUS_LABEL[request.status] ?? request.status}
                   </Badge>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Decisão</span>
-                  <Badge variant={decisionBadgeVariant(request.decision)}>
-                    {decisionLabel(request.decision)}
+                  <Badge variant={request.decision ? (DECISION_VARIANT[request.decision] ?? "secondary") : "secondary"}>
+                    {request.decision ? (DECISION_LABEL[request.decision] ?? request.decision) : "—"}
                   </Badge>
                 </div>
                 <div className="flex justify-between">
@@ -302,7 +282,11 @@ export function RequestDetail({
         </TabsContent>
 
         <TabsContent value="consentimento" className="space-y-4 pt-4">
-          {consents.length === 0 ? (
+          {consentsError ? (
+            <p className="text-sm text-destructive">
+              Erro ao carregar consentimentos.
+            </p>
+          ) : consents.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               Nenhum consentimento registrado.
             </p>
@@ -337,7 +321,12 @@ export function RequestDetail({
         </TabsContent>
 
         <TabsContent value="transacoes" className="space-y-4 pt-4">
-          {monthlyFlow.length > 0 && (
+          {transactionsError && (
+            <p className="text-sm text-destructive">
+              Erro ao carregar transações.
+            </p>
+          )}
+          {!transactionsError && monthlyFlow.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle>Fluxo mensal</CardTitle>
@@ -348,7 +337,7 @@ export function RequestDetail({
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" tick={chartTick} />
                     <YAxis tick={chartTick} />
-                    <Tooltip formatter={monthlyFlowTooltipFormatterCast} />
+                    <Tooltip formatter={flowTooltipFormatter} />
                     <Bar dataKey="credit" fill="#22c55e" name="Entradas" />
                     <Bar dataKey="debit" fill="#ef4444" name="Saídas" />
                   </BarChart>
@@ -369,7 +358,16 @@ export function RequestDetail({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {transactions.map((t) => (
+                {transactionsError ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="py-8 text-center text-destructive"
+                    >
+                      Erro ao carregar transações
+                    </TableCell>
+                  </TableRow>
+                ) : transactions.map((t) => (
                   <TableRow key={`${t.occurred_at}-${t.amount}-${t.description}`}>
                     <TableCell>
                       {dateFormatter.format(new Date(t.occurred_at))}
@@ -392,7 +390,7 @@ export function RequestDetail({
                     </TableCell>
                   </TableRow>
                 ))}
-                {transactions.length === 0 && (
+                {!transactionsError && transactions.length === 0 && (
                   <TableRow>
                     <TableCell
                       colSpan={5}
@@ -408,7 +406,11 @@ export function RequestDetail({
         </TabsContent>
 
         <TabsContent value="score" className="space-y-4 pt-4">
-          {!score ? (
+          {scoreError ? (
+            <p className="text-sm text-destructive">
+              Erro ao carregar score.
+            </p>
+          ) : !score ? (
             <p className="text-sm text-muted-foreground">
               Score ainda não calculado.
             </p>
@@ -433,8 +435,8 @@ export function RequestDetail({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Decisão</span>
-                    <Badge variant={decisionBadgeVariant(request.decision)}>
-                      {decisionLabel(request.decision)}
+                    <Badge variant={request.decision ? (DECISION_VARIANT[request.decision] ?? "secondary") : "secondary"}>
+                      {request.decision ? (DECISION_LABEL[request.decision] ?? request.decision) : "—"}
                     </Badge>
                   </div>
                 </CardContent>
@@ -478,7 +480,11 @@ export function RequestDetail({
         </TabsContent>
 
         <TabsContent value="auditoria" className="space-y-4 pt-4">
-          {auditLogs.length === 0 ? (
+          {auditLogsError ? (
+            <p className="text-sm text-destructive">
+              Erro ao carregar registros de auditoria.
+            </p>
+          ) : auditLogs.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               Nenhum registro de auditoria.
             </p>
