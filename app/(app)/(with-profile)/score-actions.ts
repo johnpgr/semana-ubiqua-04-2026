@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache"
 
 import {
+  MOCK_PROFILE_CONFIGS,
   generateSyntheticTransactions,
-  type MockProfile,
 } from "@/lib/mockData/profiles"
 import { calculateCreditScore } from "@/lib/scoreEngine"
 import type { Json, TablesInsert } from "@/lib/supabase/database.types"
@@ -121,11 +121,25 @@ export async function processCreditAnalysis(
   }
 
   if (request.status === "decided" && request.decision) {
-    const { data: existingScore } = await supabase
+    const { data: existingScore, error: existingScoreError } = await supabase
       .from("scores")
       .select("value, suggested_limit")
       .eq("request_id", request.id)
       .maybeSingle()
+
+    if (existingScoreError) {
+      return {
+        ok: false,
+        formError: "Não foi possível recuperar o resultado da análise",
+      }
+    }
+
+    if (!existingScore) {
+      return {
+        ok: false,
+        formError: "Resultado da análise inconsistente. Tente novamente em instantes.",
+      }
+    }
 
     revalidatePath(`/resultado/${request.id}`)
 
@@ -133,10 +147,9 @@ export async function processCreditAnalysis(
       ok: true,
       data: {
         requestId: request.id,
-        score: existingScore?.value ?? 0,
+        score: existingScore.value,
         decision: request.decision,
-        suggestedLimit:
-          existingScore?.suggested_limit ?? request.approved_amount ?? 0,
+        suggestedLimit: existingScore.suggested_limit,
         redirectTo: `/resultado/${request.id}`,
       },
     }
@@ -144,8 +157,17 @@ export async function processCreditAnalysis(
 
   const service = createServiceClient()
   const startedAt = new Date().toISOString()
+  const mockProfile = getMockProfile(profile.mock_profile)
+
+  if (!mockProfile) {
+    return {
+      ok: false,
+      formError: "Perfil mockado inválido para análise",
+    }
+  }
+
   const transactions = generateSyntheticTransactions({
-    profile: profile.mock_profile as MockProfile,
+    profile: mockProfile,
     requestId: request.id,
     seed: getStableSeed(request.id),
   })
@@ -201,12 +223,15 @@ export async function processCreditAnalysis(
     }),
   ]
 
-  const { error: scoringStatusError } = await service
+  const { data: scoringRequest, error: scoringStatusError } = await service
     .from("credit_requests")
     .update({ status: "scoring" })
     .eq("id", request.id)
+    .eq("status", "collecting_data")
+    .select("id")
+    .maybeSingle()
 
-  if (scoringStatusError) {
+  if (scoringStatusError || !scoringRequest) {
     return {
       ok: false,
       formError: "Não foi possível iniciar a análise",
@@ -217,8 +242,11 @@ export async function processCreditAnalysis(
     .from("transactions")
     .delete()
     .eq("request_id", request.id)
+    .eq("source", "open_finance_mock")
 
   if (deleteTransactionsError) {
+    await restoreCollectingDataStatus(service, request.id)
+
     return {
       ok: false,
       formError: "Não foi possível preparar as transações da análise",
@@ -230,6 +258,8 @@ export async function processCreditAnalysis(
     .insert(transactionRows)
 
   if (transactionsError) {
+    await restoreCollectingDataStatus(service, request.id)
+
     return {
       ok: false,
       formError: "Não foi possível salvar as transações da análise",
@@ -241,6 +271,8 @@ export async function processCreditAnalysis(
     .upsert(scoreRow, { onConflict: "request_id" })
 
   if (scoreError) {
+    await restoreCollectingDataStatus(service, request.id)
+
     return {
       ok: false,
       formError: "Não foi possível salvar o score da análise",
@@ -258,6 +290,8 @@ export async function processCreditAnalysis(
     .eq("id", request.id)
 
   if (requestUpdateError) {
+    await restoreCollectingDataStatus(service, request.id)
+
     return {
       ok: false,
       formError: "Não foi possível finalizar a solicitação",
@@ -267,10 +301,10 @@ export async function processCreditAnalysis(
   const { error: auditError } = await service.from("audit_logs").insert(auditRows)
 
   if (auditError) {
-    return {
-      ok: false,
-      formError: "Análise concluída, mas a auditoria não pôde ser registrada",
-    }
+    console.error("Failed to persist audit logs for completed credit analysis", {
+      requestId: request.id,
+      error: auditError,
+    })
   }
 
   revalidatePath(`/resultado/${request.id}`)
@@ -284,6 +318,32 @@ export async function processCreditAnalysis(
       suggestedLimit: score.suggestedLimit,
       redirectTo: `/resultado/${request.id}`,
     },
+  }
+}
+
+function getMockProfile(value: string) {
+  if (value in MOCK_PROFILE_CONFIGS) {
+    return value as keyof typeof MOCK_PROFILE_CONFIGS
+  }
+
+  return null
+}
+
+async function restoreCollectingDataStatus(
+  service: ReturnType<typeof createServiceClient>,
+  requestId: string,
+) {
+  const { error } = await service
+    .from("credit_requests")
+    .update({ status: "collecting_data" })
+    .eq("id", requestId)
+    .eq("status", "scoring")
+
+  if (error) {
+    console.error("Failed to restore credit request status after scoring error", {
+      requestId,
+      error,
+    })
   }
 }
 
