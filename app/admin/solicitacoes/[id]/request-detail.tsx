@@ -49,7 +49,9 @@ const chartTick = { fontSize: 10 }
 const flowTooltipFormatter = ((value: number) =>
   currencyFormatter.format(value)) as React.ComponentProps<typeof Tooltip>["formatter"]
 
-const STATUS_VARIANT: Record<string, string> = {
+type BadgeVariant = NonNullable<React.ComponentPropsWithoutRef<typeof Badge>["variant"]>
+
+const STATUS_VARIANT: Record<string, BadgeVariant> = {
   awaiting_consent: "secondary",
   collecting_data: "default",
   scoring: "outline",
@@ -63,7 +65,7 @@ const STATUS_LABEL: Record<string, string> = {
   decided: "Decidido",
 }
 
-const DECISION_VARIANT: Record<string, string> = {
+const DECISION_VARIANT: Record<string, BadgeVariant> = {
   approved: "default",
   approved_reduced: "secondary",
   further_review: "outline",

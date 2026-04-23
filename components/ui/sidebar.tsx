@@ -1,10 +1,11 @@
 "use client"
 
-/* eslint-disable react/jsx-no-constructed-context-values, react-perf/jsx-no-new-function-as-prop, react-perf/jsx-no-new-object-as-prop */
+/* eslint-disable react/jsx-no-constructed-context-values */
 
 import * as React from "react"
 import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"
+import type { BaseUIEvent } from "@base-ui/react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -273,7 +274,7 @@ function SidebarTrigger({
 }: React.ComponentProps<typeof Button>) {
   const { toggleSidebar } = useSidebar()
 
-  function handleClick(event: React.MouseEvent<HTMLButtonElement>) {
+  function handleClick(event: BaseUIEvent<React.MouseEvent<HTMLButtonElement>>) {
     onClick?.(event)
     toggleSidebar()
   }

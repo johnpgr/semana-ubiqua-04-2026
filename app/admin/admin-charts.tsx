@@ -90,8 +90,8 @@ function buildStatusCounts(requests: AdminRequestRow[]) {
 }
 
 const tickStyle = { fontSize: 10 }
-const radiusTop = [4, 4, 0, 0] satisfies RectRadius
-const radiusRight = [0, 4, 4, 0] satisfies RectRadius
+const radiusTop: RectRadius = [4, 4, 0, 0]
+const radiusRight: RectRadius = [0, 4, 4, 0]
 
 function pieShape(props: unknown) {
   return <Sector {...(props as React.ComponentProps<typeof Sector>)} />

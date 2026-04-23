@@ -38,7 +38,7 @@ export function sanitizeDocumentFileName(fileName: string) {
 
   const baseName = rawBaseName
     .normalize("NFKD")
-    .replace(/[^\x00-\x7F]/g, "")
+    .replace(/[\u0080-\uFFFF]/g, "")
     .replace(/\s+/g, "-")
     .replace(/[^A-Za-z0-9._-]/g, "")
     .replace(/-+/g, "-")

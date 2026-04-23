@@ -1,7 +1,7 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
-import { Button, buttonVariants } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -45,16 +45,16 @@ function PaginationLink({
   className,
   isActive,
   size = "icon",
-  type = "button",
   ...props
 }: PaginationLinkProps) {
   return (
-    <button
+    <Button
       data-slot="pagination-link"
       data-active={isActive}
       aria-current={isActive ? "page" : undefined}
-      type={type}
-      className={cn(buttonVariants({ variant: isActive ? "outline" : "ghost", size }), className)}
+      variant={isActive ? "outline" : "ghost"}
+      size={size}
+      className={className}
       {...props}
     />
   )

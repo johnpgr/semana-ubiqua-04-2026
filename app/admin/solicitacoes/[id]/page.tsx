@@ -1,31 +1,6 @@
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { RequestDetail, type RequestDetailProps } from "./request-detail"
-
-const emptyConsents: RequestDetailProps["consents"] = []
-const emptyTransactions: RequestDetailProps["transactions"] = []
-const emptyAuditLogs: RequestDetailProps["auditLogs"] = []
-
-type RawRequest = {
-  id: string
-  status: string
-  decision: string | null
-  requested_amount: number
-  approved_amount: number | null
-  created_at: string
-  decided_at: string | null
-  profile:
-    | { name: string; cpf: string; mock_profile: string }[]
-    | { name: string; cpf: string; mock_profile: string }
-    | null
-}
-
-function flattenProfileJoin(raw: RawRequest) {
-  return {
-    ...raw,
-    profile: Array.isArray(raw.profile) ? raw.profile[0] ?? null : raw.profile,
-  }
-}
+import { RequestDetail } from "./request-detail"
 
 export default async function SolicitacaoDetailPage({
   params,
@@ -82,10 +57,15 @@ export default async function SolicitacaoDetailPage({
     notFound()
   }
 
-  const request = flattenProfileJoin(requestResult.data as RawRequest)
-  const consents = consentsResult.data ?? emptyConsents
-  const transactions = transactionsResult.data ?? emptyTransactions
-  const auditLogs = auditResult.data ?? emptyAuditLogs
+  const request = {
+    ...requestResult.data,
+    profile: Array.isArray(requestResult.data.profile)
+      ? (requestResult.data.profile[0] ?? null)
+      : requestResult.data.profile,
+  }
+  const consents = consentsResult.data ?? []
+  const transactions = transactionsResult.data ?? []
+  const auditLogs = auditResult.data ?? []
 
   return (
     <RequestDetail

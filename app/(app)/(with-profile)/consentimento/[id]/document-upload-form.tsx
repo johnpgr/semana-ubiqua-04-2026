@@ -103,6 +103,34 @@ function RemoveDocumentSubmitButton({ fileName }: { fileName: string }) {
   )
 }
 
+function FileInput({
+  id,
+  acceptedMimeTypes,
+  onFileSelect,
+  ariaInvalid,
+}: {
+  id: string
+  acceptedMimeTypes: string
+  onFileSelect: (name: string | null) => void
+  ariaInvalid: true | undefined
+}) {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    onFileSelect(event.target.files?.[0]?.name ?? null)
+  }
+
+  return (
+    <Input
+      id={id}
+      name="file"
+      type="file"
+      accept={acceptedMimeTypes}
+      className="sr-only"
+      onChange={handleChange}
+      aria-invalid={ariaInvalid}
+    />
+  )
+}
+
 export function DocumentUploadForm({
   initialDocuments,
   requestId,
@@ -164,16 +192,11 @@ export function DocumentUploadForm({
                 Selecionar arquivo
               </span>
             </div>
-            <Input
+            <FileInput
               id={inputId}
-              name="file"
-              type="file"
-              accept={acceptedFileTypes}
-              className="sr-only"
-              onChange={(event) => {
-                setSelectedFileName(event.target.files?.[0]?.name ?? null)
-              }}
-              aria-invalid={state.fieldErrors?.file ? true : undefined}
+              acceptedMimeTypes={acceptedFileTypes}
+              onFileSelect={setSelectedFileName}
+              ariaInvalid={state.fieldErrors?.file ? true : undefined}
             />
           </label>
 

@@ -1,6 +1,6 @@
 "use client"
 
-/* eslint-disable react/jsx-no-constructed-context-values, react-perf/jsx-no-new-object-as-prop */
+/* eslint-disable react/jsx-no-constructed-context-values */
 
 import * as React from "react"
 import { Toggle as TogglePrimitive } from "@base-ui/react/toggle"

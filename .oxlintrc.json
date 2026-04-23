@@ -37,7 +37,7 @@
     "react/jsx-no-constructed-context-values": "warn",
     "react-perf/jsx-no-new-object-as-prop": "off",
     "react-perf/jsx-no-new-array-as-prop": "off",
-    "react-perf/jsx-no-new-function-as-prop": "warn",
+    "react-perf/jsx-no-new-function-as-prop": "off",
     "react-you-might-not-need-an-effect/no-derived-state": "warn",
     "react-you-might-not-need-an-effect/no-chain-state-updates": "warn",
     "react-you-might-not-need-an-effect/no-event-handler": "warn",
