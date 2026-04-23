@@ -47,6 +47,7 @@ export async function proxy(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
   const isPublicRoute = pathname === "/" || pathname.startsWith("/login")
+  const isAdminRoute = pathname.startsWith("/admin")
 
   if (!user && !isPublicRoute) {
     const loginUrl = request.nextUrl.clone()
@@ -54,6 +55,14 @@ export async function proxy(request: NextRequest) {
     loginUrl.search = ""
 
     return copyCookies(response, NextResponse.redirect(loginUrl))
+  }
+
+  if (user && isAdminRoute && user.user_metadata?.role !== "admin") {
+    const homeUrl = request.nextUrl.clone()
+    homeUrl.pathname = "/"
+    homeUrl.search = ""
+
+    return copyCookies(response, NextResponse.redirect(homeUrl))
   }
 
   return response
