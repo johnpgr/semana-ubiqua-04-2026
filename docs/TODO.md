@@ -126,25 +126,28 @@
 
 ### 14. Crédito progressivo
 
-- [ ] Definir modelo de níveis de limite progressivo
-- [ ] Definir critérios para evolução de limite por comportamento observado
-- [ ] Definir como ciclos de pagamento futuros afetam confiança e limite
-- [ ] Documentar como score inicial conservador deve impactar a primeira concessão
+- [x] Definir modelo de níveis de limite progressivo
+- [x] Definir critérios para evolução de limite por comportamento observado
+- [x] Definir como ciclos de pagamento futuros afetam confiança e limite
+- [x] Documentar como score inicial conservador deve impactar a primeira concessão
+- [x] Consolidar a diretriz de crédito progressivo em `docs/credito-progressivo.md`
 
 ### 15. Fraud Score e antifraude comportamental
 
-- [ ] Definir contrato do futuro Fraud Score Engine
-- [ ] Planejar sinais de Device Trust, Pattern Repetition e Synthetic Income Detector
-- [ ] Definir classificação de risco de fraude: baixo, moderado, alto e crítico
-- [ ] Definir como Credit Score e Fraud Score serão combinados na decisão final
-- [ ] Mapear consentimentos necessários para sinais sensíveis futuros
+- [x] Definir contrato do futuro Fraud Score Engine
+- [x] Planejar sinais de Device Trust, Pattern Repetition e Synthetic Income Detector
+- [x] Definir classificação de risco de fraude: baixo, moderado, alto e crítico
+- [x] Definir como Credit Score e Fraud Score serão combinados na decisão final
+- [x] Mapear consentimentos necessários para sinais sensíveis futuros
+- [x] Consolidar a diretriz de Fraud Score e antifraude em `docs/fraud-score-antifraude.md`
 
 ### 16. Monitoramento pós-crédito
 
-- [ ] Definir estados de risco pós-crédito
-- [ ] Planejar rotina de reavaliação contínua de score e risco
-- [ ] Definir alertas preventivos antes de atraso
-- [ ] Planejar revisão de limite e renegociação conforme mudança de risco
+- [x] Definir estados de risco pós-crédito
+- [x] Planejar rotina de reavaliação contínua de score e risco
+- [x] Definir alertas preventivos antes de atraso
+- [x] Planejar revisão de limite e renegociação conforme mudança de risco
+- [x] Consolidar a diretriz de monitoramento pós-crédito em `docs/monitoramento-pos-credito.md`
 
 ### 17. Explicabilidade jurídica
 
