@@ -115,10 +115,8 @@ export async function giveConsent(
   const analysis = await processCreditAnalysis(request.id)
 
   if (!analysis.ok) {
-    return {
-      ok: false,
-      formError: analysis.formError,
-    }
+    revalidatePath(`/resultado/${request.id}`)
+    redirect(`/resultado/${request.id}`)
   }
 
   revalidatePath(`/resultado/${request.id}`)
