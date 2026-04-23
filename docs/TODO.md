@@ -16,7 +16,7 @@
 
 - [x] Inicializar `supabase/config.toml` se ainda não existir
 - [x] Vincular o repositório ao projeto Supabase correto com `npx supabase link --project-ref <ref>`
-- [ ] Aplicar as migrations com `npx supabase db push` ou `npx supabase db reset` localmente
+- [x] Aplicar as migrations com `npx supabase db push` ou `npx supabase db reset` localmente
 - [x] Executar `npm run db:types` depois que o schema estiver aplicado
 - [x] Documentar as variáveis de ambiente necessárias em `.env.example`; preencher `.env.local` manualmente
   - `NEXT_PUBLIC_SUPABASE_URL`
@@ -84,13 +84,13 @@
 
 ### 9. Painel admin
 
-- [ ] Adicionar `app/admin/page.tsx` protegido
-- [ ] Adicionar middleware ou proteção equivalente para rotas exclusivas de admin
-- [ ] Carregar a lista de solicitações ordenada das mais novas para as mais antigas
-- [ ] Assinar `credit_requests` via Supabase Realtime
-- [ ] Adicionar filtros por status
-- [ ] Adicionar drill-down de uma solicitação com perfil, consentimento, transações, score e reasons
-- [ ] Adicionar gráficos de distribuição de score e métricas de decisão
+- [x] Adicionar `app/admin/page.tsx` protegido
+- [x] Adicionar middleware ou proteção equivalente para rotas exclusivas de admin
+- [x] Carregar a lista de solicitações ordenada das mais novas para as mais antigas
+- [x] Assinar `credit_requests` via Supabase Realtime
+- [x] Adicionar filtros por status
+- [x] Adicionar drill-down de uma solicitação com perfil, consentimento, transações, score e reasons
+- [x] Adicionar gráficos de distribuição de score e métricas de decisão
 
 ### 10. Documentos e storage
 
