@@ -7,28 +7,28 @@
 - [x] Realtime habilitado para `credit_requests`
 - [x] Schema alinhado com Supabase Auth via `profiles -> auth.users`
 - [x] `npm run db:types` adicionado para gerar os tipos do banco em `lib/supabase/database.types.ts`
-- [ ] Configuração do projeto Supabase versionada em `supabase/config.toml`
+- [x] Configuração do projeto Supabase versionada em `supabase/config.toml`
 - [ ] Implementação do app iniciada além do scaffold padrão
 
 ## Próximos Passos
 
 ### 1. Configuração do projeto Supabase
 
-- [ ] Executar `npx supabase init` se `supabase/config.toml` ainda não existir
+- [x] Inicializar `supabase/config.toml` se ainda não existir
 - [ ] Vincular o repositório ao projeto Supabase correto com `npx supabase link --project-ref <ref>`
 - [ ] Aplicar as migrations com `npx supabase db push` ou `npx supabase db reset` localmente
 - [ ] Executar `npm run db:types` depois que o schema estiver aplicado
-- [ ] Adicionar as variáveis de ambiente necessárias em `.env.local`
+- [x] Documentar as variáveis de ambiente necessárias em `.env.example`; preencher `.env.local` manualmente
   - `NEXT_PUBLIC_SUPABASE_URL`
   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
   - `SUPABASE_SERVICE_ROLE_KEY`
 
 ### 2. Utilitários do cliente Supabase
 
-- [ ] Criar `lib/supabase/client.ts`
-- [ ] Criar `lib/supabase/server.ts`
-- [ ] Criar `lib/supabase/service.ts`
-- [ ] Usar os tipos gerados do banco nesses clientes
+- [x] Criar `lib/supabase/client.ts`
+- [x] Criar `lib/supabase/server.ts`
+- [x] Criar `lib/supabase/service.ts`
+- [x] Usar os tipos gerados do banco nesses clientes
 
 ### 3. Fluxo de autenticação e perfil do usuário
 
