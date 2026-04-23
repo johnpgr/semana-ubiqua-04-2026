@@ -2,18 +2,18 @@
 
 ## Objetivo da demo
 
-Esta demo existe para mostrar que o OpenCred nao trata todos os autonomos da mesma forma. A proposta e evidenciar, com exemplos claros, como perfis financeiros diferentes produzem scores, decisoes, limites sugeridos e reasons coerentes com o comportamento observado.
+Esta demo existe para mostrar que o OpenCred não trata todos os autônomos da mesma forma. A proposta é evidenciar, com exemplos claros, como perfis financeiros diferentes produzem scores, decisões, limites sugeridos e reasons coerentes com o comportamento observado.
 
-O foco da apresentacao nao e discutir implementacao interna em detalhe. O foco e mostrar que o produto:
+O foco da apresentação não é discutir implementação interna em detalhe. O foco é mostrar que o produto:
 
-- entende contexto financeiro alem de renda formal;
-- diferencia qualidade de fluxo, estabilidade e historico;
-- toma decisoes explicaveis;
+- entende contexto financeiro além de renda formal;
+- diferencia qualidade de fluxo, estabilidade e histórico;
+- toma decisões explicáveis;
 - sugere limites de forma conservadora e coerente com o risco.
 
-## Ordem sugerida de apresentacao
+## Ordem sugerida de apresentação
 
-Para a demo ficar mais didatica, a ordem recomendada e:
+Para a demo ficar mais didática, a ordem recomendada é:
 
 1. `historico_insuficiente`
 2. `fluxo_instavel`
@@ -21,216 +21,216 @@ Para a demo ficar mais didatica, a ordem recomendada e:
 4. `motorista_consistente`
 5. `perfil_forte`
 
-Essa ordem ajuda a contar uma historia de evolucao de risco e qualidade:
+Essa ordem ajuda a contar uma história de evolução de risco e qualidade:
 
-- primeiro mostramos quem ainda nao tem base suficiente;
-- depois quem tem fluxo problematico;
+- primeiro mostramos quem ainda não tem base suficiente;
+- depois quem tem fluxo problemático;
 - depois quem tem renda real, mas irregular;
-- em seguida um perfil consistente e confiavel;
-- por fim o melhor caso, com historico forte e capacidade clara.
+- em seguida um perfil consistente e confiável;
+- por fim o melhor caso, com histórico forte e capacidade clara.
 
 ## Como conduzir a narrativa da demo
 
 Ao apresentar cada caso, vale repetir a mesma estrutura:
 
 1. mostrar o perfil selecionado no cadastro;
-2. explicar em uma frase quem e esse usuario;
-3. mostrar que as transacoes sinteticas combinam com esse contexto;
-4. destacar score, decisao e valor aprovado ou sugerido;
-5. fechar com os reasons, reforcando a explicabilidade.
+2. explicar em uma frase quem é esse usuário;
+3. mostrar que as transações sintéticas combinam com esse contexto;
+4. destacar score, decisão e valor aprovado ou sugerido;
+5. fechar com os reasons, reforçando a explicabilidade.
 
-Isso deixa a comparacao entre os cinco casos muito mais clara para banca, investidor ou avaliador tecnico.
+Isso deixa a comparação entre os cinco casos muito mais clara para banca, investidor ou avaliador técnico.
 
 ---
 
 ## 1. `historico_insuficiente`
 
-### Caracteristica principal
+### Característica principal
 
-Usuario com pouca profundidade de historico. A renda pode ate parecer legitima, mas ainda nao existe base suficiente para confiar na concessao.
+Usuário com pouca profundidade de histórico. A renda pode até parecer legítima, mas ainda não existe base suficiente para confiar na concessão.
 
 ### Comportamento financeiro esperado
 
-- janela curta de historico;
+- janela curta de histórico;
 - poucas entradas registradas;
-- poucas transacoes totais;
-- sinais insuficientes para medir regularidade com seguranca.
+- poucas transações totais;
+- sinais insuficientes para medir regularidade com segurança.
 
 ### Faixa ou expectativa de score
 
-Faixa esperada baixa, normalmente perto da parte inferior da escala. Como referencia de demo, esperar algo na faixa de `0-450`.
+Faixa esperada baixa, normalmente perto da parte inferior da escala. Como referência de demo, esperar algo na faixa de `0-450`.
 
-### Tipo de decisao esperado
+### Tipo de decisão esperado
 
 `denied`
 
 ### Como apresentar esse perfil na demo
 
-Comece por ele. Esse caso explica bem que o OpenCred nao aprova so porque existe alguma movimentacao. Mostre que o sistema evita superestimar um usuario quando o historico observado ainda e curto demais.
+Comece por ele. Esse caso explica bem que o OpenCred não aprova só porque existe alguma movimentação. Mostre que o sistema evita superestimar um usuário quando o histórico observado ainda é curto demais.
 
 ### Narrativa recomendada
 
-"Aqui temos um usuario que ainda nao mostrou historico suficiente. O ponto nao e dizer que ele e ruim, e sim que ainda nao existe base observavel para liberar credito com seguranca."
+"Aqui temos um usuário que ainda não mostrou histórico suficiente. O ponto não é dizer que ele é ruim, e sim que ainda não existe base observável para liberar crédito com segurança."
 
 ---
 
 ## 2. `fluxo_instavel`
 
-### Caracteristica principal
+### Característica principal
 
-Usuario com fluxo desorganizado, volatilidade alta e saidas que pressionam muito a capacidade de pagamento.
+Usuário com fluxo desorganizado, volatilidade alta e saídas que pressionam muito a capacidade de pagamento.
 
 ### Comportamento financeiro esperado
 
 - entradas irregulares;
 - lacunas mais longas entre recebimentos;
-- relacao entrada/saida apertada ou desfavoravel;
-- grande oscilacao de valores;
+- relação entrada/saída apertada ou desfavorável;
+- grande oscilação de valores;
 - sinais de instabilidade no fluxo.
 
 ### Faixa ou expectativa de score
 
-Faixa baixa a intermediaria baixa. Como referencia de demo, esperar algo em torno de `0-520`.
+Faixa baixa a intermediária baixa. Como referência de demo, esperar algo em torno de `0-520`.
 
-### Tipo de decisao esperado
+### Tipo de decisão esperado
 
 `further_review`
 
 ### Como apresentar esse perfil na demo
 
-Mostre que existe movimentacao real, mas que ela nao gera confianca automatica. Esse caso e bom para destacar que o produto nao olha so existencia de renda, e sim qualidade do fluxo.
+Mostre que existe movimentação real, mas que ela não gera confiança automática. Esse caso é bom para destacar que o produto não olha só existência de renda, e sim qualidade do fluxo.
 
 ### Narrativa recomendada
 
-"Esse usuario movimenta dinheiro, mas de forma muito instavel. O OpenCred enxerga que existe atividade financeira, porem ainda sem previsibilidade suficiente para uma aprovacao automatica segura."
+"Esse usuário movimenta dinheiro, mas de forma muito instável. O OpenCred enxerga que existe atividade financeira, porém ainda sem previsibilidade suficiente para uma aprovação automática segura."
 
 ---
 
 ## 3. `autonomo_irregular`
 
-### Caracteristica principal
+### Característica principal
 
-Usuario autonomo real, com renda legitima, mas oscilante. E um caso importante porque representa bem o publico invisivel ao credito tradicional.
+Usuário autônomo real, com renda legítima, mas oscilante. É um caso importante porque representa bem o público invisível ao crédito tradicional.
 
 ### Comportamento financeiro esperado
 
-- entradas de servicos, freelance ou vendas avulsas;
+- entradas de serviços, freelance ou vendas avulsas;
 - intervalos irregulares entre recebimentos;
 - meses melhores e piores;
 - capacidade presente, mas com menor estabilidade.
 
 ### Faixa ou expectativa de score
 
-Faixa intermediaria. Como referencia de demo, esperar algo aproximadamente entre `450-780`.
+Faixa intermediária. Como referência de demo, esperar algo aproximadamente entre `450-780`.
 
-### Tipo de decisao esperado
+### Tipo de decisão esperado
 
 `approved_reduced`
 
 ### Como apresentar esse perfil na demo
 
-Esse e o caso-chave para explicar a tese do produto. Mostre que o OpenCred nao rejeita automaticamente quem nao tem renda formal. Ao mesmo tempo, deixa claro que o limite e mais conservador por causa da irregularidade.
+Esse é o caso-chave para explicar a tese do produto. Mostre que o OpenCred não rejeita automaticamente quem não tem renda formal. Ao mesmo tempo, deixa claro que o limite é mais conservador por causa da irregularidade.
 
 ### Narrativa recomendada
 
-"Aqui esta um autonomo de verdade: ele tem renda, trabalha e gira dinheiro, mas nao no formato perfeito que bancos tradicionais gostam. O OpenCred consegue reconhecer valor nesse perfil, mas com uma aprovacao mais conservadora."
+"Aqui está um autônomo de verdade: ele tem renda, trabalha e gira dinheiro, mas não no formato perfeito que bancos tradicionais gostam. O OpenCred consegue reconhecer valor nesse perfil, mas com uma aprovação mais conservadora."
 
 ---
 
 ## 4. `motorista_consistente`
 
-### Caracteristica principal
+### Característica principal
 
-Usuario de aplicativo com recorrencia boa de entradas e padrao relativamente previsivel.
+Usuário de aplicativo com recorrência boa de entradas e padrão relativamente previsível.
 
 ### Comportamento financeiro esperado
 
 - recebimentos frequentes;
-- rotina de fluxo mais estavel;
-- despesas coerentes com a atividade, como combustivel e manutencao;
+- rotina de fluxo mais estável;
+- despesas coerentes com a atividade, como combustível e manutenção;
 - menor volatilidade relativa.
 
 ### Faixa ou expectativa de score
 
-Faixa boa, normalmente acima da zona intermediaria. Como referencia de demo, esperar algo entre `700-900`.
+Faixa boa, normalmente acima da zona intermediária. Como referência de demo, esperar algo entre `700-900`.
 
-### Tipo de decisao esperado
+### Tipo de decisão esperado
 
 `approved`
 
 ### Como apresentar esse perfil na demo
 
-Esse caso mostra inclusao com responsabilidade. O usuario nao precisa ter salario formal para demonstrar confiabilidade. O ideal e destacar a regularidade das entradas e como isso melhora score e decisao.
+Esse caso mostra inclusão com responsabilidade. O usuário não precisa ter salário formal para demonstrar confiabilidade. O ideal é destacar a regularidade das entradas e como isso melhora score e decisão.
 
 ### Narrativa recomendada
 
-"Esse perfil prova que consistencia importa. Mesmo sem contracheque tradicional, o comportamento financeiro repetido e observavel gera confianca suficiente para aprovacao."
+"Esse perfil prova que consistência importa. Mesmo sem contracheque tradicional, o comportamento financeiro repetido e observável gera confiança suficiente para aprovação."
 
 ---
 
 ## 5. `perfil_forte`
 
-### Caracteristica principal
+### Característica principal
 
-Melhor caso da demo. Usuario com historico profundo, renda alta e estavel e boa capacidade de pagamento.
+Melhor caso da demo. Usuário com histórico profundo, renda alta e estável e boa capacidade de pagamento.
 
 ### Comportamento financeiro esperado
 
-- historico mais longo;
-- entradas mais previsiveis;
+- histórico mais longo;
+- entradas mais previsíveis;
 - melhor sobra mensal;
 - menor volatilidade;
-- melhor equilibrio entre entradas e saidas.
+- melhor equilíbrio entre entradas e saídas.
 
 ### Faixa ou expectativa de score
 
-Faixa alta. Como referencia de demo, esperar algo entre `800-1000`.
+Faixa alta. Como referência de demo, esperar algo entre `800-1000`.
 
-### Tipo de decisao esperado
+### Tipo de decisão esperado
 
 `approved`
 
 ### Como apresentar esse perfil na demo
 
-Deixe esse por ultimo. Ele fecha a apresentacao com o melhor exemplo de qualidade financeira, deixando clara a diferenca em relacao aos casos anteriores.
+Deixe esse por último. Ele fecha a apresentação com o melhor exemplo de qualidade financeira, deixando clara a diferença em relação aos casos anteriores.
 
 ### Narrativa recomendada
 
-"Esse e o perfil que combina historico, estabilidade e capacidade. O sistema reconhece isso com um score alto, aprovacao clara e um limite compatível com o comportamento observado."
+"Esse é o perfil que combina histórico, estabilidade e capacidade. O sistema reconhece isso com um score alto, aprovação clara e um limite compatível com o comportamento observado."
 
 ---
 
-## Comparacao rapida entre os 5 casos
+## Comparação rápida entre os 5 casos
 
-| Perfil | Leitura principal | Score esperado | Decisao esperada |
+| Perfil | Leitura principal | Score esperado | Decisão esperada |
 | --- | --- | --- | --- |
-| `historico_insuficiente` | pouca base observavel | `0-450` | `denied` |
-| `fluxo_instavel` | fluxo ruim ou muito volatil | `0-520` | `further_review` |
+| `historico_insuficiente` | pouca base observável | `0-450` | `denied` |
+| `fluxo_instavel` | fluxo ruim ou muito volátil | `0-520` | `further_review` |
 | `autonomo_irregular` | renda real, mas oscilante | `450-780` | `approved_reduced` |
-| `motorista_consistente` | recorrencia e padrao confiavel | `700-900` | `approved` |
-| `perfil_forte` | historico forte e capacidade alta | `800-1000` | `approved` |
+| `motorista_consistente` | recorrência e padrão confiável | `700-900` | `approved` |
+| `perfil_forte` | histórico forte e capacidade alta | `800-1000` | `approved` |
 
-## Recomendacao de roteiro para mostrar evolucao de risco e qualidade
+## Recomendação de roteiro para mostrar evolução de risco e qualidade
 
-Uma forma forte de conduzir a demo e usar a seguinte linha:
+Uma forma forte de conduzir a demo é usar a seguinte linha:
 
-1. "nao basta movimentar dinheiro";
-2. "historico curto reduz confianca";
-3. "instabilidade impede aprovacao automatica forte";
+1. "não basta movimentar dinheiro";
+2. "histórico curto reduz confiança";
+3. "instabilidade impede aprovação automática forte";
 4. "renda irregular pode ser aprovada com conservadorismo";
-5. "consistencia e historico sustentam limites melhores".
+5. "consistência e histórico sustentam limites melhores".
 
-Assim, a banca enxerga que o OpenCred nao e apenas um aprovador ou negador simples. Ele organiza o risco em niveis compreensiveis.
+Assim, a banca enxerga que o OpenCred não é apenas um aprovador ou negador simples. Ele organiza o risco em níveis compreensíveis.
 
-## Como destacar score, decisao, valor e reasons
+## Como destacar score, decisão, valor e reasons
 
-Em cada perfil, chame atencao sempre para os mesmos quatro pontos:
+Em cada perfil, chame atenção sempre para os mesmos quatro pontos:
 
-- **Score:** mostra a diferenca de qualidade entre os casos.
-- **Decisao:** transforma score em acao pratica.
+- **Score:** mostra a diferença de qualidade entre os casos.
+- **Decisão:** transforma score em ação prática.
 - **Valor aprovado ou sugerido:** mostra conservadorismo e responsabilidade.
-- **Reasons:** provam explicabilidade e ajudam juridico, operacao e confianca do usuario.
+- **Reasons:** provam explicabilidade e ajudam jurídico, operação e confiança do usuário.
 
-## Conclusao
+## Conclusão
 
-Esses cinco casos demonstram bem o valor do OpenCred porque cobrem todo o arco principal da analise: falta de historico, instabilidade, irregularidade com potencial, consistencia operacional e perfil financeiro forte. Juntos, eles mostram que o produto consegue ser inclusivo sem deixar de ser prudente, e que a decisao final vem acompanhada de uma explicacao clara e apresentavel.
+Esses cinco casos demonstram bem o valor do OpenCred porque cobrem todo o arco principal da análise: falta de histórico, instabilidade, irregularidade com potencial, consistência operacional e perfil financeiro forte. Juntos, eles mostram que o produto consegue ser inclusivo sem deixar de ser prudente, e que a decisão final vem acompanhada de uma explicação clara e apresentável.

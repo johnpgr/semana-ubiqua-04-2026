@@ -1,6 +1,6 @@
 # Validação Manual de RLS
 
-Este checklist cobre os cenários principais de Row Level Security do OpenCred com base nas policies atuais em [0002_rls.sql](../supabase/migrations/0002_rls.sql) e [0006_documents_storage.sql](../supabase/migrations/0006_documents_storage.sql).
+Este checklist cobre os cenários principais de Row Level Security do OpenCred com base nas policies atuais em [0002_rls.sql](../supabase/migrations/0002_rls.sql), [0005_fix_postgres_best_practices.sql](../supabase/migrations/0005_fix_postgres_best_practices.sql) e [0006_documents_storage.sql](../supabase/migrations/0006_documents_storage.sql).
 
 ## Escopos atuais
 
@@ -12,7 +12,7 @@ Este checklist cobre os cenários principais de Row Level Security do OpenCred c
 ## Policies cobertas hoje
 
 - `profiles`: select/update do próprio usuário ou admin; insert do próprio usuário.
-- `credit_requests`: select do próprio usuário ou admin; insert do próprio usuário; update só admin.
+- `credit_requests`: select do próprio usuário ou admin; insert do próprio usuário; update por admin e exceção controlada para o próprio usuário fazer a transição `awaiting_consent -> collecting_data`.
 - `consents`: select/insert vinculados às requests do próprio usuário ou admin para leitura.
 - `transactions`: select vinculado à request do próprio usuário ou admin.
 - `scores`: select vinculado à request do próprio usuário ou admin.
@@ -53,6 +53,8 @@ Validar:
 - não consegue ler `profile` de outro usuário;
 - consegue inserir `credit_requests` com `user_id = auth.uid()`;
 - não consegue inserir `credit_requests` com `user_id` diferente;
+- consegue atualizar a própria `credit_request` apenas na transição `awaiting_consent -> collecting_data`;
+- não consegue fazer outros updates arbitrários em `credit_requests`;
 - consegue ler `consents`, `transactions`, `scores` e `documents` ligados à própria request;
 - não consegue ler os mesmos dados de request alheia;
 - não consegue ler `audit_logs`;
@@ -71,11 +73,11 @@ Validar:
 
 ## Como executar na prática
 
-### Opção A — Supabase Studio / SQL Editor
+### Opção A - Supabase Studio / SQL Editor
 
 Boa para inspeção rápida de dados e policies. Para validar RLS de verdade, prefira sessões com JWT diferentes ou clientes distintos, porque queries executadas como owner/service role podem mascarar o comportamento real.
 
-### Opção B — Cliente Supabase por contexto
+### Opção B - Cliente Supabase por contexto
 
 Criar três clientes separados:
 
