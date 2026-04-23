@@ -51,11 +51,12 @@ export function Navbar() {
         {/* Mobile Navigation */}
         <div className="md:hidden">
           <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="size-6" />
-                <span className="sr-only">Menu</span>
-              </Button>
+            <SheetTrigger
+              data-slot="button"
+              className="inline-flex items-center justify-center rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Menu className="size-6" />
+              <span className="sr-only">Menu</span>
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px]">
               <SheetHeader>

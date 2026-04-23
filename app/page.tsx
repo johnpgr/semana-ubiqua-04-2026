@@ -1,7 +1,8 @@
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, ShieldCheck, Zap, BarChart3 } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default function Page() {
   return (
@@ -16,14 +17,18 @@ export default function Page() {
           Simples, justo e transparente.
         </p>
         <div className="flex flex-wrap justify-center gap-4 mt-4">
-          <Button asChild size="lg" className="gap-2">
-            <Link href="/cadastro">
-              Solicitar Crédito <ArrowRight className="size-4" />
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link href="/admin">Acesso Admin</Link>
-          </Button>
+          <Link
+            href="/cadastro"
+            className={cn(buttonVariants({ size: "lg" }), "gap-2")}
+          >
+            Solicitar Crédito <ArrowRight className="size-4" />
+          </Link>
+          <Link
+            href="/admin"
+            className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
+          >
+            Acesso Admin
+          </Link>
         </div>
       </section>
 
