@@ -94,6 +94,35 @@ function EmptyContent({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+function EmptyState({
+  title,
+  description,
+  icon: Icon,
+  action,
+  className,
+}: {
+  title: string
+  description?: string
+  icon?: React.ElementType
+  action?: React.ReactNode
+  className?: string
+}) {
+  return (
+    <Empty className={cn("min-h-[300px] border-2 border-dashed", className)}>
+      <EmptyHeader>
+        {Icon && (
+          <EmptyMedia variant="icon">
+            <Icon />
+          </EmptyMedia>
+        )}
+        <EmptyTitle>{title}</EmptyTitle>
+        {description && <EmptyDescription>{description}</EmptyDescription>}
+      </EmptyHeader>
+      {action && <EmptyContent>{action}</EmptyContent>}
+    </Empty>
+  )
+}
+
 export {
   Empty,
   EmptyHeader,
@@ -101,4 +130,5 @@ export {
   EmptyDescription,
   EmptyContent,
   EmptyMedia,
+  EmptyState,
 }
