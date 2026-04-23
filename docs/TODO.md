@@ -56,20 +56,20 @@
 
 ### 6. Gerador de dados mockados
 
-- [ ] Adicionar `@faker-js/faker`
-- [ ] Criar `lib/mockData/profiles.ts`
-- [ ] Implementar os 5 perfis mockados da spec
-- [ ] Gerar transações sintéticas realistas por solicitação
-- [ ] Manter os dados gerados coerentes com o `mock_profile` selecionado
+- [x] Adicionar `@faker-js/faker`
+- [x] Criar `lib/mockData/profiles.ts`
+- [x] Implementar os 5 perfis mockados da spec
+- [x] Gerar transações sintéticas realistas por solicitação
+- [x] Manter os dados gerados coerentes com o `mock_profile` selecionado
 
 ### 7. Motor de score
 
-- [ ] Criar `lib/scoreEngine/index.ts`
-- [ ] Adicionar módulos de dimensão para `regularity`, `capacity`, `stability`, `behavior` e `dataQuality`
-- [ ] Implementar a agregação do score de `0-1000`
-- [ ] Implementar o mapeamento de decisão: `approved`, `approved_reduced`, `further_review`, `denied`
-- [ ] Implementar o cálculo dinâmico de limite sugerido
-- [ ] Retornar `reasons` legíveis por humanos e um breakdown completo do score
+- [x] Criar `lib/scoreEngine/index.ts`
+- [x] Adicionar módulos de dimensão para `regularity`, `capacity`, `stability`, `behavior` e `dataQuality`
+- [x] Implementar a agregação do score de `0-1000`
+- [x] Implementar o mapeamento de decisão: `approved`, `approved_reduced`, `further_review`, `denied`
+- [x] Implementar o cálculo dinâmico de limite sugerido
+- [x] Retornar `reasons` legíveis por humanos e um breakdown completo do score
 
 ### 8. API route de score
 
