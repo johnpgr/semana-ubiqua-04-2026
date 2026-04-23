@@ -10,6 +10,8 @@ import { getFieldErrors, type FormActionState } from "@/lib/form-action"
 import { createClient } from "@/lib/supabase/server"
 import { Consent } from "@/validation/consent"
 
+import { processCreditAnalysis } from "../../score-actions"
+
 export type GiveConsentState = FormActionState<"scopes">
 
 function getIpAddress(headerStore: Headers) {
@@ -108,6 +110,13 @@ export async function giveConsent(
       ok: false,
       formError: "Consentimento salvo, mas o status não pôde ser atualizado",
     }
+  }
+
+  const analysis = await processCreditAnalysis(request.id)
+
+  if (!analysis.ok) {
+    revalidatePath(`/resultado/${request.id}`)
+    redirect(`/resultado/${request.id}`)
   }
 
   revalidatePath(`/resultado/${request.id}`)
