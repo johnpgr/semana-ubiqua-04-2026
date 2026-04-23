@@ -1,0 +1,26 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": ".codex-test-dist",
+    "rootDir": ".",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "ES2023",
+    "incremental": false,
+    "isolatedModules": false,
+    "plugins": [],
+    "baseUrl": ".",
+    "paths": {}
+  },
+  "include": [
+    "tests/**/*.ts",
+    "validation/cpf.ts",
+    "lib/mockData/**/*.ts",
+    "lib/scoreEngine/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next"
+  ]
+}

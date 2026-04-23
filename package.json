@@ -10,6 +10,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
+    "test": "npm run test:unit",
+    "test:unit": "tsc -p tsconfig.test.json && node scripts/run-unit-tests.cjs",
     "lint": "oxlint",
     "format": "oxfmt \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
