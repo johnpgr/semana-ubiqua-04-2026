@@ -12,10 +12,15 @@ export function scoreStability(metrics: ScoreMetrics): DimensionResult {
     0.08,
     1,
   )
-  const maxGapStability = inverseNormalizeRange(metrics.incomeGapMaxDays, 10, 45)
+  const cadenceHistory = metrics.hasEnoughIncomeGapHistory
+    ? incomeCadenceStability
+    : 0.35
+  const maxGapStability = metrics.hasEnoughIncomeGapHistory
+    ? inverseNormalizeRange(metrics.incomeGapMaxDays, 10, 45)
+    : 0.35
   const value = scoreFromParts([
     incomeValueStability,
-    incomeCadenceStability,
+    cadenceHistory,
     maxGapStability,
   ])
   const reasons: string[] = []
@@ -35,6 +40,7 @@ export function scoreStability(metrics: ScoreMetrics): DimensionResult {
       incomeAmountVolatility: metrics.incomeAmountVolatility,
       incomeGapVolatility: metrics.incomeGapVolatility,
       incomeGapMaxDays: metrics.incomeGapMaxDays,
+      hasEnoughIncomeGapHistory: metrics.hasEnoughIncomeGapHistory,
     },
   }
 }

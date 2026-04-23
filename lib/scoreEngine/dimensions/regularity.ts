@@ -7,8 +7,12 @@ import type { DimensionResult, ScoreMetrics } from "../types"
 
 export function scoreRegularity(metrics: ScoreMetrics): DimensionResult {
   const creditDensity = normalizeRange(metrics.creditCount, 2, 24)
-  const gapConsistency = inverseNormalizeRange(metrics.incomeGapVolatility, 0.05, 0.85)
-  const maxGapControl = inverseNormalizeRange(metrics.incomeGapMaxDays, 8, 35)
+  const gapConsistency = metrics.hasEnoughIncomeGapHistory
+    ? inverseNormalizeRange(metrics.incomeGapVolatility, 0.05, 0.85)
+    : 0.35
+  const maxGapControl = metrics.hasEnoughIncomeGapHistory
+    ? inverseNormalizeRange(metrics.incomeGapMaxDays, 8, 35)
+    : 0.35
   const activeMonths = normalizeRange(metrics.activeMonthCount, 1, 4)
   const value = scoreFromParts([
     creditDensity,
@@ -30,6 +34,10 @@ export function scoreRegularity(metrics: ScoreMetrics): DimensionResult {
     reasons.push("Foram observados intervalos longos sem novas entradas.")
   }
 
+  if (!metrics.hasEnoughIncomeGapHistory) {
+    reasons.push("Histórico de entradas ainda insuficiente para medir cadência com segurança.")
+  }
+
   return {
     value,
     reasons,
@@ -38,6 +46,7 @@ export function scoreRegularity(metrics: ScoreMetrics): DimensionResult {
       incomeGapAverageDays: metrics.incomeGapAverageDays,
       incomeGapMaxDays: metrics.incomeGapMaxDays,
       incomeGapVolatility: metrics.incomeGapVolatility,
+      hasEnoughIncomeGapHistory: metrics.hasEnoughIncomeGapHistory,
     },
   }
 }

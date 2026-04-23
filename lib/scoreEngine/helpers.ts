@@ -13,6 +13,7 @@ export function buildScoreMetrics(transactions: ScoreTransaction[]): ScoreMetric
   const credits = datedTransactions.filter((transaction) => transaction.kind === "credit")
   const debits = datedTransactions.filter((transaction) => transaction.kind === "debit")
   const incomeGaps = getIncomeGaps(credits)
+  const hasEnoughIncomeGapHistory = credits.length >= 2
   const historyDays = getHistoryDays(datedTransactions)
   const monthFactor = Math.max(historyDays / MONTH_IN_DAYS, 1)
   const totalIncome = sumAmounts(credits)
@@ -35,10 +36,11 @@ export function buildScoreMetrics(transactions: ScoreTransaction[]): ScoreMetric
     averageMonthlyIncome: round(totalIncome / monthFactor),
     averageMonthlyDebits: round(totalDebits / monthFactor),
     averageMonthlyNet: round((totalIncome - totalDebits) / monthFactor),
-    expenseRatio: safeRatio(totalDebits, totalIncome),
+    expenseRatio: calculateExpenseRatio(totalDebits, totalIncome),
     incomeGapAverageDays: average(incomeGaps),
     incomeGapMaxDays: Math.max(...incomeGaps, 0),
     incomeGapVolatility: coefficientOfVariation(incomeGaps),
+    hasEnoughIncomeGapHistory,
     incomeAmountVolatility: coefficientOfVariation(credits.map((credit) => credit.amount)),
     activeMonthCount: monthlySummaries.length,
     positiveMonthRatio: safeRatio(positiveMonths.length, monthlySummaries.length),
@@ -128,7 +130,7 @@ function getHistoryDays(transactions: DatedTransaction[]) {
       first.occurredAtDate.getTime() - second.occurredAtDate.getTime(),
   )
   const first = sorted[0]?.occurredAtDate.getTime() ?? 0
-  const last = sorted.at(-1)?.occurredAtDate.getTime() ?? first
+  const last = sorted[sorted.length - 1]?.occurredAtDate.getTime() ?? first
 
   return Math.max(Math.ceil((last - first) / DAY_IN_MS), 1)
 }
@@ -163,6 +165,18 @@ function safeRatio(numerator: number, denominator: number) {
   }
 
   return numerator / denominator
+}
+
+function calculateExpenseRatio(totalDebits: number, totalIncome: number) {
+  if (totalIncome > 0) {
+    return totalDebits / totalIncome
+  }
+
+  if (totalDebits > 0) {
+    return 1.25
+  }
+
+  return 0.7
 }
 
 function sumAmounts(transactions: ScoreTransaction[]) {

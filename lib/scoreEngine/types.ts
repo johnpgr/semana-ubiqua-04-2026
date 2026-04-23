@@ -14,7 +14,7 @@ export type CreditDecision =
 export type DimensionResult = {
   value: number
   reasons: string[]
-  metrics: Record<string, number>
+  metrics: Record<string, number | boolean>
 }
 
 export type ScoreBreakdown = Record<ScoreDimension, DimensionResult>
@@ -63,6 +63,7 @@ export type ScoreMetrics = {
   incomeGapAverageDays: number
   incomeGapMaxDays: number
   incomeGapVolatility: number
+  hasEnoughIncomeGapHistory: boolean
   incomeAmountVolatility: number
   activeMonthCount: number
   positiveMonthRatio: number
