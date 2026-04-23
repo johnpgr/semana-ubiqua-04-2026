@@ -11,7 +11,7 @@ function copyCookies(from: NextResponse, to: NextResponse) {
   return to
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
     request,
   })
