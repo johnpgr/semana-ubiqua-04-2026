@@ -71,15 +71,16 @@
 - [x] Implementar o cálculo dinâmico de limite sugerido
 - [x] Retornar `reasons` legíveis por humanos e um breakdown completo do score
 
-### 8. API route de score
+### 8. Orquestração de score via Server Action
 
-- [ ] Adicionar `app/api/score/route.ts`
-- [ ] Validar `requestId`
-- [ ] Carregar os dados da solicitação, perfil e consentimento
-- [ ] Gerar as transações e inseri-las com o cliente service-role
-- [ ] Calcular o score e salvá-lo em `scores`
-- [ ] Atualizar `credit_requests.status`, `decision`, `approved_amount` e `decided_at`
-- [ ] Registrar entradas de auditoria para ações importantes
+- [x] Criar Server Action para processar a análise de crédito sem API route
+- [x] Validar autenticação, autorização e `requestId` dentro da action
+- [x] Carregar solicitação, perfil e consentimento
+- [x] Impedir análise sem consentimento salvo
+- [x] Gerar transações mockadas e inseri-las com o cliente service-role
+- [x] Calcular o score e salvá-lo em `scores`
+- [x] Atualizar `credit_requests.status`, `decision`, `approved_amount` e `decided_at`
+- [x] Registrar entradas de auditoria para ações importantes
 
 ### 9. Painel admin
 
