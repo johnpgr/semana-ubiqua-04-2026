@@ -9,9 +9,6 @@ export default function Page() {
       <div className="mx-auto flex min-h-svh w-full max-w-6xl flex-col justify-center gap-10 px-4 py-14 sm:px-6 lg:flex-row lg:items-center lg:gap-14">
         <section className="max-w-3xl space-y-7">
           <div className="space-y-4">
-            <div className="inline-flex rounded-full border border-border/70 bg-background/75 px-3 py-1 text-xs font-semibold tracking-[0.26em] text-muted-foreground uppercase backdrop-blur">
-              Demo Semana Ubiqua 2026
-            </div>
             <h1 className="max-w-3xl text-4xl leading-tight font-semibold text-balance sm:text-5xl">
               OpenCred — crédito justo com seus dados
             </h1>

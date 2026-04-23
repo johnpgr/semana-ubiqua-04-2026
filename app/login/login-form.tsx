@@ -23,8 +23,8 @@ export function LoginForm() {
 
   return (
     <form action={formAction}>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
+      <CardContent className="space-y-4 pb-4">
+        <div className="space-y-4">
           <label className="text-sm font-medium" htmlFor="email">
             Email
           </label>
