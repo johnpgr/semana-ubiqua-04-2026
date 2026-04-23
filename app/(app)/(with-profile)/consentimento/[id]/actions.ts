@@ -25,7 +25,7 @@ export type UploadDocumentState = FormActionState<
 export type RemoveDocumentState = FormActionState<"document_id" | "request_id">
 
 const ConsentPayload = Consent.extend({
-  request_id: z.string().uuid("Solicitacao invalida"),
+  request_id: z.uuid("Solicitação inválida"),
 })
 
 function getIpAddress(headerStore: Headers) {
@@ -76,14 +76,14 @@ export async function giveConsent(
   if (requestError) {
     return {
       ok: false,
-      formError: "Nao foi possivel carregar a solicitacao",
+      formError: "Não foi possível carregar a solicitação.",
     }
   }
 
   if (!request) {
     return {
       ok: false,
-      formError: "Solicitacao nao encontrada",
+      formError: "Solicitação não encontrada.",
     }
   }
 
@@ -103,7 +103,7 @@ export async function giveConsent(
   if (consentError) {
     return {
       ok: false,
-      formError: "Nao foi possivel registrar o consentimento",
+      formError: "Não foi possível registrar o consentimento.",
     }
   }
 
@@ -118,7 +118,7 @@ export async function giveConsent(
   if (updateError) {
     return {
       ok: false,
-      formError: "Consentimento salvo, mas o status nao pode ser atualizado",
+      formError: "Consentimento salvo, mas o status não pôde ser atualizado.",
     }
   }
 
@@ -144,21 +144,21 @@ export async function uploadDocument(
   if (requestError) {
     return {
       ok: false,
-      formError: "Nao foi possivel carregar a solicitacao",
+      formError: "Não foi possível carregar a solicitação.",
     }
   }
 
   if (!request) {
     return {
       ok: false,
-      formError: "Solicitacao nao encontrada",
+      formError: "Solicitação não encontrada.",
     }
   }
 
   if (request.status !== "awaiting_consent") {
     return {
       ok: false,
-      formError: "Os documentos so podem ser enviados antes do consentimento",
+      formError: "Os documentos só podem ser enviados antes do consentimento.",
     }
   }
 

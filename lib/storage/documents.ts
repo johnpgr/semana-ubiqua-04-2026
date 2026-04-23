@@ -13,8 +13,8 @@ import {
 import type { Database } from "@/lib/supabase/database.types"
 
 const DocumentUploadInput = z.object({
-  requestId: z.string().uuid(),
-  userId: z.string().uuid(),
+  requestId: z.uuid(),
+  userId: z.uuid(),
 })
 
 type AppSupabaseClient = SupabaseClient<Database>
@@ -85,6 +85,16 @@ type DeleteDocumentForRequestInput = {
   userId: string
 }
 
+type ValidatedDocumentFileResult =
+  | {
+      ok: true
+      file: File
+    }
+  | {
+      ok: false
+      error: UploadDocumentError
+    }
+
 function fail(
   code: UploadDocumentErrorCode,
   message: string
@@ -111,13 +121,27 @@ function failDelete(
   }
 }
 
-function validateDocumentFile(file: FormDataEntryValue | null) {
+function validateDocumentFile(
+  file: FormDataEntryValue | null
+): ValidatedDocumentFileResult {
   if (!(file instanceof File) || file.size === 0) {
-    return fail("FILE_REQUIRED", "Selecione um arquivo para continuar")
+    return {
+      ok: false,
+      error: {
+        code: "FILE_REQUIRED",
+        message: "Selecione um arquivo para continuar.",
+      },
+    }
   }
 
   if (file.size > DOCUMENT_FILE_SIZE_LIMIT) {
-    return fail("FILE_TOO_LARGE", "O arquivo excede o limite de 10 MB")
+    return {
+      ok: false,
+      error: {
+        code: "FILE_TOO_LARGE",
+        message: "O arquivo excede o limite de 10 MB.",
+      },
+    }
   }
 
   if (
@@ -125,11 +149,17 @@ function validateDocumentFile(file: FormDataEntryValue | null) {
       file.type as (typeof DOCUMENT_ALLOWED_MIME_TYPES)[number]
     )
   ) {
-    return fail("UNSUPPORTED_MIME_TYPE", "Envie um PDF, JPG, PNG ou WEBP")
+    return {
+      ok: false,
+      error: {
+        code: "UNSUPPORTED_MIME_TYPE",
+        message: "Envie um PDF, JPG, PNG ou WEBP.",
+      },
+    }
   }
 
   return {
-    ok: true as const,
+    ok: true,
     file,
   }
 }
@@ -148,16 +178,19 @@ export async function uploadDocumentForRequest(
     )
 
     if (requestIdIssue) {
-      return fail("INVALID_REQUEST_ID", "Solicitacao invalida")
+      return fail("INVALID_REQUEST_ID", "Solicitação inválida.")
     }
 
-    return fail("INVALID_USER_ID", "Usuario invalido")
+    return fail("INVALID_USER_ID", "Usuário inválido.")
   }
 
   const validatedFile = validateDocumentFile(input.file)
 
   if (!validatedFile.ok) {
-    return validatedFile
+    return {
+      ok: false,
+      error: validatedFile.error,
+    }
   }
 
   const { data: request, error: requestError } = await input.supabase
@@ -170,12 +203,12 @@ export async function uploadDocumentForRequest(
   if (requestError) {
     return fail(
       "REQUEST_LOOKUP_FAILED",
-      "Nao foi possivel carregar a solicitacao"
+      "Não foi possível carregar a solicitação."
     )
   }
 
   if (!request) {
-    return fail("REQUEST_NOT_FOUND", "Solicitacao nao encontrada")
+    return fail("REQUEST_NOT_FOUND", "Solicitação não encontrada.")
   }
 
   const { sanitizedFileName, storagePath } = buildDocumentStoragePath({
@@ -192,7 +225,10 @@ export async function uploadDocumentForRequest(
     })
 
   if (uploadError) {
-    return fail("STORAGE_UPLOAD_FAILED", "Nao foi possivel enviar o arquivo agora")
+    return fail(
+      "STORAGE_UPLOAD_FAILED",
+      "Não foi possível enviar o arquivo agora."
+    )
   }
 
   const { data: document, error: documentError } = await input.supabase
@@ -216,13 +252,13 @@ export async function uploadDocumentForRequest(
     if (rollbackError) {
       return fail(
         "STORAGE_ROLLBACK_FAILED",
-        "O arquivo subiu, mas houve falha ao salvar e limpar o upload"
+        "O arquivo foi enviado, mas houve falha ao salvar e limpar o envio."
       )
     }
 
     return fail(
       "DOCUMENT_INSERT_FAILED",
-      "O arquivo foi enviado, mas o metadado nao pode ser salvo"
+      "O arquivo foi enviado, mas os metadados não puderam ser salvos."
     )
   }
 
@@ -239,9 +275,9 @@ export async function deleteDocumentForRequest(
 ): Promise<DeleteDocumentResult> {
   const parsedIds = z
     .object({
-      documentId: z.string().uuid(),
-      requestId: z.string().uuid(),
-      userId: z.string().uuid(),
+      documentId: z.uuid(),
+      requestId: z.uuid(),
+      userId: z.uuid(),
     })
     .safeParse(input)
 
@@ -254,14 +290,14 @@ export async function deleteDocumentForRequest(
     )
 
     if (documentIdIssue) {
-      return failDelete("INVALID_DOCUMENT_ID", "Documento invalido")
+      return failDelete("INVALID_DOCUMENT_ID", "Documento inválido.")
     }
 
     if (requestIdIssue) {
-      return failDelete("INVALID_REQUEST_ID", "Solicitacao invalida")
+      return failDelete("INVALID_REQUEST_ID", "Solicitação inválida.")
     }
 
-    return failDelete("INVALID_USER_ID", "Usuario invalido")
+    return failDelete("INVALID_USER_ID", "Usuário inválido.")
   }
 
   const { data: document, error: documentLookupError } = await input.supabase
@@ -275,12 +311,12 @@ export async function deleteDocumentForRequest(
   if (documentLookupError) {
     return failDelete(
       "DOCUMENT_LOOKUP_FAILED",
-      "Nao foi possivel localizar o documento"
+      "Não foi possível localizar o documento."
     )
   }
 
   if (!document) {
-    return failDelete("DOCUMENT_NOT_FOUND", "Documento nao encontrado")
+    return failDelete("DOCUMENT_NOT_FOUND", "Documento não encontrado.")
   }
 
   const { error: storageDeleteError } = await input.supabase.storage
@@ -290,7 +326,7 @@ export async function deleteDocumentForRequest(
   if (storageDeleteError) {
     return failDelete(
       "STORAGE_DELETE_FAILED",
-      "Nao foi possivel remover o arquivo agora"
+      "Não foi possível remover o arquivo agora."
     )
   }
 
@@ -304,7 +340,7 @@ export async function deleteDocumentForRequest(
   if (documentDeleteError) {
     return failDelete(
       "DOCUMENT_DELETE_FAILED",
-      "O arquivo foi removido, mas o registro nao pode ser apagado"
+      "O arquivo foi removido, mas o registro não pôde ser apagado."
     )
   }
 

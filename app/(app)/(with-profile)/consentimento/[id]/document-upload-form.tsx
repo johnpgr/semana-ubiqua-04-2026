@@ -1,7 +1,6 @@
 "use client"
 
-import { useActionState, useEffect, useId, useRef, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useActionState, useId, useState } from "react"
 import { useFormStatus } from "react-dom"
 import { FileTextIcon, Trash2Icon, UploadIcon } from "lucide-react"
 
@@ -74,15 +73,6 @@ function RemoveDocumentButton({
     removeDocument,
     REMOVE_DOCUMENT_INITIAL_STATE
   )
-  const router = useRouter()
-
-  useEffect(() => {
-    if (!state.ok) {
-      return
-    }
-
-    router.refresh()
-  }, [router, state.ok])
 
   return (
     <form action={formAction} className="flex items-center gap-2">
@@ -122,39 +112,32 @@ export function DocumentUploadForm({
     UPLOAD_DOCUMENT_INITIAL_STATE
   )
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null)
-  const formRef = useRef<HTMLFormElement>(null)
   const inputId = useId()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (!state.ok) {
-      return
-    }
-
-    formRef.current?.reset()
-    setSelectedFileName(null)
-    router.refresh()
-  }, [router, state.ok, state.data?.document.id])
+  const selectedFileNameToShow =
+    selectedFileName &&
+    selectedFileName !== state.data?.document.file_name
+      ? selectedFileName
+      : null
 
   return (
     <div className="space-y-5">
-      <form ref={formRef} action={formAction} encType="multipart/form-data">
+      <form action={formAction} encType="multipart/form-data">
         <input type="hidden" name="request_id" value={requestId} />
         <CardContent className="space-y-5">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline">Opcional</Badge>
-              <Badge variant="secondary">Complementa a analise</Badge>
+              <Badge variant="secondary">Complementa a análise</Badge>
             </div>
 
             <div className="space-y-2">
               <h3 className="text-sm font-medium">
-                Anexe seu extrato ou comprovantes caso a coleta automatica nao
+                Anexe seu extrato ou comprovantes caso a coleta automática não
                 tenha sido suficiente
               </h3>
               <p className="text-sm leading-6 text-muted-foreground">
-                Isso pode ajudar a complementar a analise da sua solicitacao.
-                O envio de arquivos nao substitui o consentimento.
+                Isso pode ajudar a complementar a análise da sua solicitação. O
+                envio de arquivos não substitui o consentimento.
               </p>
             </div>
           </div>
@@ -173,7 +156,7 @@ export function DocumentUploadForm({
                     Escolha um arquivo para enviar
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    PDF, JPG, PNG ou WEBP ate {formatDocumentSizeLimit()}.
+                    PDF, JPG, PNG ou WEBP até {formatDocumentSizeLimit()}.
                   </div>
                 </div>
               </div>
@@ -194,9 +177,9 @@ export function DocumentUploadForm({
             />
           </label>
 
-          {selectedFileName ? (
+          {selectedFileNameToShow ? (
             <p className="text-sm text-muted-foreground">
-              Pronto para envio: <strong>{selectedFileName}</strong>
+              Pronto para envio: <strong>{selectedFileNameToShow}</strong>
             </p>
           ) : null}
 
@@ -228,8 +211,8 @@ export function DocumentUploadForm({
             <p className="text-sm font-medium">Arquivos enviados</p>
             <p className="text-sm text-muted-foreground">
               {initialDocuments.length === 0
-                ? "Nenhum comprovante anexado ate agora."
-                : `${initialDocuments.length} arquivo(s) complementar(es) vinculado(s) a esta solicitacao.`}
+                ? "Nenhum comprovante anexado até agora."
+                : `${initialDocuments.length} arquivo(s) complementar(es) vinculado(s) a esta solicitação.`}
             </p>
           </div>
           <Badge variant="outline">{initialDocuments.length} arquivo(s)</Badge>
@@ -268,7 +251,7 @@ export function DocumentUploadForm({
           </ul>
         ) : (
           <div className="mt-4 rounded-xl border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
-            Se a coleta automatica nao tiver sido suficiente, voce pode anexar
+            Se a coleta automática não tiver sido suficiente, você pode anexar
             comprovantes aqui antes de seguir para o consentimento.
           </div>
         )}
