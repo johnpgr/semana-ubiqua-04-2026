@@ -3,20 +3,16 @@ import "server-only"
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 
+import { env as clientEnv } from "@/env/client"
+
 import type { Database } from "./database.types"
 
 export async function createClient() {
   const cookieStore = await cookies()
 
   return createServerClient<Database>(
-    getRequiredEnv(
-      "NEXT_PUBLIC_SUPABASE_URL",
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-    ),
-    getRequiredEnv(
-      "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    ),
+    clientEnv.NEXT_PUBLIC_SUPABASE_URL,
+    clientEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() {
@@ -34,12 +30,4 @@ export async function createClient() {
       },
     },
   )
-}
-
-function getRequiredEnv(name: string, value: string | undefined) {
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`)
-  }
-
-  return value
 }
