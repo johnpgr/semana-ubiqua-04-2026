@@ -2,6 +2,44 @@ import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { RequestDetail } from "./request-detail"
 
+type RequestProfile = {
+  name: string
+  cpf: string
+  mock_profile: string
+} | null
+
+type RequestWithProfileJoin = {
+  id: string
+  status: string
+  decision: string | null
+  requested_amount: number
+  approved_amount: number | null
+  created_at: string
+  decided_at: string | null
+  profile: RequestProfile[] | RequestProfile
+}
+
+function normalizeJoin<T>(value: T[] | T) {
+  return Array.isArray(value) ? (value[0] ?? null) : value
+}
+
+function normalizeRequest(request: RequestWithProfileJoin) {
+  return {
+    id: request.id,
+    status: request.status,
+    decision: request.decision,
+    requested_amount: request.requested_amount,
+    approved_amount: request.approved_amount,
+    created_at: request.created_at,
+    decided_at: request.decided_at,
+    profile: normalizeJoin(request.profile),
+  }
+}
+
+function ensureArray<T>(value: T[] | null) {
+  return value ?? []
+}
+
 export default async function SolicitacaoDetailPage({
   params,
 }: {
@@ -56,27 +94,18 @@ export default async function SolicitacaoDetailPage({
     notFound()
   }
 
-  const requestData = requestResult.data
-  const profileArray = requestData.profile as unknown as
-    | { name: string; cpf: string; mock_profile: string }[]
-    | { name: string; cpf: string; mock_profile: string }
-    | null
-  const profile = Array.isArray(profileArray)
-    ? profileArray[0] ?? null
-    : profileArray
-
-  const request = {
-    ...(requestData as Omit<typeof requestData, "profile">),
-    profile,
-  }
+  const request = normalizeRequest(requestResult.data as RequestWithProfileJoin)
+  const consents = ensureArray(consentsResult.data)
+  const transactions = ensureArray(transactionsResult.data)
+  const auditLogs = ensureArray(auditResult.data)
 
   return (
     <RequestDetail
       request={request}
-      consents={consentsResult.data ?? []}
-      transactions={transactionsResult.data ?? []}
+      consents={consents}
+      transactions={transactions}
       score={scoreResult.data ?? null}
-      auditLogs={auditResult.data ?? []}
+      auditLogs={auditLogs}
     />
   )
 }

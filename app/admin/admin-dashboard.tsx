@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useReducer, useState } from "react"
 import Link from "next/link"
 import { toast } from "sonner"
 
@@ -40,6 +40,110 @@ const currencyFormatter = new Intl.NumberFormat("pt-BR", {
 const dateFormatter = new Intl.DateTimeFormat("pt-BR")
 
 const PAGE_SIZE = 20
+
+type AdminRequestRealtimeRow = Omit<AdminRequestRow, "profile" | "score"> & {
+  profile: AdminRequestRow["profile"][] | AdminRequestRow["profile"]
+  score: AdminRequestRow["score"][] | AdminRequestRow["score"]
+}
+
+type AdminDashboardViewState = {
+  statusFilter: string
+  decisionFilter: string
+  page: number
+}
+
+type AdminDashboardViewAction = string | null | React.MouseEvent<HTMLButtonElement>
+
+function normalizeJoin<T>(value: T[] | T) {
+  return Array.isArray(value) ? (value[0] ?? null) : value
+}
+
+function normalizeRequestRow(row: AdminRequestRealtimeRow): AdminRequestRow {
+  return {
+    id: row.id,
+    status: row.status,
+    decision: row.decision,
+    requested_amount: row.requested_amount,
+    approved_amount: row.approved_amount,
+    created_at: row.created_at,
+    decided_at: row.decided_at,
+    profile: normalizeJoin(row.profile),
+    score: normalizeJoin(row.score),
+  }
+}
+
+function filterRequests(
+  requests: AdminRequestRow[],
+  statusFilter: string,
+  decisionFilter: string
+) {
+  return requests.filter((request) => {
+    const statusOk = statusFilter === "all" || request.status === statusFilter
+    const decisionOk =
+      decisionFilter === "all" || request.decision === decisionFilter
+    return statusOk && decisionOk
+  })
+}
+
+function buildPageNumbers(totalPages: number) {
+  return Array.from({ length: totalPages }, (_, index) => index + 1)
+}
+
+function adminDashboardViewReducer(
+  state: AdminDashboardViewState,
+  action: AdminDashboardViewAction
+): AdminDashboardViewState {
+  if (typeof action === "string") {
+    if (action.startsWith("status:")) {
+      return {
+        ...state,
+        statusFilter: action.slice("status:".length),
+        page: 1,
+      }
+    }
+
+    if (action.startsWith("decision:")) {
+      return {
+        ...state,
+        decisionFilter: action.slice("decision:".length),
+        page: 1,
+      }
+    }
+
+    return state
+  }
+
+  if (action === null) {
+    return state
+  }
+
+  const pageAction = action.currentTarget.dataset.pageAction
+  const totalPages = Number(action.currentTarget.dataset.totalPages ?? state.page)
+
+  if (pageAction === "prev") {
+    return {
+      ...state,
+      page: Math.max(1, state.page - 1),
+    }
+  }
+
+  if (pageAction === "next") {
+    return {
+      ...state,
+      page: Math.min(totalPages, state.page + 1),
+    }
+  }
+
+  const nextPage = Number(action.currentTarget.value)
+  if (Number.isNaN(nextPage)) {
+    return state
+  }
+
+  return {
+    ...state,
+    page: nextPage,
+  }
+}
 
 function statusBadgeVariant(status: string) {
   switch (status) {
@@ -98,29 +202,20 @@ export function AdminDashboard({
   initialRequests: AdminRequestRow[]
 }) {
   const [requests, setRequests] = useState<AdminRequestRow[]>(initialRequests)
-  const [statusFilter, setStatusFilter] = useState<string>("all")
-  const [decisionFilter, setDecisionFilter] = useState<string>("all")
-  const [page, setPage] = useState(1)
+  const [{ statusFilter, decisionFilter, page }, dispatchView] = useReducer(
+    adminDashboardViewReducer,
+    {
+      statusFilter: "all",
+      decisionFilter: "all",
+      page: 1,
+    }
+  )
 
-  function handleStatusChange(v: string) {
-    setStatusFilter(v)
-    setPage(1)
-  }
-
-  function handleDecisionChange(v: string) {
-    setDecisionFilter(v)
-    setPage(1)
-  }
-
-  const filtered = requests.filter((r) => {
-    const statusOk = statusFilter === "all" || r.status === statusFilter
-    const decisionOk =
-      decisionFilter === "all" || r.decision === decisionFilter
-    return statusOk && decisionOk
-  })
+  const filtered = filterRequests(requests, statusFilter, decisionFilter)
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  const pageNumbers = buildPageNumbers(totalPages)
 
   useEffect(() => {
     const supabase = createClient()
@@ -153,25 +248,7 @@ export function AdminDashboard({
               .single()
 
             if (data) {
-              const profileArray = data.profile as unknown as
-                | AdminRequestRow["profile"][]
-                | AdminRequestRow["profile"]
-              const scoreArray = data.score as unknown as
-                | AdminRequestRow["score"][]
-                | AdminRequestRow["score"]
-
-              const row: AdminRequestRow = {
-                ...(data as Omit<
-                  AdminRequestRow,
-                  "profile" | "score"
-                >),
-                profile: Array.isArray(profileArray)
-                  ? profileArray[0] ?? null
-                  : profileArray,
-                score: Array.isArray(scoreArray)
-                  ? scoreArray[0] ?? null
-                  : scoreArray,
-              }
+              const row = normalizeRequestRow(data as AdminRequestRealtimeRow)
 
               setRequests((prev) => [row, ...prev])
               toast.success("Nova solicitação recebida")
@@ -189,25 +266,7 @@ export function AdminDashboard({
               .single()
 
             if (data) {
-              const profileArray = data.profile as unknown as
-                | AdminRequestRow["profile"][]
-                | AdminRequestRow["profile"]
-              const scoreArray = data.score as unknown as
-                | AdminRequestRow["score"][]
-                | AdminRequestRow["score"]
-
-              const row: AdminRequestRow = {
-                ...(data as Omit<
-                  AdminRequestRow,
-                  "profile" | "score"
-                >),
-                profile: Array.isArray(profileArray)
-                  ? profileArray[0] ?? null
-                  : profileArray,
-                score: Array.isArray(scoreArray)
-                  ? scoreArray[0] ?? null
-                  : scoreArray,
-              }
+              const row = normalizeRequestRow(data as AdminRequestRealtimeRow)
 
               setRequests((prev) =>
                 prev.map((r) => (r.id === id ? row : r))
@@ -228,36 +287,36 @@ export function AdminDashboard({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-3">
         <Select
-          value={statusFilter}
-          onValueChange={(v) => handleStatusChange(v ?? "all")}
+          value={`status:${statusFilter}`}
+          onValueChange={dispatchView}
         >
           <SelectTrigger className="w-48">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos os status</SelectItem>
-            <SelectItem value="awaiting_consent">
+            <SelectItem value="status:all">Todos os status</SelectItem>
+            <SelectItem value="status:awaiting_consent">
               Aguardando consentimento
             </SelectItem>
-            <SelectItem value="collecting_data">Coletando dados</SelectItem>
-            <SelectItem value="scoring">Scoring</SelectItem>
-            <SelectItem value="decided">Decidido</SelectItem>
+            <SelectItem value="status:collecting_data">Coletando dados</SelectItem>
+            <SelectItem value="status:scoring">Scoring</SelectItem>
+            <SelectItem value="status:decided">Decidido</SelectItem>
           </SelectContent>
         </Select>
 
         <Select
-          value={decisionFilter}
-          onValueChange={(v) => handleDecisionChange(v ?? "all")}
+          value={`decision:${decisionFilter}`}
+          onValueChange={dispatchView}
         >
           <SelectTrigger className="w-48">
             <SelectValue placeholder="Decisão" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todas as decisões</SelectItem>
-            <SelectItem value="approved">Aprovado</SelectItem>
-            <SelectItem value="approved_reduced">Aprovado reduzido</SelectItem>
-            <SelectItem value="further_review">Revisão manual</SelectItem>
-            <SelectItem value="denied">Negado</SelectItem>
+            <SelectItem value="decision:all">Todas as decisões</SelectItem>
+            <SelectItem value="decision:approved">Aprovado</SelectItem>
+            <SelectItem value="decision:approved_reduced">Aprovado reduzido</SelectItem>
+            <SelectItem value="decision:further_review">Revisão manual</SelectItem>
+            <SelectItem value="decision:denied">Negado</SelectItem>
           </SelectContent>
         </Select>
 
@@ -346,16 +405,18 @@ export function AdminDashboard({
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                onClick={dispatchView}
+                data-page-action="prev"
                 aria-disabled={page === 1}
                 className={page === 1 ? "pointer-events-none opacity-50" : ""}
               />
             </PaginationItem>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+            {pageNumbers.map((p) => (
               <PaginationItem key={p}>
                 <PaginationLink
                   isActive={p === page}
-                  onClick={() => setPage(p)}
+                  onClick={dispatchView}
+                  value={p}
                 >
                   {p}
                 </PaginationLink>
@@ -363,7 +424,9 @@ export function AdminDashboard({
             ))}
             <PaginationItem>
               <PaginationNext
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                onClick={dispatchView}
+                data-page-action="next"
+                data-total-pages={totalPages}
                 aria-disabled={page === totalPages}
                 className={
                   page === totalPages

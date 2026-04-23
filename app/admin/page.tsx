@@ -24,6 +24,33 @@ export type AdminRequestRow = {
   score: ScoreJoin
 }
 
+type AdminRequestRowJoin = Omit<AdminRequestRow, "profile" | "score"> & {
+  profile: ProfileJoin[] | ProfileJoin
+  score: ScoreJoin[] | ScoreJoin
+}
+
+function normalizeJoin<T>(value: T[] | T) {
+  return Array.isArray(value) ? (value[0] ?? null) : value
+}
+
+function normalizeRequestRow(row: AdminRequestRowJoin): AdminRequestRow {
+  return {
+    id: row.id,
+    status: row.status,
+    decision: row.decision,
+    requested_amount: row.requested_amount,
+    approved_amount: row.approved_amount,
+    created_at: row.created_at,
+    decided_at: row.decided_at,
+    profile: normalizeJoin(row.profile),
+    score: normalizeJoin(row.score),
+  }
+}
+
+function normalizeRequestRows(rows: AdminRequestRowJoin[]) {
+  return rows.map(normalizeRequestRow)
+}
+
 export default async function AdminPage() {
   const supabase = await createClient()
 
@@ -42,24 +69,7 @@ export default async function AdminPage() {
     throw error
   }
 
-  const requests: AdminRequestRow[] = (rawData ?? []).map((row) => {
-    const profileArray = row.profile as unknown as ProfileJoin[] | ProfileJoin
-    const scoreArray = row.score as unknown as ScoreJoin[] | ScoreJoin
-
-    const profile = Array.isArray(profileArray)
-      ? profileArray[0] ?? null
-      : profileArray
-
-    const score = Array.isArray(scoreArray)
-      ? scoreArray[0] ?? null
-      : scoreArray
-
-    return {
-      ...row,
-      profile,
-      score,
-    }
-  })
+  const requests = normalizeRequestRows((rawData ?? []) as AdminRequestRowJoin[])
 
   return (
     <div className="space-y-6">

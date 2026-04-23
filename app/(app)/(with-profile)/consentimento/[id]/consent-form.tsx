@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState, useState } from "react"
+import { useActionState, useReducer } from "react"
 
 import { Button } from "@/components/ui/button"
 import { CardContent, CardFooter } from "@/components/ui/card"
@@ -17,24 +17,43 @@ type ConsentFormProps = {
   requestId: string
 }
 
+type ConsentFormState = {
+  selectedScopes: string[]
+}
+
+function consentFormReducer(
+  state: ConsentFormState,
+  action: React.MouseEvent<HTMLElement>
+): ConsentFormState {
+  const scope = action.currentTarget.dataset.scope
+
+  if (!scope) {
+    return state
+  }
+
+  if (state.selectedScopes.includes(scope)) {
+    return {
+      selectedScopes: state.selectedScopes.filter(
+        (currentScope) => currentScope !== scope
+      ),
+    }
+  }
+
+  return {
+    selectedScopes: [...state.selectedScopes, scope],
+  }
+}
+
 export function ConsentForm({ requestId }: ConsentFormProps) {
   const [state, formAction, isPending] = useActionState(
     giveConsent,
     GIVE_CONSENT_INITIAL_STATE
   )
-  const [selectedScopes, setSelectedScopes] = useState<string[]>([])
+  const [{ selectedScopes }, dispatch] = useReducer(consentFormReducer, {
+    selectedScopes: [],
+  })
   const scopesError =
     selectedScopes.length > 0 ? undefined : state.fieldErrors?.scopes?.[0]
-
-  function toggleScope(scope: string, checked: boolean) {
-    setSelectedScopes((current) => {
-      if (checked) {
-        return current.includes(scope) ? current : [...current, scope]
-      }
-
-      return current.filter((currentScope) => currentScope !== scope)
-    })
-  }
 
   return (
     <form action={formAction}>
@@ -51,10 +70,9 @@ export function ConsentForm({ requestId }: ConsentFormProps) {
             >
               <Checkbox
                 id={`scope-${scope}`}
+                data-scope={scope}
                 checked={selectedScopes.includes(scope)}
-                onCheckedChange={(checked) => {
-                  toggleScope(scope, checked)
-                }}
+                onClick={dispatch}
                 aria-invalid={scopesError ? true : undefined}
               />
               <label htmlFor={`scope-${scope}`} className="space-y-1">

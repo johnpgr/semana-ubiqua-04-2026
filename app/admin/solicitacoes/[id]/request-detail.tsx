@@ -1,6 +1,5 @@
 "use client"
 
-import { useMemo } from "react"
 import Link from "next/link"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -45,6 +44,15 @@ const dateTimeFormatter = new Intl.DateTimeFormat("pt-BR", {
   dateStyle: "short",
   timeStyle: "short",
 })
+const chartTick = { fontSize: 10 }
+
+function monthlyFlowTooltipFormatter(value: number) {
+  return currencyFormatter.format(value)
+}
+
+const monthlyFlowTooltipFormatterCast = monthlyFlowTooltipFormatter as unknown as React.ComponentProps<
+  typeof Tooltip
+>["formatter"]
 
 function statusBadgeVariant(status: string) {
   switch (status) {
@@ -168,7 +176,7 @@ function buildMonthlyFlow(
     }
   }
 
-  return Array.from(map.values()).reverse()
+  return Array.from(map.values()).toReversed()
 }
 
 export function RequestDetail({
@@ -178,10 +186,7 @@ export function RequestDetail({
   score,
   auditLogs,
 }: RequestDetailProps) {
-  const monthlyFlow = useMemo(
-    () => buildMonthlyFlow(transactions),
-    [transactions]
-  )
+  const monthlyFlow = buildMonthlyFlow(transactions)
 
   const dimensions = score
     ? [
@@ -302,10 +307,10 @@ export function RequestDetail({
               Nenhum consentimento registrado.
             </p>
           ) : (
-            consents.map((c, i) => (
-              <Card key={i}>
+            consents.map((c, index) => (
+              <Card key={`${c.granted_at}-${c.scopes.join("-")}`}>
                 <CardHeader>
-                  <CardTitle>Consentimento #{i + 1}</CardTitle>
+                  <CardTitle>Consentimento #{index + 1}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
                   <div className="flex flex-wrap gap-2">
@@ -341,15 +346,9 @@ export function RequestDetail({
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={monthlyFlow}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                    <YAxis tick={{ fontSize: 10 }} />
-                    <Tooltip
-                      formatter={((value: number) =>
-                        currencyFormatter.format(value)
-                      ) as unknown as React.ComponentProps<
-                        typeof Tooltip
-                      >["formatter"]}
-                    />
+                    <XAxis dataKey="month" tick={chartTick} />
+                    <YAxis tick={chartTick} />
+                    <Tooltip formatter={monthlyFlowTooltipFormatterCast} />
                     <Bar dataKey="credit" fill="#22c55e" name="Entradas" />
                     <Bar dataKey="debit" fill="#ef4444" name="Saídas" />
                   </BarChart>
@@ -370,8 +369,8 @@ export function RequestDetail({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {transactions.map((t, i) => (
-                  <TableRow key={i}>
+                {transactions.map((t) => (
+                  <TableRow key={`${t.occurred_at}-${t.amount}-${t.description}`}>
                     <TableCell>
                       {dateFormatter.format(new Date(t.occurred_at))}
                     </TableCell>
@@ -467,8 +466,8 @@ export function RequestDetail({
                   </CardHeader>
                   <CardContent>
                     <ul className="list-disc space-y-1 pl-4 text-sm">
-                      {score.reasons.map((reason, i) => (
-                        <li key={i}>{reason}</li>
+                      {score.reasons.map((reason) => (
+                        <li key={reason}>{reason}</li>
                       ))}
                     </ul>
                   </CardContent>
@@ -494,8 +493,8 @@ export function RequestDetail({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {auditLogs.map((log, i) => (
-                    <TableRow key={i}>
+                  {auditLogs.map((log) => (
+                    <TableRow key={`${log.created_at}-${log.action}`}>
                       <TableCell>
                         {dateTimeFormatter.format(new Date(log.created_at))}
                       </TableCell>

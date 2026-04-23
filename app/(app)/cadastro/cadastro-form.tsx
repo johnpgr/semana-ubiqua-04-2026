@@ -1,6 +1,6 @@
 "use client"
 
-import { type ChangeEvent, useActionState, useState } from "react"
+import { useActionState, useReducer } from "react"
 
 import { Button } from "@/components/ui/button"
 import { CardContent, CardFooter } from "@/components/ui/card"
@@ -14,20 +14,86 @@ const CREATE_PROFILE_INITIAL_STATE: CreateProfileState = {
   ok: false,
 }
 
+const CADASTRO_INITIAL_VALUES = {
+  name: "",
+  cpf: "",
+  mock_profile: "",
+}
+
+const CADASTRO_ALL_TOUCHED = {
+  name: true,
+  cpf: true,
+  mock_profile: true,
+}
+
+type CadastroState = {
+  values: typeof CADASTRO_INITIAL_VALUES
+  touched: Record<keyof typeof CADASTRO_INITIAL_VALUES, boolean>
+}
+
+type CadastroAction =
+  | React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  | React.FocusEvent<HTMLInputElement | HTMLSelectElement>
+  | React.FormEvent<HTMLFormElement>
+
+function isCadastroField(
+  value: string
+): value is keyof typeof CADASTRO_INITIAL_VALUES {
+  return value === "name" || value === "cpf" || value === "mock_profile"
+}
+
+function cadastroReducer(
+  state: CadastroState,
+  action: CadastroAction
+): CadastroState {
+  if (action.type === "submit") {
+    return { ...state, touched: CADASTRO_ALL_TOUCHED }
+  }
+
+  const target = action.target
+  if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement)) {
+    return state
+  }
+
+  if (!isCadastroField(target.name)) {
+    return state
+  }
+
+  if (action.type === "change") {
+    return {
+      ...state,
+      values: {
+        ...state.values,
+        [target.name]: target.value,
+      },
+    }
+  }
+
+  if (action.type === "blur") {
+    return {
+      ...state,
+      touched: {
+        ...state.touched,
+        [target.name]: true,
+      },
+    }
+  }
+
+  return state
+}
+
 export function CadastroForm() {
   const [state, formAction, isPending] = useActionState(
     createProfile,
     CREATE_PROFILE_INITIAL_STATE
   )
-  const [values, setValues] = useState({
-    name: "",
-    cpf: "",
-    mock_profile: "",
-  })
-  const [touched, setTouched] = useState({
-    name: false,
-    cpf: false,
-    mock_profile: false,
+  const [{ values, touched }, dispatch] = useReducer(cadastroReducer, {
+    values: CADASTRO_INITIAL_VALUES,
+    touched: {
+      name: false,
+      cpf: false,
+      mock_profile: false,
+    },
   })
 
   const validation = Signup.safeParse(values)
@@ -45,43 +111,13 @@ export function CadastroForm() {
     (touched.mock_profile ? clientFieldErrors.mock_profile?.[0] : undefined) ??
     state.fieldErrors?.mock_profile?.[0]
 
-  function markAllTouched() {
-    setTouched({
-      name: true,
-      cpf: true,
-      mock_profile: true,
-    })
-  }
-
-  function handleNameChange(event: ChangeEvent<HTMLInputElement>) {
-    setValues((current) => ({ ...current, name: event.target.value }))
-  }
-
-  function handleCpfChange(event: ChangeEvent<HTMLInputElement>) {
-    setValues((current) => ({ ...current, cpf: event.target.value }))
-  }
-
-  function handleMockProfileChange(event: ChangeEvent<HTMLSelectElement>) {
-    setValues((current) => ({
-      ...current,
-      mock_profile: event.target.value,
-    }))
-  }
-
-  function handleNameBlur() {
-    setTouched((current) => ({ ...current, name: true }))
-  }
-
-  function handleCpfBlur() {
-    setTouched((current) => ({ ...current, cpf: true }))
-  }
-
-  function handleMockProfileBlur() {
-    setTouched((current) => ({ ...current, mock_profile: true }))
-  }
-
   return (
-    <form action={formAction} onSubmit={markAllTouched}>
+    <form
+      action={formAction}
+      onSubmit={dispatch}
+      onChange={dispatch}
+      onBlurCapture={dispatch}
+    >
       <CardContent className="space-y-5">
         <div className="space-y-2">
           <label className="text-sm font-medium" htmlFor="name">
@@ -93,8 +129,6 @@ export function CadastroForm() {
             placeholder="Ana Souza"
             autoComplete="name"
             value={values.name}
-            onChange={handleNameChange}
-            onBlur={handleNameBlur}
             aria-invalid={nameError ? true : undefined}
             required
           />
@@ -114,8 +148,6 @@ export function CadastroForm() {
             inputMode="numeric"
             autoComplete="off"
             value={values.cpf}
-            onChange={handleCpfChange}
-            onBlur={handleCpfBlur}
             aria-invalid={cpfError ? true : undefined}
             required
           />
@@ -135,8 +167,6 @@ export function CadastroForm() {
             id="mock_profile"
             name="mock_profile"
             value={values.mock_profile}
-            onChange={handleMockProfileChange}
-            onBlur={handleMockProfileBlur}
             aria-invalid={mockProfileError ? true : undefined}
             required
           >

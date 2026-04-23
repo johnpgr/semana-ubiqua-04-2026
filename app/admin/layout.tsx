@@ -3,6 +3,8 @@ import { signOut } from "@/app/(app)/actions"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
+const backLink = <Link href="/" />
+
 export default async function AdminLayout({
   children,
 }: {
@@ -15,7 +17,9 @@ export default async function AdminLayout({
       <header className="border-b bg-card px-4 py-3">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" render={<Link href="/">← Voltar</Link>} />
+            <Button variant="ghost" size="sm" render={backLink}>
+              ← Voltar
+            </Button>
             <span className="text-sm font-medium">Painel Admin</span>
           </div>
           <div className="flex items-center gap-3">

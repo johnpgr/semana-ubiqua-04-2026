@@ -1,5 +1,7 @@
 "use client"
 
+/* eslint-disable react/jsx-no-constructed-context-values, react-perf/jsx-no-new-function-as-prop, react-perf/jsx-no-new-object-as-prop */
+
 import * as React from "react"
 import useEmblaCarousel, {
   type UseEmblaCarouselType,
@@ -32,6 +34,17 @@ type CarouselContextProps = {
 
 const CarouselContext = React.createContext<CarouselContextProps | null>(null)
 
+function notifyApiChange(
+  setApi: CarouselProps["setApi"],
+  api: CarouselApi | undefined
+) {
+  if (!api || !setApi) {
+    return
+  }
+
+  setApi(api)
+}
+
 function useCarousel() {
   const context = React.useContext(CarouselContext)
 
@@ -51,73 +64,85 @@ function Carousel({
   children,
   ...props
 }: React.ComponentProps<"div"> & CarouselProps) {
-  const [carouselRef, api] = useEmblaCarousel(
+  const [carouselRef, carouselApi] = useEmblaCarousel(
     {
       ...opts,
       axis: orientation === "horizontal" ? "x" : "y",
     },
     plugins
   )
-  const [canScrollPrev, setCanScrollPrev] = React.useState(false)
-  const [canScrollNext, setCanScrollNext] = React.useState(false)
 
-  const onSelect = React.useCallback((api: CarouselApi) => {
-    if (!api) return
-    setCanScrollPrev(api.canScrollPrev())
-    setCanScrollNext(api.canScrollNext())
-  }, [])
+  const canScrollPrev = React.useSyncExternalStore(
+    (onStoreChange) => {
+      if (!carouselApi) {
+        return () => {}
+      }
 
-  const scrollPrev = React.useCallback(() => {
-    api?.scrollPrev()
-  }, [api])
+      carouselApi.on("select", onStoreChange)
+      carouselApi.on("reInit", onStoreChange)
 
-  const scrollNext = React.useCallback(() => {
-    api?.scrollNext()
-  }, [api])
-
-  const handleKeyDown = React.useCallback(
-    (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (event.key === "ArrowLeft") {
-        event.preventDefault()
-        scrollPrev()
-      } else if (event.key === "ArrowRight") {
-        event.preventDefault()
-        scrollNext()
+      return () => {
+        carouselApi.off("select", onStoreChange)
+        carouselApi.off("reInit", onStoreChange)
       }
     },
-    [scrollPrev, scrollNext]
+    () => carouselApi?.canScrollPrev() ?? false,
+    () => false
   )
 
-  React.useEffect(() => {
-    if (!api || !setApi) return
-    setApi(api)
-  }, [api, setApi])
+  const canScrollNext = React.useSyncExternalStore(
+    (onStoreChange) => {
+      if (!carouselApi) {
+        return () => {}
+      }
 
-  React.useEffect(() => {
-    if (!api) return
-    onSelect(api)
-    api.on("reInit", onSelect)
-    api.on("select", onSelect)
+      carouselApi.on("select", onStoreChange)
+      carouselApi.on("reInit", onStoreChange)
 
-    return () => {
-      api?.off("select", onSelect)
+      return () => {
+        carouselApi.off("select", onStoreChange)
+        carouselApi.off("reInit", onStoreChange)
+      }
+    },
+    () => carouselApi?.canScrollNext() ?? false,
+    () => false
+  )
+
+  function scrollPrev() {
+    carouselApi?.scrollPrev()
+  }
+
+  function scrollNext() {
+    carouselApi?.scrollNext()
+  }
+
+  function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "ArrowLeft") {
+      event.preventDefault()
+      scrollPrev()
+    } else if (event.key === "ArrowRight") {
+      event.preventDefault()
+      scrollNext()
     }
-  }, [api, onSelect])
+  }
+
+  React.useEffect(() => {
+    notifyApiChange(setApi, carouselApi)
+  }, [carouselApi, setApi])
+
+  const contextValue = {
+    carouselRef,
+    api: carouselApi,
+    opts,
+    orientation: orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
+    scrollPrev,
+    scrollNext,
+    canScrollPrev,
+    canScrollNext,
+  }
 
   return (
-    <CarouselContext.Provider
-      value={{
-        carouselRef,
-        api: api,
-        opts,
-        orientation:
-          orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
-        scrollPrev,
-        scrollNext,
-        canScrollPrev,
-        canScrollNext,
-      }}
-    >
+    <CarouselContext.Provider value={contextValue}>
       <div
         onKeyDownCapture={handleKeyDown}
         className={cn("relative", className)}
