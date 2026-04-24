@@ -395,3 +395,22 @@ O modelo recomendado:
 5. prepara abordagem preventiva e possivel renegociacao quando o risco sobe.
 
 Assim, o OpenCred deixa de ser apenas um sistema de aprovacao inicial e evolui para uma plataforma que acompanha risco de forma continua e responsavel.
+
+## Implementacao MVP atual
+
+O projeto agora possui um primeiro modulo funcional de monitoramento pos-credito em `lib/postCreditMonitoring`.
+
+No estado atual:
+
+- o sistema classifica o relacionamento em `low`, `moderate`, `high` ou `critical`;
+- a avaliacao combina score financeiro, risco de fraude, nivel de confianca progressiva, historico de solicitacoes e padrao observado nas transacoes;
+- o resultado devolve:
+  - nivel de risco;
+  - reasons;
+  - alertas preventivos;
+  - recomendacao operacional;
+  - impacto em elegibilidade e limite futuro;
+- o monitoramento registra metadados em auditoria durante a analise principal;
+- o estado de monitoramento aparece na pagina de resultado e no detalhe do admin.
+
+Este MVP ainda nao implementa cobranca, cron, atraso real ou renegociacao executavel, mas ja deixa a base pronta para evoluir com ciclos reais de pagamento e revisoes periodicas futuras.

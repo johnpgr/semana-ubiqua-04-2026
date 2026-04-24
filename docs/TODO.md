@@ -131,6 +131,7 @@
 - [x] Definir como ciclos de pagamento futuros afetam confiança e limite
 - [x] Documentar como score inicial conservador deve impactar a primeira concessão
 - [x] Consolidar a diretriz de crédito progressivo em `docs/credito-progressivo.md`
+- [x] Implementar MVP de crédito progressivo no fluxo real com `lib/creditProgression`, ajuste de limite e exibição em resultado/admin
 
 ### 15. Fraud Score e antifraude comportamental
 
@@ -140,6 +141,7 @@
 - [x] Definir como Credit Score e Fraud Score serão combinados na decisão final
 - [x] Mapear consentimentos necessários para sinais sensíveis futuros
 - [x] Consolidar a diretriz de Fraud Score e antifraude em `docs/fraud-score-antifraude.md`
+- [x] Implementar MVP de Fraud Score no fluxo real com `lib/fraudScore`, ajuste de decisão e exibição em resultado/admin
 
 ### 16. Monitoramento pós-crédito
 
@@ -148,27 +150,32 @@
 - [x] Definir alertas preventivos antes de atraso
 - [x] Planejar revisão de limite e renegociação conforme mudança de risco
 - [x] Consolidar a diretriz de monitoramento pós-crédito em `docs/monitoramento-pos-credito.md`
+- [x] Implementar MVP de monitoramento pós-crédito no fluxo real com `lib/postCreditMonitoring`, alertas e exibição em resultado/admin
 
 ### 17. Explicabilidade jurídica
 
-- [ ] Criar catálogo de reasons juridicamente claras para aprovação, redução, revisão e negativa
-- [ ] Definir quais fatores principais devem ser exibidos ao usuário
-- [ ] Documentar quando uma decisão foi automática ou exige revisão adicional
-- [ ] Revisar consentimentos caso novos dados sensíveis sejam usados futuramente
+- [x] Criar catálogo de reasons juridicamente claras para aprovação, redução, revisão e negativa
+- [x] Definir quais fatores principais devem ser exibidos ao usuário
+- [x] Documentar quando uma decisão foi automática ou exige revisão adicional
+- [x] Revisar consentimentos caso novos dados sensíveis sejam usados futuramente
+- [x] Consolidar a diretriz de explicabilidade jurídica em `docs/explicabilidade-juridica.md`
+- [x] Implementar MVP de explicabilidade jurídica no fluxo real com `lib/explainability`, fatores principais e exibição em resultado/admin
 
 ### 18. Comunicação oficial por email
 
-- [ ] Definir templates de email para decisão de crédito
-- [ ] Definir templates de transparência e explicabilidade
-- [ ] Definir templates de risco, segurança e operação
-- [ ] Planejar trilha de auditoria para comunicações enviadas
+- [x] Definir templates de email para decisão de crédito
+- [x] Definir templates de transparência e explicabilidade
+- [x] Definir templates de risco, segurança e operação
+- [x] Planejar trilha de auditoria para comunicações enviadas
+- [x] Consolidar a diretriz de comunicação oficial por email em `docs/comunicacao-email-oficial.md`
 
 ### 19. Integrações futuras com parceiros
 
-- [ ] Definir contrato para receber indicadores agregados de parceiros
-- [ ] Planejar uso de score de desempenho, regularidade, atividade e confiança externa
-- [ ] Documentar limites de uso de dados brutos versus indicadores processados
-- [ ] Mapear impacto de indicadores externos no Credit Score e Fraud Score
+- [x] Definir contrato para receber indicadores agregados de parceiros
+- [x] Planejar uso de score de desempenho, regularidade, atividade e confiança externa
+- [x] Documentar limites de uso de dados brutos versus indicadores processados
+- [x] Mapear impacto de indicadores externos no Credit Score e Fraud Score
+- [x] Consolidar a diretriz de integrações com parceiros em `docs/integracoes-parceiros-indicadores.md`
 
 ### 20. Backlog estratégico da próxima fase
 

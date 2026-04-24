@@ -38,6 +38,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import type { ProgressiveCreditState } from "@/lib/creditProgression"
+import { buildDecisionExplainability } from "@/lib/explainability"
+import { calculateFraudScore } from "@/lib/fraudScore"
+import { evaluatePostCreditMonitoring } from "@/lib/postCreditMonitoring"
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -93,6 +97,7 @@ type ProfileJoin = {
 export type RequestDetailProps = {
   request: {
     id: string
+    user_id: string
     status: string
     decision: string | null
     requested_amount: number
@@ -101,6 +106,15 @@ export type RequestDetailProps = {
     decided_at: string | null
     profile: ProfileJoin
   }
+  progression: ProgressiveCreditState | null
+  requestHistory: {
+    id: string
+    status: string
+    decision: "approved" | "approved_reduced" | "further_review" | "denied" | null
+    approvedAmount: number | null
+    createdAt: string
+    decidedAt: string | null
+  }[]
   consents: {
     scopes: string[]
     granted_at: string
@@ -213,6 +227,8 @@ function KeyValueRow({
 
 export function RequestDetail({
   request,
+  progression,
+  requestHistory,
   consents,
   consentsError,
   transactions,
@@ -223,6 +239,67 @@ export function RequestDetail({
   auditLogsError,
 }: RequestDetailProps) {
   const monthlyFlow = buildMonthlyFlow(transactions)
+  const latestConsent = consents[0]
+  const fraudScore =
+    score && transactions.length > 0
+      ? calculateFraudScore({
+          transactions: transactions.map((transaction) => ({
+            occurredAt: transaction.occurred_at,
+            amount: transaction.amount,
+            kind: transaction.kind as "credit" | "debit",
+            category: transaction.category,
+            description: transaction.description,
+            source: transaction.source,
+          })),
+          deviceTrust: {
+            userAgent: latestConsent?.user_agent,
+            ipAddress: normalizeIpAddress(latestConsent?.ip_address),
+          },
+        })
+      : null
+  const monitoring =
+    score && progression
+      ? evaluatePostCreditMonitoring({
+          transactions: transactions.map((transaction) => ({
+            occurredAt: transaction.occurred_at,
+            amount: transaction.amount,
+            kind: transaction.kind as "credit" | "debit",
+            category: transaction.category,
+            description: transaction.description,
+            source: transaction.source,
+          })),
+          creditScoreValue: score.value,
+          creditDecision: (request.decision ?? "further_review") as
+            | "approved"
+            | "approved_reduced"
+            | "further_review"
+            | "denied",
+          suggestedLimit: score.suggested_limit,
+          approvedAmount: request.approved_amount,
+          fraudScoreValue: fraudScore?.value,
+          fraudRiskLevel: fraudScore?.riskLevel,
+          confidenceLevel: progression.level,
+          isFirstConcession: progression.isFirstConcession,
+          requestHistory,
+        })
+      : null
+  const explainability =
+    score && request.decision
+      ? buildDecisionExplainability({
+          decision: request.decision as
+            | "approved"
+            | "approved_reduced"
+            | "further_review"
+            | "denied",
+          scoreValue: score.value,
+          suggestedLimit: score.suggested_limit,
+          reasons: score.reasons,
+          consentScopes: latestConsent?.scopes,
+          progressiveCredit: progression,
+          fraudScore,
+          monitoring,
+        })
+      : null
 
   const dimensions = score
     ? [
@@ -301,6 +378,35 @@ export function RequestDetail({
                       : "—"}
                   </Badge>
                 </KeyValueRow>
+                {progression ? (
+                  <KeyValueRow label="Nivel de confianca">
+                    <Badge
+                      variant={
+                        progression.level === "premium"
+                          ? "default"
+                          : progression.level === "trusted"
+                            ? "secondary"
+                            : "outline"
+                      }
+                    >
+                      {progression.levelLabel}
+                    </Badge>
+                  </KeyValueRow>
+                ) : null}
+                {fraudScore ? (
+                  <KeyValueRow label="Risco de fraude">
+                    <Badge variant={getFraudBadgeVariant(fraudScore.riskLevel)}>
+                      {getFraudRiskLabel(fraudScore.riskLevel)}
+                    </Badge>
+                  </KeyValueRow>
+                ) : null}
+                {monitoring ? (
+                  <KeyValueRow label="Monitoramento">
+                    <Badge variant={getMonitoringBadgeVariant(monitoring.riskLevel)}>
+                      {getMonitoringRiskLabel(monitoring.riskLevel)}
+                    </Badge>
+                  </KeyValueRow>
+                ) : null}
                 <KeyValueRow label="Valor solicitado">
                   {currencyFormatter.format(request.requested_amount)}
                 </KeyValueRow>
@@ -312,6 +418,226 @@ export function RequestDetail({
               </CardContent>
             </Card>
           </div>
+
+          {progression ? (
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <CardTitle>Credito progressivo</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm">
+                <div className="flex flex-wrap gap-2">
+                  <Badge
+                    variant={
+                      progression.level === "premium"
+                        ? "default"
+                        : progression.level === "trusted"
+                          ? "secondary"
+                          : "outline"
+                    }
+                  >
+                    {progression.levelLabel}
+                  </Badge>
+                  {progression.isConservativeInitialOffer ? (
+                    <Badge variant="outline">Concessao inicial conservadora</Badge>
+                  ) : null}
+                </div>
+                <p className="text-muted-foreground">
+                  {progression.progressionSummary}
+                </p>
+                <div className="grid gap-3 md:grid-cols-3">
+                  <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                    <div className="text-muted-foreground">
+                      Aprovadas anteriormente
+                    </div>
+                    <div className="mt-1 font-medium">
+                      {progression.stats.previousApprovedRequests}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                    <div className="text-muted-foreground">Teto desta etapa</div>
+                    <div className="mt-1 font-medium">
+                      {currencyFormatter.format(progression.appliedCap)}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                    <div className="text-muted-foreground">Ciclos pagos em dia</div>
+                    <div className="mt-1 font-medium">
+                      {progression.stats.onTimeCycles}
+                    </div>
+                  </div>
+                </div>
+                {progression.policyNotes.length > 0 ? (
+                  <ul className="list-disc space-y-1 pl-4 text-sm">
+                    {progression.policyNotes.map((note) => (
+                      <li key={note}>{note}</li>
+                    ))}
+                  </ul>
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {fraudScore ? (
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <CardTitle>Fraud Score</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm">
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant={getFraudBadgeVariant(fraudScore.riskLevel)}>
+                    {getFraudRiskLabel(fraudScore.riskLevel)}
+                  </Badge>
+                  <Badge variant="outline">Score {fraudScore.value}</Badge>
+                </div>
+                <p className="text-muted-foreground">
+                  {fraudScore.operationalRecommendation}
+                </p>
+                <div className="grid gap-3 md:grid-cols-3">
+                  <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                    <div className="text-muted-foreground">Transferencias espelhadas</div>
+                    <div className="mt-1 font-medium">
+                      {fraudScore.metrics.mirroredTransferCount}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                    <div className="text-muted-foreground">Saida rapida</div>
+                    <div className="mt-1 font-medium">
+                      {Math.round(fraudScore.metrics.fastOutflowRatio * 100)}%
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                    <div className="text-muted-foreground">Repeticao de valores</div>
+                    <div className="mt-1 font-medium">
+                      {Math.round(fraudScore.metrics.repeatedAmountRatio * 100)}%
+                    </div>
+                  </div>
+                </div>
+                {fraudScore.signals.length > 0 ? (
+                  <ul className="list-disc space-y-1 pl-4 text-sm">
+                    {fraudScore.signals.slice(0, 4).map((signal) => (
+                      <li key={signal.key}>
+                        <span className="font-medium">{signal.label}:</span>{" "}
+                        {signal.detail}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {monitoring ? (
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <CardTitle>Monitoramento pos-credito</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm">
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant={getMonitoringBadgeVariant(monitoring.riskLevel)}>
+                    {getMonitoringRiskLabel(monitoring.riskLevel)}
+                  </Badge>
+                  <Badge variant="outline">
+                    {getLimitActionLabel(monitoring.limitRecommendation.action)}
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground">
+                  {monitoring.monitoringSummary}
+                </p>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                    <div className="text-muted-foreground">Elegibilidade</div>
+                    <div className="mt-1 font-medium">
+                      {getEligibilityLabel(monitoring.eligibility.status)}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                    <div className="text-muted-foreground">Limite futuro</div>
+                    <div className="mt-1 font-medium">
+                      {getLimitActionLabel(monitoring.limitRecommendation.action)}
+                    </div>
+                  </div>
+                </div>
+                {monitoring.alerts.length > 0 ? (
+                  <ul className="list-disc space-y-1 pl-4 text-sm">
+                    {monitoring.alerts.slice(0, 4).map((alert) => (
+                      <li key={alert.key}>
+                        <span className="font-medium">{alert.title}:</span>{" "}
+                        {alert.detail}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {explainability ? (
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <CardTitle>Explicabilidade juridica</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm">
+                <div className="flex flex-wrap gap-2">
+                  <Badge
+                    variant={getDecisionModeBadgeVariant(explainability.decisionMode)}
+                  >
+                    {explainability.decisionModeLabel}
+                  </Badge>
+                  <Badge variant="outline">Mensagem ao usuario</Badge>
+                </div>
+                <div className="space-y-1">
+                  <div className="font-medium">{explainability.headline}</div>
+                  <p className="text-muted-foreground">{explainability.summary}</p>
+                </div>
+                <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                  <div className="text-muted-foreground">Modo da decisao</div>
+                  <div className="mt-1 font-medium">
+                    {explainability.decisionModeDescription}
+                  </div>
+                </div>
+                {explainability.primaryFactors.length > 0 ? (
+                  <ul className="list-disc space-y-1 pl-4 text-sm">
+                    {explainability.primaryFactors.map((factor) => (
+                      <li key={factor.key}>
+                        <span className="font-medium">{factor.label}:</span>{" "}
+                        {factor.summary}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                {explainability.reasons.length > 0 ? (
+                  <ul className="list-disc space-y-1 pl-4 text-sm">
+                    {explainability.reasons.map((reason) => (
+                      <li key={reason.id}>
+                        <span className="font-medium">{reason.title}:</span>{" "}
+                        {reason.message}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                {explainability.sensitiveDataNotice ? (
+                  <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                    <div className="font-medium">
+                      {explainability.sensitiveDataNotice.title}
+                    </div>
+                    <p className="mt-1 text-muted-foreground">
+                      {explainability.sensitiveDataNotice.message}
+                    </p>
+                  </div>
+                ) : null}
+                {explainability.futureConsentNotice ? (
+                  <div className="rounded-xl border border-dashed border-border/70 bg-muted/30 p-3">
+                    <div className="font-medium">
+                      {explainability.futureConsentNotice.title}
+                    </div>
+                    <p className="mt-1 text-muted-foreground">
+                      {explainability.futureConsentNotice.message}
+                    </p>
+                  </div>
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
 
           <Card className="rounded-2xl">
             <CardHeader>
@@ -518,6 +844,28 @@ export function RequestDetail({
                         : "—"}
                     </Badge>
                   </KeyValueRow>
+                  {fraudScore ? (
+                    <KeyValueRow label="Fraud Score">
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        <Badge variant={getFraudBadgeVariant(fraudScore.riskLevel)}>
+                          {getFraudRiskLabel(fraudScore.riskLevel)}
+                        </Badge>
+                        <span className="font-medium">{fraudScore.value}</span>
+                      </div>
+                    </KeyValueRow>
+                  ) : null}
+                  {monitoring ? (
+                    <KeyValueRow label="Pos-credito">
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        <Badge variant={getMonitoringBadgeVariant(monitoring.riskLevel)}>
+                          {getMonitoringRiskLabel(monitoring.riskLevel)}
+                        </Badge>
+                        <span className="font-medium">
+                          {getEligibilityLabel(monitoring.eligibility.status)}
+                        </span>
+                      </div>
+                    </KeyValueRow>
+                  ) : null}
                 </CardContent>
               </Card>
 
@@ -551,6 +899,33 @@ export function RequestDetail({
                         <li key={reason}>{reason}</li>
                       ))}
                     </ul>
+                  </CardContent>
+                </Card>
+              ) : null}
+
+              {explainability ? (
+                <Card className="rounded-2xl">
+                  <CardHeader>
+                    <CardTitle>Leitura explicavel</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3 text-sm">
+                    <KeyValueRow label="Modo da decisao">
+                      <Badge
+                        variant={getDecisionModeBadgeVariant(explainability.decisionMode)}
+                      >
+                        {explainability.decisionModeLabel}
+                      </Badge>
+                    </KeyValueRow>
+                    <KeyValueRow label="Resumo">
+                      <span className="block break-words">
+                        {explainability.summary}
+                      </span>
+                    </KeyValueRow>
+                    <KeyValueRow label="Fatores principais">
+                      <span className="block break-words">
+                        {explainability.primaryFactors.map((factor) => factor.label).join(", ") || "—"}
+                      </span>
+                    </KeyValueRow>
                   </CardContent>
                 </Card>
               ) : null}
@@ -613,4 +988,130 @@ export function RequestDetail({
       </Tabs>
     </div>
   )
+}
+
+function getFraudBadgeVariant(riskLevel: ReturnType<typeof calculateFraudScore>["riskLevel"]) {
+  switch (riskLevel) {
+    case "critical":
+      return "destructive"
+    case "high":
+      return "destructive"
+    case "moderate":
+      return "outline"
+    case "low":
+    default:
+      return "secondary"
+  }
+}
+
+function getFraudRiskLabel(riskLevel: ReturnType<typeof calculateFraudScore>["riskLevel"]) {
+  switch (riskLevel) {
+    case "critical":
+      return "Fraude critica"
+    case "high":
+      return "Fraude alta"
+    case "moderate":
+      return "Fraude moderada"
+    case "low":
+    default:
+      return "Fraude baixa"
+  }
+}
+
+function getMonitoringBadgeVariant(
+  riskLevel: ReturnType<typeof evaluatePostCreditMonitoring>["riskLevel"],
+) {
+  switch (riskLevel) {
+    case "critical":
+      return "destructive"
+    case "high":
+      return "destructive"
+    case "moderate":
+      return "outline"
+    case "low":
+    default:
+      return "secondary"
+  }
+}
+
+function getMonitoringRiskLabel(
+  riskLevel: ReturnType<typeof evaluatePostCreditMonitoring>["riskLevel"],
+) {
+  switch (riskLevel) {
+    case "critical":
+      return "Risco critico"
+    case "high":
+      return "Risco alto"
+    case "moderate":
+      return "Risco moderado"
+    case "low":
+    default:
+      return "Risco baixo"
+  }
+}
+
+function getDecisionModeBadgeVariant(
+  decisionMode: ReturnType<typeof buildDecisionExplainability>["decisionMode"],
+) {
+  switch (decisionMode) {
+    case "preventive_block":
+      return "destructive"
+    case "review_additional":
+      return "outline"
+    case "automatic":
+    default:
+      return "secondary"
+  }
+}
+
+function getEligibilityLabel(
+  status: ReturnType<typeof evaluatePostCreditMonitoring>["eligibility"]["status"],
+) {
+  switch (status) {
+    case "blocked":
+      return "Bloqueada"
+    case "review_required":
+      return "Revisao obrigatoria"
+    case "frozen":
+      return "Congelada"
+    case "watch":
+      return "Em observacao"
+    case "eligible":
+    default:
+      return "Elegivel"
+  }
+}
+
+function getLimitActionLabel(
+  action: ReturnType<typeof evaluatePostCreditMonitoring>["limitRecommendation"]["action"],
+) {
+  switch (action) {
+    case "manual_review":
+      return "Revisao manual"
+    case "reduce_future_exposure":
+      return "Reduzir exposicao"
+    case "freeze_growth":
+      return "Congelar crescimento"
+    case "renegotiation_watch":
+      return "Observar renegociacao"
+    case "maintain":
+    default:
+      return "Manter limite"
+  }
+}
+
+function normalizeIpAddress(value: unknown) {
+  if (typeof value === "string") {
+    return value
+  }
+
+  if (value == null) {
+    return null
+  }
+
+  try {
+    return JSON.stringify(value)
+  } catch {
+    return null
+  }
 }

@@ -6,6 +6,13 @@ import {
   MOCK_PROFILE_CONFIGS,
   generateSyntheticTransactions,
 } from "@/lib/mockData/profiles"
+import { applyProgressiveCreditPolicy } from "@/lib/creditProgression"
+import { buildDecisionExplainability } from "@/lib/explainability"
+import {
+  applyFraudDecisionPolicy,
+  calculateFraudScore,
+} from "@/lib/fraudScore"
+import { evaluatePostCreditMonitoring } from "@/lib/postCreditMonitoring"
 import { calculateCreditScore } from "@/lib/scoreEngine"
 import type { Json, TablesInsert } from "@/lib/supabase/database.types"
 import { createClient } from "@/lib/supabase/server"
@@ -19,6 +26,13 @@ type ProcessCreditAnalysisSuccess = {
     score: number
     decision: "approved" | "approved_reduced" | "further_review" | "denied"
     suggestedLimit: number
+    confidenceLevel: string
+    confidenceLabel: string
+    isConservativeInitialOffer: boolean
+    fraudScoreValue: number
+    fraudRiskLevel: string
+    postCreditRiskLevel: string
+    postCreditLimitAction: string
     redirectTo: string
   }
 }
@@ -82,8 +96,11 @@ export async function processCreditAnalysis(
     }
   }
 
-  const [{ data: profile, error: profileError }, { data: consent, error: consentError }] =
-    await Promise.all([
+  const [
+    { data: profile, error: profileError },
+    { data: consent, error: consentError },
+    { data: requestHistory, error: requestHistoryError },
+  ] = await Promise.all([
       supabase
         .from("profiles")
         .select("id, mock_profile")
@@ -91,12 +108,19 @@ export async function processCreditAnalysis(
         .maybeSingle(),
       supabase
         .from("consents")
-        .select("id, scopes, granted_at")
+        .select("id, scopes, granted_at, user_agent, ip_address")
         .eq("request_id", request.id)
         .eq("user_id", user.id)
         .order("granted_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
+      supabase
+        .from("credit_requests")
+        .select("id, status, decision, approved_amount, created_at, decided_at")
+        .eq("user_id", user.id)
+        .neq("id", request.id)
+        .order("created_at", { ascending: false })
+        .limit(20),
     ])
 
   if (profileError || !profile) {
@@ -117,6 +141,13 @@ export async function processCreditAnalysis(
     return {
       ok: false,
       formError: "A análise exige consentimento salvo",
+    }
+  }
+
+  if (requestHistoryError) {
+    return {
+      ok: false,
+      formError: "NÃ£o foi possÃ­vel carregar o histÃ³rico de solicitaÃ§Ãµes",
     }
   }
 
@@ -150,6 +181,13 @@ export async function processCreditAnalysis(
         score: existingScore.value,
         decision: request.decision,
         suggestedLimit: existingScore.suggested_limit,
+        confidenceLevel: "unknown",
+        confidenceLabel: "Indisponivel",
+        isConservativeInitialOffer: false,
+        fraudScoreValue: 0,
+        fraudRiskLevel: "unknown",
+        postCreditRiskLevel: "unknown",
+        postCreditLimitAction: "unknown",
         redirectTo: `/resultado/${request.id}`,
       },
     }
@@ -171,9 +209,72 @@ export async function processCreditAnalysis(
     requestId: request.id,
     seed: getStableSeed(request.id),
   })
-  const score = calculateCreditScore({
+  const baseScore = calculateCreditScore({
     transactions,
     requestedAmount: request.requested_amount,
+  })
+  const progressiveCredit = applyProgressiveCreditPolicy({
+    requestedAmount: request.requested_amount,
+    score: baseScore.value,
+    baseDecision: baseScore.decision,
+    baseSuggestedLimit: baseScore.suggestedLimit,
+    baseReasons: baseScore.reasons,
+    requestHistory: (requestHistory ?? []).map((historyRow) => ({
+      id: historyRow.id,
+      status: historyRow.status,
+      decision: historyRow.decision,
+      approvedAmount: historyRow.approved_amount,
+      createdAt: historyRow.created_at,
+      decidedAt: historyRow.decided_at,
+    })),
+  })
+  const fraudScore = calculateFraudScore({
+    transactions,
+    deviceTrust: {
+      userAgent: consent.user_agent,
+      ipAddress: normalizeIpAddress(consent.ip_address),
+    },
+  })
+  const fraudDecision = applyFraudDecisionPolicy({
+    creditDecision: progressiveCredit.decision,
+    suggestedLimit: progressiveCredit.suggestedLimit,
+    reasons: progressiveCredit.reasons,
+    fraudScore,
+  })
+  const monitoring = evaluatePostCreditMonitoring({
+    transactions,
+    creditScoreValue: baseScore.value,
+    creditDecision: fraudDecision.decision,
+    suggestedLimit: fraudDecision.suggestedLimit,
+    approvedAmount: fraudDecision.suggestedLimit,
+    fraudScoreValue: fraudScore.value,
+    fraudRiskLevel: fraudScore.riskLevel,
+    confidenceLevel: progressiveCredit.level,
+    isFirstConcession: progressiveCredit.isFirstConcession,
+    requestHistory: (requestHistory ?? []).map((historyRow) => ({
+      id: historyRow.id,
+      status: historyRow.status,
+      decision: historyRow.decision,
+      approvedAmount: historyRow.approved_amount,
+      createdAt: historyRow.created_at,
+      decidedAt: historyRow.decided_at,
+    })),
+  })
+  const score = {
+    ...baseScore,
+    decision: fraudDecision.decision,
+    suggestedLimit: fraudDecision.suggestedLimit,
+    reasons: fraudDecision.reasons,
+  }
+  const explainability = buildDecisionExplainability({
+    decision: score.decision,
+    scoreValue: score.value,
+    suggestedLimit: score.suggestedLimit,
+    reasons: score.reasons,
+    consentScopes: consent.scopes,
+    progressiveCredit,
+    fraudScore,
+    monitoring,
   })
   const transactionRows = mapTransactionsToRows(
     transactions,
@@ -210,6 +311,53 @@ export async function processCreditAnalysis(
         score: score.value,
         decision: score.decision,
         suggested_limit: score.suggestedLimit,
+        confidence_level: progressiveCredit.level,
+        confidence_label: progressiveCredit.levelLabel,
+        is_first_concession: progressiveCredit.isFirstConcession,
+        is_conservative_initial_offer:
+          progressiveCredit.isConservativeInitialOffer,
+        previous_approved_requests:
+          progressiveCredit.stats.previousApprovedRequests,
+        progressive_limit_cap: progressiveCredit.appliedCap,
+      },
+    }),
+    buildAuditLog({
+      requestId: request.id,
+      actor: user.id,
+      action: "fraud_score_calculated",
+      metadata: {
+        fraud_score: fraudScore.value,
+        fraud_risk_level: fraudScore.riskLevel,
+        fraud_signals: fraudScore.signals.map((signal) => ({
+          key: signal.key,
+          category: signal.category,
+          label: signal.label,
+          severity: signal.severity,
+        })),
+        fraud_breakdown: fraudScore.breakdown,
+        fraud_metrics: fraudScore.metrics,
+        operational_recommendation: fraudScore.operationalRecommendation,
+        impact_summary: fraudDecision.impactSummary,
+      },
+    }),
+    buildAuditLog({
+      requestId: request.id,
+      actor: user.id,
+      action: "post_credit_monitoring_evaluated",
+      metadata: {
+        post_credit_risk_level: monitoring.riskLevel,
+        monitoring_summary: monitoring.monitoringSummary,
+        eligibility_status: monitoring.eligibility.status,
+        eligibility_summary: monitoring.eligibility.summary,
+        limit_action: monitoring.limitRecommendation.action,
+        limit_action_summary: monitoring.limitRecommendation.summary,
+        alerts: monitoring.alerts.map((alert) => ({
+          key: alert.key,
+          level: alert.level,
+          title: alert.title,
+          audience: alert.audience,
+        })),
+        monitoring_metrics: monitoring.metrics,
       },
     }),
     buildAuditLog({
@@ -219,6 +367,29 @@ export async function processCreditAnalysis(
       metadata: {
         decision: score.decision,
         approved_amount: score.suggestedLimit,
+        confidence_level: progressiveCredit.level,
+        confidence_label: progressiveCredit.levelLabel,
+        fraud_score: fraudScore.value,
+        fraud_risk_level: fraudScore.riskLevel,
+        fraud_impact_summary: fraudDecision.impactSummary,
+        post_credit_risk_level: monitoring.riskLevel,
+        post_credit_limit_action: monitoring.limitRecommendation.action,
+        post_credit_eligibility: monitoring.eligibility.status,
+      },
+    }),
+    buildAuditLog({
+      requestId: request.id,
+      actor: user.id,
+      action: "decision_explainability_prepared",
+      metadata: {
+        decision_mode: explainability.decisionMode,
+        primary_factors: explainability.primaryFactors.map((factor) => ({
+          key: factor.key,
+          label: factor.label,
+        })),
+        reason_titles: explainability.reasons.map((reason) => reason.title),
+        has_sensitive_data_notice: Boolean(explainability.sensitiveDataNotice),
+        has_future_consent_notice: Boolean(explainability.futureConsentNotice),
       },
     }),
   ]
@@ -316,6 +487,13 @@ export async function processCreditAnalysis(
       score: score.value,
       decision: score.decision,
       suggestedLimit: score.suggestedLimit,
+      confidenceLevel: progressiveCredit.level,
+      confidenceLabel: progressiveCredit.levelLabel,
+      isConservativeInitialOffer: progressiveCredit.isConservativeInitialOffer,
+      fraudScoreValue: fraudScore.value,
+      fraudRiskLevel: fraudScore.riskLevel,
+      postCreditRiskLevel: monitoring.riskLevel,
+      postCreditLimitAction: monitoring.limitRecommendation.action,
       redirectTo: `/resultado/${request.id}`,
     },
   }
@@ -376,6 +554,22 @@ function getStableSeed(value: string) {
     .slice(0, 8)
     .split("")
     .reduce((total, char) => total + char.charCodeAt(0), 0)
+}
+
+function normalizeIpAddress(value: unknown) {
+  if (typeof value === "string") {
+    return value
+  }
+
+  if (value == null) {
+    return null
+  }
+
+  try {
+    return JSON.stringify(value)
+  } catch {
+    return null
+  }
 }
 
 function mapScoreToRow(

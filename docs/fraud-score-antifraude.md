@@ -360,3 +360,28 @@ O modelo recomendado:
 5. trata sinais sensiveis com cuidado de consentimento e compliance.
 
 Assim, o OpenCred evolui para um modelo de credito mais robusto, explicavel e resistente a abuso.
+
+## Implementacao MVP atual
+
+O projeto agora possui uma primeira implementacao real de Fraud Score em `lib/fraudScore`.
+
+No estado atual do sistema:
+
+- o Fraud Score e calculado separadamente do Credit Score;
+- a analise usa sinais MVP de:
+  - `synthetic_income`;
+  - `pattern_repetition`;
+  - `device_trust`;
+- o resultado devolve:
+  - valor numerico;
+  - nivel de risco;
+  - sinais acionados;
+  - reasons;
+  - recomendacao operacional;
+- a Server Action de analise combina o eixo financeiro com o eixo de fraude antes de persistir a decisao final;
+- risco de fraude moderado pode reduzir a exposicao inicial;
+- risco de fraude alto converte a solicitacao para revisao;
+- risco de fraude critico bloqueia a concessao automatica;
+- o risco de fraude e exibido na pagina de resultado e no detalhe do admin.
+
+Esta implementacao ainda e um MVP de hackathon, mas ja deixa a base preparada para evolucao com sinais reais de dispositivo, correlacao entre usuarios, indicadores externos e monitoramento posterior.

@@ -288,3 +288,18 @@ O modelo de credito progressivo do OpenCred deve funcionar como uma trilha de co
 4. bloqueio ou desaceleracao para quem piora o risco.
 
 Assim, o produto reforca sua proposta de valor: ser inclusivo na entrada, mas disciplinado na evolucao do limite.
+
+## Implementacao MVP atual
+
+O sistema agora possui uma implementacao inicial e demonstravel de credito progressivo.
+
+Nesta versao MVP:
+
+- a regra foi centralizada em `lib/creditProgression`;
+- a Server Action de analise aplica a politica progressiva depois do score financeiro;
+- a primeira concessao recebe teto conservador de entrada, mesmo quando o score base e forte;
+- o nivel de confianca atual passa a ser calculado com base em historico de solicitacoes aprovadas e estrutura pronta para futuros ciclos pagos em dia;
+- o resultado final persistido em `scores` e `credit_requests` ja reflete o ajuste progressivo de limite e decisao;
+- a UI de resultado e o detalhe do admin exibem nivel de confianca, contexto de concessao inicial conservadora e teto da etapa atual.
+
+Essa base nao implementa cobranca real nem evolucao por pagamento efetivo ainda, mas deixa o ponto de extensao concreto para adicionar sinais futuros de ciclos, atraso e confianca acumulada.

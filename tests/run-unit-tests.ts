@@ -1,4 +1,8 @@
 import { cpfTests } from "./unit/cpf.test"
+import { creditProgressionTests } from "./unit/credit-progression.test"
+import { explainabilityTests } from "./unit/explainability.test"
+import { fraudScoreTests } from "./unit/fraud-score.test"
+import { postCreditMonitoringTests } from "./unit/post-credit-monitoring.test"
 import { scoreEngineTests } from "./unit/score-engine.test"
 
 type NamedTest = {
@@ -6,7 +10,14 @@ type NamedTest = {
   run: () => void
 }
 
-const tests: NamedTest[] = [...cpfTests, ...scoreEngineTests]
+const tests: NamedTest[] = [
+  ...cpfTests,
+  ...scoreEngineTests,
+  ...creditProgressionTests,
+  ...explainabilityTests,
+  ...fraudScoreTests,
+  ...postCreditMonitoringTests,
+]
 
 let failed = 0
 
