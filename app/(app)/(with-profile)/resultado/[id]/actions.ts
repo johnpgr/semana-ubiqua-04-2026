@@ -138,6 +138,8 @@ export async function simulateCreditDisbursement(
     }
   }
 
+  await cleanupDuplicateDisbursements(service, request.id)
+
   revalidatePath(`/resultado/${request.id}`)
   revalidatePath("/minha-conta")
 
@@ -149,5 +151,42 @@ export async function simulateCreditDisbursement(
       disbursedAt,
       status: "active",
     },
+  }
+}
+
+async function cleanupDuplicateDisbursements(
+  service: ReturnType<typeof createServiceClient>,
+  requestId: string
+) {
+  const { data: disbursements, error: loadError } = await service
+    .from("audit_logs")
+    .select("id")
+    .eq("entity_type", "credit_request")
+    .eq("entity_id", requestId)
+    .eq("action", DISBURSEMENT_ACTION)
+    .order("created_at", { ascending: true })
+
+  if (loadError || !disbursements || disbursements.length <= 1) {
+    if (loadError) {
+      console.error("Failed to load duplicate disbursement audit logs", {
+        error: loadError,
+        requestId,
+      })
+    }
+
+    return
+  }
+
+  const duplicateIds = disbursements.slice(1).map((row) => row.id)
+  const { error: deleteError } = await service
+    .from("audit_logs")
+    .delete()
+    .in("id", duplicateIds)
+
+  if (deleteError) {
+    console.error("Failed to cleanup duplicate disbursement audit logs", {
+      error: deleteError,
+      requestId,
+    })
   }
 }

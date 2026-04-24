@@ -5,7 +5,6 @@ import { useActionState } from "react"
 import {
   ArrowRightIcon,
   BanknoteIcon,
-  CheckIcon,
   FileTextIcon,
   GaugeIcon,
   LandmarkIcon,
@@ -178,7 +177,7 @@ export function AnalysisStageCard({
                     ) : index === 0 ? (
                       <ArrowRightIcon className="size-4" />
                     ) : (
-                      <CheckIcon className="size-4" />
+                      <Icon className="size-4" />
                     )}
                   </div>
                   <div className="flex min-w-0 flex-col gap-1">

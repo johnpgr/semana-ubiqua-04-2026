@@ -38,9 +38,7 @@ export async function runAnalysis(
   if (!analysis.ok) {
     return {
       ok: false,
-      formError:
-        analysis.formError ??
-        "Não foi possível concluir a análise neste momento.",
+      formError: "Não foi possível concluir a análise neste momento.",
     }
   }
 

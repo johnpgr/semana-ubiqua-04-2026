@@ -628,10 +628,10 @@ export function ResultCard({
       <div className="flex flex-col gap-4 self-start">
         <Card className="border border-border/70 bg-muted/40">
           <CardHeader className="space-y-3">
-            <CardTitle>Resumo da analise</CardTitle>
+            <CardTitle>Resumo da análise</CardTitle>
             <CardDescription className="space-y-3 text-sm leading-6">
               <p>
-                Numero da solicitacao: <strong>{request.id}</strong>
+                Número da solicitação: <strong>{request.id}</strong>
               </p>
               <p>
                 Valor pedido:{" "}
@@ -644,7 +644,7 @@ export function ResultCard({
               </p>
               {progressiveCredit ? (
                 <p>
-                  Nivel de confianca:{" "}
+                  Nível de confiança:{" "}
                   <strong>{progressiveCredit.levelLabel}</strong>
                 </p>
               ) : null}
