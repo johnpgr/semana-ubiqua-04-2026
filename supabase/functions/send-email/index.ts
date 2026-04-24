@@ -32,6 +32,12 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ ok: false, error: "Method not allowed" }, 405)
   }
 
+  const authHeader = req.headers.get("Authorization") ?? ""
+  const serviceRoleKey = env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+  if (!authHeader || authHeader !== `Bearer ${serviceRoleKey}`) {
+    return jsonResponse({ ok: false, error: "Unauthorized" }, 401)
+  }
+
   let body: SendEmailRequest
   try {
     body = await req.json()

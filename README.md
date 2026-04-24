@@ -72,12 +72,12 @@ Deploy da funcao:
 npx supabase functions deploy send-email
 ```
 
-Configurar SMTP (qualquer provedor: Gmail com senha de app, SendGrid, Amazon SES, Resend como SMTP etc.):
+Configurar SMTP (qualquer provedor: Gmail com senha de app, SendGrid, Amazon SES, Resend como SMTP etc.). Use porta 465 (TLS implícito) — o Supabase bloqueia saída na porta 587 (STARTTLS):
 
 ```bash
 npx supabase secrets set \
   SMTP_HOST=smtp.example.com \
-  SMTP_PORT=587 \
+  SMTP_PORT=465 \
   SMTP_USERNAME=usuario \
   SMTP_PASSWORD=senha \
   SMTP_FROM_EMAIL=noreply@example.com \
