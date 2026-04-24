@@ -16,6 +16,59 @@ export const ConsentScopeLabels: Record<ConsentScopeEnum, string> = {
   cards: "Cartões e compras",
 }
 
+export type ConsentCategoryKey = "financial"
+
+export type ConsentScopeDetail = {
+  category: ConsentCategoryKey
+  label: string
+  dataUsage: string
+}
+
+export const ConsentScopeDetails: Record<ConsentScopeEnum, ConsentScopeDetail> = {
+  salary: {
+    category: "financial",
+    label: "Salário e rendimentos",
+    dataUsage:
+      "Usado para estimar renda recorrente e regularidade de entradas na análise.",
+  },
+  investments: {
+    category: "financial",
+    label: "Investimentos e saldos",
+    dataUsage:
+      "Usado para leitura de folga financeira e estabilidade geral do perfil.",
+  },
+  cards: {
+    category: "financial",
+    label: "Cartões e compras",
+    dataUsage:
+      "Usado para leitura de comportamento de gasto e relação com o fluxo de entrada.",
+  },
+}
+
+export type ConsentCategoryConfig = {
+  title: string
+  description: string
+  scopes: readonly ConsentScopeEnum[]
+}
+
+export const ConsentCategoryConfigs: Record<
+  ConsentCategoryKey,
+  ConsentCategoryConfig
+> = {
+  financial: {
+    title: "Dados financeiros autorizados",
+    description:
+      "Sinais financeiros consumidos pela análise de crédito desta solicitação.",
+    scopes: CONSENT_SCOPES.filter(
+      (scope) => ConsentScopeDetails[scope].category === "financial",
+    ),
+  },
+}
+
+export const CONSENT_CATEGORY_KEYS: readonly ConsentCategoryKey[] = [
+  "financial",
+]
+
 export const Consent = z.object({
   scopes: z
     .array(z.enum(CONSENT_SCOPES))

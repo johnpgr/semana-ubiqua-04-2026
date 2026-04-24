@@ -71,3 +71,6 @@ enabled = false
 port = 54327
 vector_port = 54328
 backend = "postgres"
+
+[functions.send-email]
+verify_jwt = true

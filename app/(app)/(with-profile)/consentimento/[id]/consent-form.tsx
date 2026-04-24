@@ -5,7 +5,11 @@ import { useActionState, useReducer } from "react"
 import { Button } from "@/components/ui/button"
 import { CardContent, CardFooter } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { CONSENT_SCOPES, ConsentScopeLabels } from "@/validation/consent"
+import {
+  CONSENT_CATEGORY_KEYS,
+  ConsentCategoryConfigs,
+  ConsentScopeDetails,
+} from "@/validation/consent"
 
 import { giveConsent, type GiveConsentState } from "./actions"
 
@@ -55,31 +59,50 @@ export function ConsentForm({ requestId }: ConsentFormProps) {
       {selectedScopes.map((scope) => (
         <input key={scope} type="hidden" name="scopes" value={scope} />
       ))}
-      <CardContent className="space-y-4 pb-4">
-        <div className="space-y-3">
-          {CONSENT_SCOPES.map((scope) => (
-            <div
-              key={scope}
-              className="flex items-start gap-3 rounded-xl border border-border/70 bg-background/60 p-4"
-            >
-              <Checkbox
-                id={`scope-${scope}`}
-                checked={selectedScopes.includes(scope)}
-                onCheckedChange={() => dispatch(scope)}
-                aria-invalid={scopesError ? true : undefined}
-              />
-              <label htmlFor={`scope-${scope}`} className="space-y-1">
-                <span className="block cursor-pointer text-sm font-medium">
-                  {ConsentScopeLabels[scope]}
-                </span>
-                <span className="block text-sm text-muted-foreground">
-                  Compartilhamento simulado apenas para a análise desta
-                  solicitação.
-                </span>
-              </label>
+      <CardContent className="space-y-6 pb-4">
+        {CONSENT_CATEGORY_KEYS.map((categoryKey) => {
+          const category = ConsentCategoryConfigs[categoryKey]
+
+          return (
+            <div key={categoryKey} className="space-y-3">
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                  {category.title}
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  {category.description}
+                </p>
+              </div>
+              <div className="space-y-3">
+                {category.scopes.map((scope) => {
+                  const detail = ConsentScopeDetails[scope]
+
+                  return (
+                    <div
+                      key={scope}
+                      className="flex items-start gap-3 rounded-xl border border-border/70 bg-background/60 p-4"
+                    >
+                      <Checkbox
+                        id={`scope-${scope}`}
+                        checked={selectedScopes.includes(scope)}
+                        onCheckedChange={() => dispatch(scope)}
+                        aria-invalid={scopesError ? true : undefined}
+                      />
+                      <label htmlFor={`scope-${scope}`} className="space-y-1">
+                        <span className="block cursor-pointer text-sm font-medium">
+                          {detail.label}
+                        </span>
+                        <span className="block text-sm text-muted-foreground">
+                          {detail.dataUsage}
+                        </span>
+                      </label>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
-          ))}
-        </div>
+          )
+        })}
         {scopesError ? (
           <p className="text-sm text-destructive">{scopesError}</p>
         ) : null}

@@ -8,6 +8,10 @@ import {
 } from "@/lib/mockData/profiles"
 import { applyProgressiveCreditPolicy } from "@/lib/creditProgression"
 import { buildEmailCommunicationBundle } from "@/lib/emailCommunication"
+import {
+  deliveryOutcomeToAuditAction,
+  sendEmailBundle,
+} from "@/lib/emailCommunication/sender"
 import { buildDecisionExplainability } from "@/lib/explainability"
 import {
   applyFraudDecisionPolicy,
@@ -363,6 +367,7 @@ export async function processCreditAnalysis(
         previous_approved_requests:
           progressiveCredit.stats.previousApprovedRequests,
         progressive_limit_cap: progressiveCredit.appliedCap,
+        engine_version: baseScore.engineVersion,
       },
     }),
     buildAuditLog({
@@ -405,6 +410,7 @@ export async function processCreditAnalysis(
         fraud_metrics: partnerFraud.fraudScore.metrics,
         operational_recommendation: partnerFraud.fraudScore.operationalRecommendation,
         impact_summary: fraudDecision.impactSummary,
+        engine_version: fraudScore.engineVersion,
       },
     }),
     buildAuditLog({
@@ -425,6 +431,7 @@ export async function processCreditAnalysis(
           audience: alert.audience,
         })),
         monitoring_metrics: monitoring.metrics,
+        engine_version: monitoring.engineVersion,
       },
     }),
     buildAuditLog({
@@ -457,6 +464,7 @@ export async function processCreditAnalysis(
         reason_titles: explainability.reasons.map((reason) => reason.title),
         has_sensitive_data_notice: Boolean(explainability.sensitiveDataNotice),
         has_future_consent_notice: Boolean(explainability.futureConsentNotice),
+        engine_version: explainability.engineVersion,
       },
     }),
     ...emailCommunication.communications.map((communication) =>
@@ -478,6 +486,7 @@ export async function processCreditAnalysis(
           fraud_risk_level: communication.audit.fraudRiskLevel,
           monitoring_risk_level: communication.audit.monitoringRiskLevel,
           recipient_email: user.email ?? null,
+          engine_version: emailCommunication.engineVersion,
         },
       }),
     ),
@@ -565,6 +574,44 @@ export async function processCreditAnalysis(
       requestId: request.id,
       error: auditError,
     })
+  }
+
+  const deliveryResult = await sendEmailBundle({
+    supabase,
+    bundle: emailCommunication,
+    recipientEmail: user.email ?? null,
+    requestId: request.id,
+  })
+
+  const deliveryAuditRows: AuditLogInsert[] = deliveryResult.deliveries.map(
+    (delivery) =>
+      buildAuditLog({
+        requestId: request.id,
+        actor: user.id,
+        action: deliveryOutcomeToAuditAction(delivery.status),
+        metadata: {
+          template_key: delivery.templateKey,
+          communication_type: delivery.communicationType,
+          audience: delivery.audience,
+          recipient: delivery.recipient,
+          status: delivery.status,
+          message_id: delivery.messageId,
+          error: delivery.error,
+        },
+      }),
+  )
+
+  if (deliveryAuditRows.length > 0) {
+    const { error: deliveryAuditError } = await service
+      .from("audit_logs")
+      .insert(deliveryAuditRows)
+
+    if (deliveryAuditError) {
+      console.error(
+        "Failed to persist email delivery audit logs for credit analysis",
+        { requestId: request.id, error: deliveryAuditError },
+      )
+    }
   }
 
   revalidatePath(`/resultado/${request.id}`)

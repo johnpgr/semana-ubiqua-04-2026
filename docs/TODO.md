@@ -183,52 +183,55 @@
 
 #### 20.1 Risco e produto
 
-- [ ] Tornar o score inicial mais conservador por padrão para primeiras concessões
+- [x] Tornar o score inicial mais conservador por padrão para primeiras concessões
+- [x] Definir regras de progressão de limite baseadas em confiança acumulada
 - [ ] Aumentar o peso de comportamento observado ao longo do tempo em reavaliações futuras
-- [ ] Definir regras de progressão de limite baseadas em confiança acumulada
-- [ ] Estruturar reavaliação contínua de score após concessão de crédito
-- [ ] Definir critérios para ajuste de limite conforme histórico de pagamento e manutenção de renda
+- [ ] Estruturar reavaliação contínua de score após concessão de crédito (requer cobrança real — DEFER)
+- [ ] Definir critérios para ajuste de limite conforme histórico de pagamento e manutenção de renda (requer cobrança real — DEFER)
 
 #### 20.2 Fraude e confiança operacional
 
-- [ ] Separar formalmente Credit Score e Fraud Score como dois eixos de decisão
-- [ ] Preparar decisão final considerando risco financeiro e risco de fraude em conjunto
-- [ ] Preparar suporte para device trust e device risk
-- [ ] Permitir correlação futura por dispositivo, IP e origem técnica
-- [ ] Cruzar dados entre usuários para identificar comportamento excessivamente semelhante
-- [ ] Sinalizar clusters suspeitos de contas relacionadas
-- [ ] Detectar fluxo circular e movimentação artificial de renda
-- [ ] Detectar entradas e saídas espelhadas com padrão suspeito
-- [ ] Marcar tentativas de inflar artificialmente renda antes da análise
+- [x] Separar formalmente Credit Score e Fraud Score como dois eixos de decisão
+- [x] Preparar decisão final considerando risco financeiro e risco de fraude em conjunto
+- [ ] Preparar suporte para device trust e device risk (DESIGN — ver `docs/fraud-score-antifraude.md`)
+- [ ] Permitir correlação futura por dispositivo, IP e origem técnica (DESIGN)
+- [ ] Cruzar dados entre usuários para identificar comportamento excessivamente semelhante (DEFER — requer população)
+- [ ] Sinalizar clusters suspeitos de contas relacionadas (DEFER — requer população)
+- [x] Detectar fluxo circular e movimentação artificial de renda
+- [x] Detectar entradas e saídas espelhadas com padrão suspeito
+- [x] Marcar tentativas de inflar artificialmente renda antes da análise
 
 #### 20.3 Operação e monitoramento pós-crédito
 
-- [ ] Reavaliar risco depois da concessão de crédito
-- [ ] Detectar piora relevante do perfil financeiro após liberação
-- [ ] Preparar alertas preventivos antes de atraso ou deterioração forte do risco
-- [ ] Estruturar apoio operacional à renegociação com base em sinais de risco
-- [ ] Definir estados operacionais de monitoramento pós-crédito e suas ações esperadas
+- [x] Reavaliar risco depois da concessão de crédito
+- [x] Detectar piora relevante do perfil financeiro após liberação
+- [x] Preparar alertas preventivos antes de atraso ou deterioração forte do risco
+- [x] Estruturar apoio operacional à renegociação com base em sinais de risco (ver `docs/monitoramento-pos-credito.md`)
+- [x] Definir estados operacionais de monitoramento pós-crédito e suas ações esperadas (ver `docs/monitoramento-pos-credito.md`)
+- [ ] SMS/voice alerts (DEFER — design only)
 
 #### 20.4 Compliance, jurídico e comunicação
 
-- [ ] Refinar reasons para ficarem mais claras, compreensíveis e não técnicas
-- [ ] Reforçar explicabilidade jurídica para negativas, revisões e limites reduzidos
-- [ ] Ampliar transparência sobre quais dados foram usados em cada decisão
-- [ ] Preparar consentimento expandido para sinais financeiros, comportamentais e externos
-- [ ] Separar melhor os blocos de consentimento por categoria de dado utilizado
-- [ ] Planejar emails de decisão de crédito
-- [ ] Planejar emails de transparência sobre score e uso de dados
-- [ ] Planejar emails de risco e alerta preventivo
-- [ ] Planejar emails de segurança para comportamento suspeito
-- [ ] Planejar emails operacionais e de cobrança
+- [x] Refinar reasons para ficarem mais claras, compreensíveis e não técnicas
+- [x] Reforçar explicabilidade jurídica para negativas, revisões e limites reduzidos
+- [x] Ampliar transparência sobre quais dados foram usados em cada decisão
+- [x] Preparar consentimento expandido para sinais financeiros, comportamentais e externos
+- [x] Separar melhor os blocos de consentimento por categoria de dado utilizado
+- [x] Planejar emails de decisão de crédito (BUILD — agora com envio real via Edge Function)
+- [x] Planejar emails de transparência sobre score e uso de dados (BUILD)
+- [x] Planejar emails de risco e alerta preventivo (BUILD)
+- [x] Planejar emails de segurança para comportamento suspeito (BUILD)
+- [x] Planejar emails operacionais e de cobrança (BUILD — operacionais sim, cobrança DEFER)
+- [ ] Consentimento para telemetria de dispositivo (DESIGN — estrutura pronta, escopo novo aguardando necessidade)
+- [ ] Consentimento para compartilhamento com parceiros (DESIGN)
 
 #### 20.5 Arquitetura, escala e regulação
 
-- [ ] Preparar modularização futura entre motores de score, fraude e monitoramento
-- [ ] Deixar a arquitetura adaptável a novos mercados e regulações
-- [ ] Preparar suporte a integração com parceiros via indicadores processados
-- [ ] Enriquecer análise com indicadores externos sem depender de dados brutos
-- [ ] Definir contratos de integração que permitam crescimento com compliance e portabilidade
+- [x] Preparar modularização futura entre motores de score, fraude e monitoramento (engineVersion introduzido)
+- [ ] Deixar a arquitetura adaptável a novos mercados e regulações (DEFER — design note em roadmap)
+- [x] Preparar suporte a integração com parceiros via indicadores processados
+- [x] Enriquecer análise com indicadores externos sem depender de dados brutos
+- [x] Definir contratos de integração que permitam crescimento com compliance e portabilidade (engineVersion como contrato mínimo)
 
 ## Ordem Sugerida de Implementação
 

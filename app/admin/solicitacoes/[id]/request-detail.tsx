@@ -269,6 +269,7 @@ export function RequestDetail({
   const communicationAuditLogs = auditLogs.filter(
     (log) => log.action === "email_communication_generated",
   )
+  const deliveryStatusByTemplateKey = buildDeliveryStatusByTemplateKey(auditLogs)
 
   const dimensions = score
     ? [
@@ -1033,7 +1034,12 @@ export function RequestDetail({
                   <CardTitle>Bundle de comunicacoes</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
-                  {emailCommunication.communications.map((communication) => (
+                  {emailCommunication.communications.map((communication) => {
+                    const deliveryStatus = deliveryStatusByTemplateKey.get(
+                      communication.audit.templateKey,
+                    )
+
+                    return (
                     <div
                       key={communication.id}
                       className="rounded-xl border border-border/70 bg-muted/30 p-3"
@@ -1047,13 +1053,21 @@ export function RequestDetail({
                           <Badge variant="outline">
                             {EMAIL_STATUS_LABELS[communication.status]}
                           </Badge>
+                          {deliveryStatus ? (
+                            <Badge
+                              variant={DELIVERY_STATUS_CONFIG[deliveryStatus].badgeVariant}
+                            >
+                              {DELIVERY_STATUS_CONFIG[deliveryStatus].label}
+                            </Badge>
+                          ) : null}
                         </div>
                       <div className="mt-3 font-medium">{communication.subject}</div>
                       <p className="mt-1 text-muted-foreground">
                         {communication.preview}
                       </p>
                     </div>
-                  ))}
+                    )
+                  })}
                 </CardContent>
               </Card>
 
@@ -1267,6 +1281,52 @@ const EMAIL_STATUS_LABELS = {
   previewed: "Preview",
   generated: "Gerado",
 } as const satisfies Record<EmailStatus, string>
+
+type DeliveryStatus = "sent" | "failed" | "skipped" | "dry_run"
+
+const DELIVERY_STATUS_CONFIG = {
+  sent: { badgeVariant: "default", label: "Enviado" },
+  failed: { badgeVariant: "destructive", label: "Falha" },
+  skipped: { badgeVariant: "outline", label: "Ignorado" },
+  dry_run: { badgeVariant: "secondary", label: "Simulado" },
+} as const satisfies Record<DeliveryStatus, { badgeVariant: BadgeVariant; label: string }>
+
+const DELIVERY_ACTION_TO_STATUS: Record<string, DeliveryStatus> = {
+  email_delivery_sent: "sent",
+  email_delivery_failed: "failed",
+  email_delivery_skipped: "skipped",
+  email_delivery_dry_run: "dry_run",
+}
+
+function buildDeliveryStatusByTemplateKey(
+  auditLogs: RequestDetailProps["auditLogs"],
+): Map<string, DeliveryStatus> {
+  const latestByTemplateKey = new Map<
+    string,
+    { status: DeliveryStatus; createdAt: string }
+  >()
+
+  for (const log of auditLogs) {
+    const status = DELIVERY_ACTION_TO_STATUS[log.action]
+    if (!status) continue
+    if (!log.metadata || typeof log.metadata !== "object" || Array.isArray(log.metadata)) {
+      continue
+    }
+    const templateKey = (log.metadata as { template_key?: unknown }).template_key
+    if (typeof templateKey !== "string" || templateKey.length === 0) continue
+    const createdAt = log.created_at
+    const existing = latestByTemplateKey.get(templateKey)
+    if (!existing || existing.createdAt < createdAt) {
+      latestByTemplateKey.set(templateKey, { status, createdAt })
+    }
+  }
+
+  const result = new Map<string, DeliveryStatus>()
+  for (const [templateKey, entry] of latestByTemplateKey.entries()) {
+    result.set(templateKey, entry.status)
+  }
+  return result
+}
 
 function parseEmailAuditMetadata(metadata: unknown) {
   if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) {

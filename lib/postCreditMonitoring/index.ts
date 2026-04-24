@@ -64,7 +64,10 @@ export type PostCreditMonitoringResult = {
     scoreValue: number
     fraudScoreValue: number
   }
+  engineVersion: string
 }
+
+export const POST_CREDIT_MONITORING_ENGINE_VERSION = "1.0.0"
 
 type DatedTransaction = ScoreTransaction & {
   occurredAtDate: Date
@@ -307,6 +310,7 @@ export function evaluatePostCreditMonitoring(
       scoreValue: input.creditScoreValue,
       fraudScoreValue: input.fraudScoreValue ?? 0,
     },
+    engineVersion: POST_CREDIT_MONITORING_ENGINE_VERSION,
   }
 }
 

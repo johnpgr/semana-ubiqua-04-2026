@@ -525,3 +525,33 @@ No MVP atual:
 - o detalhe da solicitacao no admin mostra o bundle de comunicacoes e a trilha de auditoria correspondente.
 
 Essa implementacao nao envia emails por provedor externo ainda, mas deixa a base pronta para evoluir depois com fila, envio real e status de entrega.
+
+## Envio real via Supabase Edge Function
+
+A partir do backlog 20.4, o OpenCred envia os e-mails do bundle por uma Edge Function Supabase chamada `send-email`, hospedada em `supabase/functions/send-email/index.ts`. A Next.js continua responsavel por construir o bundle e por renderizar HTML; o SMTP fica isolado no Supabase.
+
+**Fluxo:**
+
+1. A Server Action de analise chama `buildEmailCommunicationBundle` (ja existente) e, depois de persistir o score, invoca `sendEmailBundle` (novo em `lib/emailCommunication/sender.ts`).
+2. `sendEmailBundle` itera pelas comunicacoes do bundle, roteia o destinatario via `routeCommunicationRecipient` (e-mail do usuario para audiencia `user`; `EMAIL_OPERATIONS_INBOX` para audiencias internas), renderiza HTML + texto via `renderCommunicationHtml` e invoca a Edge Function.
+3. A Edge Function usa `denomailer` para fazer o envio SMTP real. Se as secrets SMTP nao estiverem configuradas, retorna `{ ok: true, dryRun: true }` em vez de falhar.
+4. Para cada comunicacao, o sender retorna um registro de entrega (`sent`, `failed`, `skipped`, `dry_run`).
+5. A Server Action persiste esses registros como novas linhas em `audit_logs`, usando as actions `email_delivery_sent`, `email_delivery_failed`, `email_delivery_skipped`, `email_delivery_dry_run`, cada uma com `template_key`, `communication_type`, `audience`, `recipient`, `status`, `message_id` e `error`.
+6. O detalhe da solicitacao no admin exibe um badge de entrega por comunicacao, derivado da ultima linha de `audit_logs` com o `template_key` correspondente.
+
+**Segredos SMTP (Supabase):**
+
+```
+SMTP_HOST
+SMTP_PORT
+SMTP_USERNAME
+SMTP_PASSWORD
+SMTP_FROM_EMAIL
+SMTP_FROM_NAME
+```
+
+Todos ficam em `supabase secrets set`, nao em `.env.local`. `EMAIL_OPERATIONS_INBOX` continua em `.env.local` porque e consumido na Next.js ao rotear o destinatario.
+
+**Dry-run:**
+
+Contribuidores sem SMTP configurado continuam conseguindo rodar o fluxo completo de analise. Os e-mails aparecem como `Simulado` no admin e com action `email_delivery_dry_run` em `audit_logs`, sem chamada SMTP.

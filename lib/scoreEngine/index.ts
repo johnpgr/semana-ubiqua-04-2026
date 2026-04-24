@@ -22,6 +22,8 @@ export type {
   ScoreTransaction,
 } from "./types"
 
+export const CREDIT_SCORE_ENGINE_VERSION = "1.0.0"
+
 const DIMENSION_WEIGHTS = {
   regularity: 0.22,
   capacity: 0.28,
@@ -68,6 +70,7 @@ export function calculateCreditScore({
     reasons,
     breakdown,
     metrics,
+    engineVersion: CREDIT_SCORE_ENGINE_VERSION,
   }
 }
 

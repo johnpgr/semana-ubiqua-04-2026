@@ -259,3 +259,28 @@ No MVP atual:
 - a pagina de resultado e o detalhe da solicitacao no admin exibem parceiro, indicadores recebidos e resumo do impacto aplicado.
 
 Essa implementacao nao usa integracao externa real ainda, mas deixa a base pronta para evoluir para multiplos parceiros, APIs reais e governanca mais forte de consentimento e compliance.
+
+## Versionamento e contratos
+
+Cada motor de analise do OpenCred agora expoe um `engineVersion` em seu resultado:
+
+- `lib/scoreEngine` — `CREDIT_SCORE_ENGINE_VERSION` (`"1.0.0"`)
+- `lib/fraudScore` — `FRAUD_SCORE_ENGINE_VERSION` (`"1.0.0"`)
+- `lib/postCreditMonitoring` — `POST_CREDIT_MONITORING_ENGINE_VERSION` (`"1.0.0"`)
+- `lib/explainability` — `EXPLAINABILITY_ENGINE_VERSION` (`"1.0.0"`)
+- `lib/emailCommunication` — `EMAIL_COMMUNICATION_ENGINE_VERSION` (`"1.0.0"`)
+
+Essas versoes sao persistidas em `audit_logs.metadata.engine_version` junto com cada evento de resultado (`*_completed`, `*_prepared`, `email_communication_generated`).
+
+**Por que versionar os motores:**
+
+- parceiros que consomem indicadores agregados precisam saber qual versao do motor os gerou;
+- migracoes de modelo ou ajuste de pesos podem mudar o significado de um score sem mudar a escala — a versao torna isso rastreável;
+- multi-mercado exige que o mesmo tipo de resultado possa ter interpretacoes diferentes por versao;
+- a versao e o contrato minimo que o OpenCred oferece a parceiros: "este indicador foi gerado pela versao X do motor Y".
+
+**Regras de evolucao:**
+
+- mudancas que nao alteram interpretacao do resultado (refactor, performance) nao exigem bump;
+- mudancas que alteram pesos, escala ou Semantica do resultado exigem bump de minor ou major;
+- o versionamento e por motor, nao global — cada motor evolui independentemente.

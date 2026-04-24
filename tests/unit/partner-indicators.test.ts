@@ -165,6 +165,7 @@ export const partnerIndicatorTests: NamedTest[] = [
           hasUserAgent: true,
           hasIpAddress: true,
         },
+        engineVersion: "1.0.0",
       }
 
       const result = applyPartnerIndicatorsToFraudScore({

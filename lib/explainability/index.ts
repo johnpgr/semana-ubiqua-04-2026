@@ -57,7 +57,10 @@ export type ExplainabilityResult = {
   primaryFactors: ExplainabilityFactor[]
   sensitiveDataNotice: ExplainabilityNotice | null
   futureConsentNotice: ExplainabilityNotice | null
+  engineVersion: string
 }
+
+export const EXPLAINABILITY_ENGINE_VERSION = "1.0.0"
 
 export type ExplainabilityInput = {
   decision: CreditDecision
@@ -153,6 +156,7 @@ export function buildDecisionExplainability(
     primaryFactors,
     sensitiveDataNotice,
     futureConsentNotice,
+    engineVersion: EXPLAINABILITY_ENGINE_VERSION,
   }
 }
 

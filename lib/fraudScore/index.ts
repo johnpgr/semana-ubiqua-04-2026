@@ -45,7 +45,10 @@ export type FraudScoreResult = {
     hasUserAgent: boolean
     hasIpAddress: boolean
   }
+  engineVersion: string
 }
+
+export const FRAUD_SCORE_ENGINE_VERSION = "1.0.0"
 
 export type FraudDecisionResult = {
   decision: CreditDecision
@@ -132,6 +135,7 @@ export function calculateFraudScore({
       hasUserAgent: deviceTrustScore.metrics.hasUserAgent,
       hasIpAddress: deviceTrustScore.metrics.hasIpAddress,
     },
+    engineVersion: FRAUD_SCORE_ENGINE_VERSION,
   }
 }
 
