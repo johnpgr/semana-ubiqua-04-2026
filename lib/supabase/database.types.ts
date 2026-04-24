@@ -30,7 +30,7 @@ export type Database = {
           created_at?: string
           entity_id: string
           entity_type: string
-          id?: number
+          id?: never
           metadata?: Json | null
         }
         Update: {
@@ -39,7 +39,7 @@ export type Database = {
           created_at?: string
           entity_id?: string
           entity_type?: string
-          id?: number
+          id?: never
           metadata?: Json | null
         }
         Relationships: []
@@ -51,8 +51,8 @@ export type Database = {
           ip_address: unknown
           request_id: string
           scopes: Database["public"]["Enums"]["consent_scope"][]
-          user_id: string
           user_agent: string | null
+          user_id: string
         }
         Insert: {
           granted_at?: string
@@ -60,8 +60,8 @@ export type Database = {
           ip_address?: unknown
           request_id: string
           scopes: Database["public"]["Enums"]["consent_scope"][]
-          user_id: string
           user_agent?: string | null
+          user_id: string
         }
         Update: {
           granted_at?: string
@@ -69,8 +69,8 @@ export type Database = {
           ip_address?: unknown
           request_id?: string
           scopes?: Database["public"]["Enums"]["consent_scope"][]
-          user_id?: string
           user_agent?: string | null
+          user_id?: string
         }
         Relationships: [
           {
