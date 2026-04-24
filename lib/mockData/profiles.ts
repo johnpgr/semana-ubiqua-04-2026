@@ -86,6 +86,20 @@ const DEBIT_DESCRIPTIONS: Record<DebitCategory, string[]> = {
   transporte: ["Aplicativo transporte", "Bilhete transporte", "Estacionamento"],
 }
 
+const INCOME_DESCRIPTIONS: Record<IncomeCategory, string[]> = {
+  bico: ["Servico eventual recebido", "Pagamento de diaria"],
+  bonus_app: ["Bonus por metas no app", "Incentivo semanal do app"],
+  corrida_app: ["Repasse de corridas", "Recebimento aplicativo motorista"],
+  emprestimo_recebido: ["Transferencia recebida", "Apoio financeiro familiar"],
+  freelance: ["Projeto freelance", "Servico autonomo recebido"],
+  primeiro_salario: ["Primeiro salario", "Pagamento inicial de trabalho"],
+  prestacao_servico: ["Prestacao de servico", "Contrato autonomo"],
+  rendimento_investimento: ["Rendimento de investimento", "Resgate com rendimento"],
+  repasse_semanal: ["Repasse semanal plataforma", "Fechamento semanal app"],
+  salario: ["Salario mensal", "Pagamento empregador"],
+  venda_avulsa: ["Venda avulsa recebida", "Recebimento por venda"],
+}
+
 export const MOCK_PROFILE_CONFIGS: Record<MockProfile, ProfileConfig> = {
   motorista_consistente: {
     label: "Motorista consistente",
@@ -279,21 +293,7 @@ function buildDebitTransactions(
 }
 
 function buildIncomeDescription(category: IncomeCategory, faker: Faker) {
-  const descriptions: Record<IncomeCategory, string[]> = {
-    bico: ["Servico eventual recebido", "Pagamento de diaria"],
-    bonus_app: ["Bonus por metas no app", "Incentivo semanal do app"],
-    corrida_app: ["Repasse de corridas", "Recebimento aplicativo motorista"],
-    emprestimo_recebido: ["Transferencia recebida", "Apoio financeiro familiar"],
-    freelance: ["Projeto freelance", "Servico autonomo recebido"],
-    primeiro_salario: ["Primeiro salario", "Pagamento inicial de trabalho"],
-    prestacao_servico: ["Prestacao de servico", "Contrato autonomo"],
-    rendimento_investimento: ["Rendimento de investimento", "Resgate com rendimento"],
-    repasse_semanal: ["Repasse semanal plataforma", "Fechamento semanal app"],
-    salario: ["Salario mensal", "Pagamento empregador"],
-    venda_avulsa: ["Venda avulsa recebida", "Recebimento por venda"],
-  }
-
-  return faker.helpers.arrayElement(descriptions[category])
+  return faker.helpers.arrayElement(INCOME_DESCRIPTIONS[category])
 }
 
 function buildDebitDescription(category: DebitCategory, faker: Faker) {

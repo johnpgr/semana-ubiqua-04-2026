@@ -6,6 +6,19 @@ import {
   MOCK_PROFILE_CONFIGS,
   generateSyntheticTransactions,
 } from "@/lib/mockData/profiles"
+import { applyProgressiveCreditPolicy } from "@/lib/creditProgression"
+import { buildEmailCommunicationBundle } from "@/lib/emailCommunication"
+import { buildDecisionExplainability } from "@/lib/explainability"
+import {
+  applyFraudDecisionPolicy,
+  calculateFraudScore,
+} from "@/lib/fraudScore"
+import {
+  applyPartnerIndicatorsToCreditScore,
+  applyPartnerIndicatorsToFraudScore,
+  getMockPartnerIndicatorProfile,
+} from "@/lib/partnerIndicators"
+import { evaluatePostCreditMonitoring } from "@/lib/postCreditMonitoring"
 import { calculateCreditScore } from "@/lib/scoreEngine"
 import type { Json, TablesInsert } from "@/lib/supabase/database.types"
 import { createClient } from "@/lib/supabase/server"
@@ -19,6 +32,13 @@ type ProcessCreditAnalysisSuccess = {
     score: number
     decision: "approved" | "approved_reduced" | "further_review" | "denied"
     suggestedLimit: number
+    confidenceLevel: string
+    confidenceLabel: string
+    isConservativeInitialOffer: boolean
+    fraudScoreValue: number
+    fraudRiskLevel: string
+    postCreditRiskLevel: string
+    postCreditLimitAction: string
     redirectTo: string
   }
 }
@@ -44,7 +64,7 @@ export async function processCreditAnalysis(
   if (!parsedRequestId.success) {
     return {
       ok: false,
-      formError: "Solicitação inválida",
+      formError: "SolicitaÃ§Ã£o invÃ¡lida",
     }
   }
 
@@ -57,7 +77,7 @@ export async function processCreditAnalysis(
   if (userError || !user) {
     return {
       ok: false,
-      formError: "Faça login para processar a análise",
+      formError: "FaÃ§a login para processar a anÃ¡lise",
     }
   }
 
@@ -71,52 +91,69 @@ export async function processCreditAnalysis(
   if (requestError) {
     return {
       ok: false,
-      formError: "Não foi possível carregar a solicitação",
+      formError: "NÃ£o foi possÃ­vel carregar a solicitaÃ§Ã£o",
     }
   }
 
   if (!request) {
     return {
       ok: false,
-      formError: "Solicitação não encontrada",
+      formError: "SolicitaÃ§Ã£o nÃ£o encontrada",
     }
   }
 
-  const [{ data: profile, error: profileError }, { data: consent, error: consentError }] =
-    await Promise.all([
+  const [
+    { data: profile, error: profileError },
+    { data: consent, error: consentError },
+    { data: requestHistory, error: requestHistoryError },
+  ] = await Promise.all([
       supabase
         .from("profiles")
-        .select("id, mock_profile")
+        .select("id, name, mock_profile")
         .eq("id", request.user_id)
         .maybeSingle(),
       supabase
         .from("consents")
-        .select("id, scopes, granted_at")
+        .select("id, scopes, granted_at, user_agent, ip_address")
         .eq("request_id", request.id)
         .eq("user_id", user.id)
         .order("granted_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
+      supabase
+        .from("credit_requests")
+        .select("id, status, decision, approved_amount, created_at, decided_at")
+        .eq("user_id", user.id)
+        .neq("id", request.id)
+        .order("created_at", { ascending: false })
+        .limit(20),
     ])
 
   if (profileError || !profile) {
     return {
       ok: false,
-      formError: "Não foi possível carregar o perfil do usuário",
+      formError: "NÃ£o foi possÃ­vel carregar o perfil do usuÃ¡rio",
     }
   }
 
   if (consentError) {
     return {
       ok: false,
-      formError: "Não foi possível verificar o consentimento",
+      formError: "NÃ£o foi possÃ­vel verificar o consentimento",
     }
   }
 
   if (!consent) {
     return {
       ok: false,
-      formError: "A análise exige consentimento salvo",
+      formError: "A anÃ¡lise exige consentimento salvo",
+    }
+  }
+
+  if (requestHistoryError) {
+    return {
+      ok: false,
+      formError: "Não foi possível carregar o histórico de solicitações",
     }
   }
 
@@ -130,14 +167,14 @@ export async function processCreditAnalysis(
     if (existingScoreError) {
       return {
         ok: false,
-        formError: "Não foi possível recuperar o resultado da análise",
+        formError: "NÃ£o foi possÃ­vel recuperar o resultado da anÃ¡lise",
       }
     }
 
     if (!existingScore) {
       return {
         ok: false,
-        formError: "Resultado da análise inconsistente. Tente novamente em instantes.",
+        formError: "Resultado da anÃ¡lise inconsistente. Tente novamente em instantes.",
       }
     }
 
@@ -150,6 +187,13 @@ export async function processCreditAnalysis(
         score: existingScore.value,
         decision: request.decision,
         suggestedLimit: existingScore.suggested_limit,
+        confidenceLevel: "unknown",
+        confidenceLabel: "Indisponivel",
+        isConservativeInitialOffer: false,
+        fraudScoreValue: 0,
+        fraudRiskLevel: "unknown",
+        postCreditRiskLevel: "unknown",
+        postCreditLimitAction: "unknown",
         redirectTo: `/resultado/${request.id}`,
       },
     }
@@ -162,7 +206,7 @@ export async function processCreditAnalysis(
   if (!mockProfile) {
     return {
       ok: false,
-      formError: "Perfil mockado inválido para análise",
+      formError: "Perfil mockado invÃ¡lido para anÃ¡lise",
     }
   }
 
@@ -171,9 +215,107 @@ export async function processCreditAnalysis(
     requestId: request.id,
     seed: getStableSeed(request.id),
   })
-  const score = calculateCreditScore({
+  const baseScore = calculateCreditScore({
     transactions,
     requestedAmount: request.requested_amount,
+  })
+  const partnerIndicators = getMockPartnerIndicatorProfile(profile.mock_profile)
+  const partnerCredit = applyPartnerIndicatorsToCreditScore({
+    partnerProfile: partnerIndicators,
+    scoreValue: baseScore.value,
+    suggestedLimit: baseScore.suggestedLimit,
+    decision: baseScore.decision,
+    reasons: baseScore.reasons,
+    requestedAmount: request.requested_amount,
+    breakdown: baseScore.breakdown,
+  })
+  const creditScore = {
+    ...baseScore,
+    value: partnerCredit.value,
+    suggestedLimit: partnerCredit.suggestedLimit,
+    decision: partnerCredit.decision,
+    reasons: partnerCredit.reasons,
+    breakdown: partnerCredit.breakdown,
+  }
+  const progressiveCredit = applyProgressiveCreditPolicy({
+    requestedAmount: request.requested_amount,
+    score: creditScore.value,
+    baseDecision: creditScore.decision,
+    baseSuggestedLimit: creditScore.suggestedLimit,
+    baseReasons: creditScore.reasons,
+    requestHistory: (requestHistory ?? []).map((historyRow) => ({
+      id: historyRow.id,
+      status: historyRow.status,
+      decision: historyRow.decision,
+      approvedAmount: historyRow.approved_amount,
+      createdAt: historyRow.created_at,
+      decidedAt: historyRow.decided_at,
+    })),
+  })
+  const fraudScore = calculateFraudScore({
+    transactions,
+    deviceTrust: {
+      userAgent: consent.user_agent,
+      ipAddress: normalizeIpAddress(consent.ip_address),
+    },
+  })
+  const partnerFraud = applyPartnerIndicatorsToFraudScore({
+    partnerProfile: partnerIndicators,
+    fraudScore,
+  })
+  const fraudDecision = applyFraudDecisionPolicy({
+    creditDecision: progressiveCredit.decision,
+    suggestedLimit: progressiveCredit.suggestedLimit,
+    reasons: progressiveCredit.reasons,
+    fraudScore: partnerFraud.fraudScore,
+  })
+  const monitoring = evaluatePostCreditMonitoring({
+    transactions,
+    creditScoreValue: creditScore.value,
+    creditDecision: fraudDecision.decision,
+    suggestedLimit: fraudDecision.suggestedLimit,
+    approvedAmount: fraudDecision.suggestedLimit,
+    fraudScoreValue: partnerFraud.fraudScore.value,
+    fraudRiskLevel: partnerFraud.fraudScore.riskLevel,
+    confidenceLevel: progressiveCredit.level,
+    isFirstConcession: progressiveCredit.isFirstConcession,
+    requestHistory: (requestHistory ?? []).map((historyRow) => ({
+      id: historyRow.id,
+      status: historyRow.status,
+      decision: historyRow.decision,
+      approvedAmount: historyRow.approved_amount,
+      createdAt: historyRow.created_at,
+      decidedAt: historyRow.decided_at,
+    })),
+  })
+  const score = {
+    ...creditScore,
+    decision: fraudDecision.decision,
+    suggestedLimit: fraudDecision.suggestedLimit,
+    reasons: fraudDecision.reasons,
+  }
+  const explainability = buildDecisionExplainability({
+    decision: score.decision,
+    scoreValue: score.value,
+    suggestedLimit: score.suggestedLimit,
+    reasons: score.reasons,
+    consentScopes: consent.scopes,
+    progressiveCredit,
+    fraudScore: partnerFraud.fraudScore,
+    monitoring,
+  })
+  const emailCommunication = buildEmailCommunicationBundle({
+    requestId: request.id,
+    recipientName: profile.name,
+    recipientEmail: user.email,
+    requestedAmount: request.requested_amount,
+    approvedAmount: score.suggestedLimit,
+    decision: score.decision,
+    scoreValue: score.value,
+    explainability,
+    progressiveCredit,
+    fraudScore: partnerFraud.fraudScore,
+    monitoring,
   })
   const transactionRows = mapTransactionsToRows(
     transactions,
@@ -210,6 +352,79 @@ export async function processCreditAnalysis(
         score: score.value,
         decision: score.decision,
         suggested_limit: score.suggestedLimit,
+        base_score: baseScore.value,
+        partner_credit_score: creditScore.value,
+        partner_credit_score_delta_applied: partnerCredit.scoreDeltaApplied,
+        confidence_level: progressiveCredit.level,
+        confidence_label: progressiveCredit.levelLabel,
+        is_first_concession: progressiveCredit.isFirstConcession,
+        is_conservative_initial_offer:
+          progressiveCredit.isConservativeInitialOffer,
+        previous_approved_requests:
+          progressiveCredit.stats.previousApprovedRequests,
+        progressive_limit_cap: progressiveCredit.appliedCap,
+      },
+    }),
+    buildAuditLog({
+      requestId: request.id,
+      actor: user.id,
+      action: "partner_indicators_enriched",
+      metadata: {
+        partner_id: partnerIndicators?.partnerId ?? null,
+        partner_name: partnerIndicators?.partnerName ?? null,
+        partner_summary: partnerIndicators?.summary ?? null,
+        indicator_count: partnerIndicators?.indicators.length ?? 0,
+        credit_impact_summary: partnerCredit.impactSummary,
+        fraud_impact_summary: partnerFraud.impactSummary,
+        indicators:
+          partnerIndicators?.indicators.map((indicator) => ({
+            type: indicator.indicatorType,
+            value: indicator.indicatorValue,
+            time_window: indicator.timeWindow,
+            confidence_level: indicator.confidenceLevel,
+            usage_context: indicator.usageContext,
+          })) ?? [],
+      },
+    }),
+    buildAuditLog({
+      requestId: request.id,
+      actor: user.id,
+      action: "fraud_score_calculated",
+      metadata: {
+        fraud_score: partnerFraud.fraudScore.value,
+        fraud_risk_level: partnerFraud.fraudScore.riskLevel,
+        raw_fraud_score: fraudScore.value,
+        raw_fraud_risk_level: fraudScore.riskLevel,
+        fraud_signals: partnerFraud.fraudScore.signals.map((signal) => ({
+          key: signal.key,
+          category: signal.category,
+          label: signal.label,
+          severity: signal.severity,
+        })),
+        fraud_breakdown: partnerFraud.fraudScore.breakdown,
+        fraud_metrics: partnerFraud.fraudScore.metrics,
+        operational_recommendation: partnerFraud.fraudScore.operationalRecommendation,
+        impact_summary: fraudDecision.impactSummary,
+      },
+    }),
+    buildAuditLog({
+      requestId: request.id,
+      actor: user.id,
+      action: "post_credit_monitoring_evaluated",
+      metadata: {
+        post_credit_risk_level: monitoring.riskLevel,
+        monitoring_summary: monitoring.monitoringSummary,
+        eligibility_status: monitoring.eligibility.status,
+        eligibility_summary: monitoring.eligibility.summary,
+        limit_action: monitoring.limitRecommendation.action,
+        limit_action_summary: monitoring.limitRecommendation.summary,
+        alerts: monitoring.alerts.map((alert) => ({
+          key: alert.key,
+          level: alert.level,
+          title: alert.title,
+          audience: alert.audience,
+        })),
+        monitoring_metrics: monitoring.metrics,
       },
     }),
     buildAuditLog({
@@ -219,8 +434,53 @@ export async function processCreditAnalysis(
       metadata: {
         decision: score.decision,
         approved_amount: score.suggestedLimit,
+        confidence_level: progressiveCredit.level,
+        confidence_label: progressiveCredit.levelLabel,
+        fraud_score: partnerFraud.fraudScore.value,
+        fraud_risk_level: partnerFraud.fraudScore.riskLevel,
+        fraud_impact_summary: fraudDecision.impactSummary,
+        post_credit_risk_level: monitoring.riskLevel,
+        post_credit_limit_action: monitoring.limitRecommendation.action,
+        post_credit_eligibility: monitoring.eligibility.status,
       },
     }),
+    buildAuditLog({
+      requestId: request.id,
+      actor: user.id,
+      action: "decision_explainability_prepared",
+      metadata: {
+        decision_mode: explainability.decisionMode,
+        primary_factors: explainability.primaryFactors.map((factor) => ({
+          key: factor.key,
+          label: factor.label,
+        })),
+        reason_titles: explainability.reasons.map((reason) => reason.title),
+        has_sensitive_data_notice: Boolean(explainability.sensitiveDataNotice),
+        has_future_consent_notice: Boolean(explainability.futureConsentNotice),
+      },
+    }),
+    ...emailCommunication.communications.map((communication) =>
+      buildAuditLog({
+        requestId: request.id,
+        actor: user.id,
+        action: "email_communication_generated",
+        metadata: {
+          category: communication.category,
+          type: communication.type,
+          audience: communication.audience,
+          status: communication.status,
+          subject: communication.subject,
+          preview: communication.preview,
+          template_key: communication.audit.templateKey,
+          trigger: communication.audit.trigger,
+          decision_mode: communication.audit.decisionMode,
+          decision: communication.audit.decision,
+          fraud_risk_level: communication.audit.fraudRiskLevel,
+          monitoring_risk_level: communication.audit.monitoringRiskLevel,
+          recipient_email: user.email ?? null,
+        },
+      }),
+    ),
   ]
 
   const { data: scoringRequest, error: scoringStatusError } = await service
@@ -234,7 +494,7 @@ export async function processCreditAnalysis(
   if (scoringStatusError || !scoringRequest) {
     return {
       ok: false,
-      formError: "Não foi possível iniciar a análise",
+      formError: "NÃ£o foi possÃ­vel iniciar a anÃ¡lise",
     }
   }
 
@@ -249,7 +509,7 @@ export async function processCreditAnalysis(
 
     return {
       ok: false,
-      formError: "Não foi possível preparar as transações da análise",
+      formError: "NÃ£o foi possÃ­vel preparar as transaÃ§Ãµes da anÃ¡lise",
     }
   }
 
@@ -262,7 +522,7 @@ export async function processCreditAnalysis(
 
     return {
       ok: false,
-      formError: "Não foi possível salvar as transações da análise",
+      formError: "NÃ£o foi possÃ­vel salvar as transaÃ§Ãµes da anÃ¡lise",
     }
   }
 
@@ -275,7 +535,7 @@ export async function processCreditAnalysis(
 
     return {
       ok: false,
-      formError: "Não foi possível salvar o score da análise",
+      formError: "NÃ£o foi possÃ­vel salvar o score da anÃ¡lise",
     }
   }
 
@@ -294,7 +554,7 @@ export async function processCreditAnalysis(
 
     return {
       ok: false,
-      formError: "Não foi possível finalizar a solicitação",
+      formError: "NÃ£o foi possÃ­vel finalizar a solicitaÃ§Ã£o",
     }
   }
 
@@ -316,6 +576,13 @@ export async function processCreditAnalysis(
       score: score.value,
       decision: score.decision,
       suggestedLimit: score.suggestedLimit,
+      confidenceLevel: progressiveCredit.level,
+      confidenceLabel: progressiveCredit.levelLabel,
+      isConservativeInitialOffer: progressiveCredit.isConservativeInitialOffer,
+      fraudScoreValue: partnerFraud.fraudScore.value,
+      fraudRiskLevel: partnerFraud.fraudScore.riskLevel,
+      postCreditRiskLevel: monitoring.riskLevel,
+      postCreditLimitAction: monitoring.limitRecommendation.action,
       redirectTo: `/resultado/${request.id}`,
     },
   }
@@ -378,6 +645,22 @@ function getStableSeed(value: string) {
     .reduce((total, char) => total + char.charCodeAt(0), 0)
 }
 
+function normalizeIpAddress(value: unknown) {
+  if (typeof value === "string") {
+    return value
+  }
+
+  if (value == null) {
+    return null
+  }
+
+  try {
+    return JSON.stringify(value)
+  } catch {
+    return null
+  }
+}
+
 function mapScoreToRow(
   score: ReturnType<typeof calculateCreditScore>,
   requestId: string,
@@ -413,3 +696,4 @@ function mapTransactionsToRows(
     source: transaction.source,
   }))
 }
+
