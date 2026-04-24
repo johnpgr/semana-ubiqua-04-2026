@@ -118,7 +118,7 @@ export function CadastroForm() {
       onChange={dispatch}
       onBlurCapture={dispatch}
     >
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-4 pb-4">
         <div className="space-y-2">
           <label className="text-sm font-medium" htmlFor="name">
             Nome completo

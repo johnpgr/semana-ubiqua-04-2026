@@ -34,7 +34,7 @@ export function VerifyForm({ email }: VerifyFormProps) {
     <form action={formAction}>
       <input type="hidden" name="email" value={email} />
       <input type="hidden" name="token" value={token} />
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pb-4">
         <div className="space-y-2">
           <p className="text-sm text-muted-foreground">
             Digite o código enviado para <strong>{email}</strong>.

@@ -115,7 +115,7 @@ export function CreditRequestForm() {
       onBlurCapture={dispatch}
     >
       <input type="hidden" name="requested_amount" value={digits} />
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-4 pb-4">
         <div className="space-y-2">
           <label
             className="text-sm font-medium"

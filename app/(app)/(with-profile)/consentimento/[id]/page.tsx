@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { requireCurrentProfile } from "@/lib/auth/profile"
+import { getRequestStatusLabel } from "@/lib/credit-requests"
 import { createClient } from "@/lib/supabase/server"
 
 import { ConsentForm } from "./consent-form"
@@ -140,7 +141,7 @@ export default async function ConsentimentoPage({
         </Card>
       </div>
 
-      <Card className="border border-border/70 bg-muted/40">
+      <Card className="self-start border border-border/70 bg-muted/40">
         <CardHeader className="space-y-3">
           <CardTitle>Resumo da solicitação</CardTitle>
           <CardDescription className="space-y-3 text-sm leading-6">
@@ -151,7 +152,8 @@ export default async function ConsentimentoPage({
               </strong>
             </p>
             <p>
-              Status atual: <strong>{request.status}</strong>
+              Status atual:{" "}
+              <strong>{getRequestStatusLabel(request.status)}</strong>
             </p>
             <p>
               Documentos complementares:{" "}

@@ -23,14 +23,8 @@ type ConsentFormState = {
 
 function consentFormReducer(
   state: ConsentFormState,
-  action: React.MouseEvent<HTMLElement>
+  scope: string
 ): ConsentFormState {
-  const scope = action.currentTarget.dataset.scope
-
-  if (!scope) {
-    return state
-  }
-
   if (state.selectedScopes.includes(scope)) {
     return {
       selectedScopes: state.selectedScopes.filter(
@@ -61,7 +55,7 @@ export function ConsentForm({ requestId }: ConsentFormProps) {
       {selectedScopes.map((scope) => (
         <input key={scope} type="hidden" name="scopes" value={scope} />
       ))}
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pb-4">
         <div className="space-y-3">
           {CONSENT_SCOPES.map((scope) => (
             <div
@@ -70,9 +64,8 @@ export function ConsentForm({ requestId }: ConsentFormProps) {
             >
               <Checkbox
                 id={`scope-${scope}`}
-                data-scope={scope}
                 checked={selectedScopes.includes(scope)}
-                onClick={dispatch}
+                onCheckedChange={() => dispatch(scope)}
                 aria-invalid={scopesError ? true : undefined}
               />
               <label htmlFor={`scope-${scope}`} className="space-y-1">

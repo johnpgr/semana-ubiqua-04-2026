@@ -18,6 +18,10 @@ import {
   getUserVisibleCommunications,
 } from "@/lib/analysisPresentation"
 import { buildAnalysisView } from "@/lib/analysisView"
+import {
+  getCreditDecisionLabel,
+  getRequestStatusLabel,
+} from "@/lib/credit-requests"
 import { buildEmailCommunicationBundle } from "@/lib/emailCommunication"
 import { buildDecisionExplainability } from "@/lib/explainability"
 import { calculateFraudScore } from "@/lib/fraudScore"
@@ -25,6 +29,7 @@ import { getMockPartnerIndicatorProfile } from "@/lib/partnerIndicators"
 import { evaluatePostCreditMonitoring } from "@/lib/postCreditMonitoring"
 import { createClient } from "@/lib/supabase/client"
 import type { Database } from "@/lib/supabase/database.types"
+import { ConsentScopeLabels } from "@/validation/consent"
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -181,6 +186,9 @@ export function ResultCard({
   const monitoringCopy = monitoring
     ? getMonitoringPresentationCopy(monitoring)
     : null
+  const consentScopeSummary = initialConsent
+    ? initialConsent.scopes.map((scope) => ConsentScopeLabels[scope]).join(", ")
+    : "Aguardando registro"
 
   const progressiveBadgeVariant =
     progressiveCredit?.level === "premium"
@@ -220,7 +228,9 @@ export function ResultCard({
                 <div className="rounded-xl border border-border/70 bg-muted/40 p-4">
                   <div className="text-sm text-muted-foreground">Decisao</div>
                   <div className="mt-1 text-base font-semibold">
-                    {request.decision}
+                    {request.decision
+                      ? getCreditDecisionLabel(request.decision)
+                      : "Em análise"}
                   </div>
                 </div>
                 <div className="rounded-xl border border-border/70 bg-muted/40 p-4">
@@ -328,13 +338,15 @@ export function ResultCard({
               {monitoring ? (
                 <div className="space-y-3 rounded-2xl border border-border/70 bg-muted/25 p-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge
-                      variant={RISK_BADGE_VARIANTS[monitoring.riskLevel]}
-                    >
+                    <Badge variant={RISK_BADGE_VARIANTS[monitoring.riskLevel]}>
                       {MONITORING_RISK_LABELS[monitoring.riskLevel]}
                     </Badge>
                     <Badge variant="outline">
-                      {LIMIT_ACTION_LABELS[monitoring.limitRecommendation.action]}
+                      {
+                        LIMIT_ACTION_LABELS[
+                          monitoring.limitRecommendation.action
+                        ]
+                      }
                     </Badge>
                   </div>
                   <div className="space-y-1">
@@ -357,7 +369,11 @@ export function ResultCard({
                     <div className="rounded-xl border border-border/70 bg-background/60 p-3">
                       <div className="text-muted-foreground">Limite futuro</div>
                       <div className="mt-1 font-semibold">
-                        {LIMIT_ACTION_LABELS[monitoring.limitRecommendation.action]}
+                        {
+                          LIMIT_ACTION_LABELS[
+                            monitoring.limitRecommendation.action
+                          ]
+                        }
                       </div>
                     </div>
                   </div>
@@ -504,7 +520,11 @@ export function ResultCard({
                       }
                     </Badge>
                     <Badge variant="outline">
-                      {EMAIL_STATUS_LABELS[userEmailCommunication.primary.status]}
+                      {
+                        EMAIL_STATUS_LABELS[
+                          userEmailCommunication.primary.status
+                        ]
+                      }
                     </Badge>
                   </div>
                   <div className="space-y-1">
@@ -594,12 +614,12 @@ export function ResultCard({
         </CardContent>
       </Card>
 
-      <Card className="border border-border/70 bg-muted/40">
+      <Card className="self-start border border-border/70 bg-muted/40">
         <CardHeader className="space-y-3">
-          <CardTitle>Resumo tecnico</CardTitle>
+          <CardTitle>Resumo da analise</CardTitle>
           <CardDescription className="space-y-3 text-sm leading-6">
             <p>
-              Solicitacao: <strong>{request.id}</strong>
+              Numero da solicitacao: <strong>{request.id}</strong>
             </p>
             <p>
               Valor pedido:{" "}
@@ -608,7 +628,7 @@ export function ResultCard({
               </strong>
             </p>
             <p>
-              Status: <strong>{request.status}</strong>
+              Status: <strong>{getRequestStatusLabel(request.status)}</strong>
             </p>
             {progressiveCredit ? (
               <p>
@@ -620,7 +640,11 @@ export function ResultCard({
               <p>
                 Fraude:{" "}
                 <strong>
-                  {FRAUD_RISK_LABELS[partnerFraud?.riskLevel ?? fraudScore.riskLevel]}
+                  {
+                    FRAUD_RISK_LABELS[
+                      partnerFraud?.riskLevel ?? fraudScore.riskLevel
+                    ]
+                  }
                 </strong>
               </p>
             ) : null}
@@ -631,12 +655,7 @@ export function ResultCard({
               </p>
             ) : null}
             <p>
-              Consentimento:{" "}
-              <strong>
-                {initialConsent
-                  ? initialConsent.scopes.join(", ")
-                  : "aguardando registro"}
-              </strong>
+              Consentimento: <strong>{consentScopeSummary}</strong>
             </p>
           </CardDescription>
         </CardHeader>

@@ -6,9 +6,8 @@ import { FileTextIcon, Trash2Icon, UploadIcon } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { CardContent, CardFooter } from "@/components/ui/card"
+import { CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
 import { Spinner } from "@/components/ui/spinner"
 import {
   DOCUMENT_ALLOWED_MIME_TYPES,
@@ -142,14 +141,13 @@ export function DocumentUploadForm({
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null)
   const inputId = useId()
   const selectedFileNameToShow =
-    selectedFileName &&
-    selectedFileName !== state.data?.document.file_name
+    selectedFileName && selectedFileName !== state.data?.document.file_name
       ? selectedFileName
       : null
 
   return (
     <div className="space-y-5">
-      <form action={formAction} encType="multipart/form-data">
+      <form action={formAction}>
         <input type="hidden" name="request_id" value={requestId} />
         <CardContent className="space-y-5">
           <div className="space-y-3">
@@ -170,114 +168,123 @@ export function DocumentUploadForm({
             </div>
           </div>
 
-          <label
-            htmlFor={inputId}
-            className="block cursor-pointer rounded-2xl border border-dashed border-border/80 bg-muted/25 p-5 transition-colors hover:bg-muted/40"
-          >
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-3">
-                <div className="rounded-xl bg-background p-2 text-muted-foreground">
-                  <UploadIcon className="size-5" />
-                </div>
-                <div className="space-y-1">
-                  <div className="text-sm font-medium">
-                    Escolha um arquivo para enviar
+          <div className="space-y-4 rounded-2xl border border-border/60 bg-muted/15 p-4 sm:p-5">
+            <label
+              htmlFor={inputId}
+              className="block cursor-pointer rounded-2xl border border-dashed border-border/80 bg-background/30 p-5 transition-colors hover:bg-background/45"
+            >
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-xl bg-background p-2 text-muted-foreground">
+                    <UploadIcon className="size-5" />
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    PDF, JPG, PNG ou WEBP até {formatDocumentSizeLimit()}.
+                  <div className="space-y-1">
+                    <div className="text-sm font-medium">
+                      Escolha um arquivo para enviar
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      PDF, JPG, PNG ou WEBP até {formatDocumentSizeLimit()}.
+                    </div>
                   </div>
                 </div>
+                <span className="text-sm font-medium text-foreground">
+                  Selecionar arquivo
+                </span>
               </div>
-              <span className="text-sm font-medium text-foreground">
-                Selecionar arquivo
-              </span>
+              <FileInput
+                id={inputId}
+                acceptedMimeTypes={acceptedFileTypes}
+                onFileSelect={setSelectedFileName}
+                ariaInvalid={state.fieldErrors?.file ? true : undefined}
+              />
+            </label>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="space-y-2">
+                {selectedFileNameToShow ? (
+                  <p className="text-sm text-muted-foreground">
+                    Pronto para envio: <strong>{selectedFileNameToShow}</strong>
+                  </p>
+                ) : null}
+
+                {state.fieldErrors?.file?.[0] ? (
+                  <p className="text-sm text-destructive">
+                    {state.fieldErrors.file[0]}
+                  </p>
+                ) : null}
+                {state.ok && state.data?.document ? (
+                  <p className="text-sm text-foreground">
+                    Arquivo <strong>{state.data.document.file_name}</strong>
+                    enviado com sucesso.
+                  </p>
+                ) : null}
+                {state.formError ? (
+                  <p className="text-sm text-destructive">{state.formError}</p>
+                ) : null}
+              </div>
+
+              <div className="sm:shrink-0">
+                <UploadSubmitButton />
+              </div>
             </div>
-            <FileInput
-              id={inputId}
-              acceptedMimeTypes={acceptedFileTypes}
-              onFileSelect={setSelectedFileName}
-              ariaInvalid={state.fieldErrors?.file ? true : undefined}
-            />
-          </label>
-
-          {selectedFileNameToShow ? (
-            <p className="text-sm text-muted-foreground">
-              Pronto para envio: <strong>{selectedFileNameToShow}</strong>
-            </p>
-          ) : null}
-
-          {state.fieldErrors?.file?.[0] ? (
-            <p className="text-sm text-destructive">
-              {state.fieldErrors.file[0]}
-            </p>
-          ) : null}
-          {state.ok && state.data?.document ? (
-            <p className="text-sm text-foreground">
-              Arquivo <strong>{state.data.document.file_name}</strong> enviado
-              com sucesso.
-            </p>
-          ) : null}
-          {state.formError ? (
-            <p className="text-sm text-destructive">{state.formError}</p>
-          ) : null}
+          </div>
         </CardContent>
-        <CardFooter className="justify-end">
-          <UploadSubmitButton />
-        </CardFooter>
       </form>
 
-      <Separator />
-
-      <div className="rounded-2xl border border-border/70 bg-background/60 p-4">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <p className="text-sm font-medium">Arquivos enviados</p>
-            <p className="text-sm text-muted-foreground">
-              {initialDocuments.length === 0
-                ? "Nenhum comprovante anexado até agora."
-                : `${initialDocuments.length} arquivo(s) complementar(es) vinculado(s) a esta solicitação.`}
-            </p>
+      <div className="px-4 pb-4">
+        <div className="space-y-4 border-t border-border/60 pt-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <p className="text-sm font-medium">Arquivos enviados</p>
+              <p className="text-sm text-muted-foreground">
+                {initialDocuments.length === 0
+                  ? "Nenhum comprovante anexado até agora."
+                  : `${initialDocuments.length} arquivo(s) complementar(es) vinculado(s) a esta solicitação.`}
+              </p>
+            </div>
+            <Badge variant="outline">
+              {initialDocuments.length} arquivo(s)
+            </Badge>
           </div>
-          <Badge variant="outline">{initialDocuments.length} arquivo(s)</Badge>
-        </div>
 
-        {initialDocuments.length > 0 ? (
-          <ul className="mt-4 space-y-3">
-            {initialDocuments.map((document) => (
-              <li
-                key={document.id}
-                className="flex flex-col gap-3 rounded-xl border border-border/60 bg-muted/30 p-3 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-lg bg-background p-2 text-muted-foreground">
-                      <FileTextIcon className="size-4" />
-                    </div>
-                    <div className="min-w-0 space-y-1">
-                      <p className="truncate text-sm font-medium">
-                        {document.file_name}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {document.mime_type} |{" "}
-                        {dateFormatter.format(new Date(document.uploaded_at))}
-                      </p>
+          {initialDocuments.length > 0 ? (
+            <ul className="space-y-3">
+              {initialDocuments.map((document) => (
+                <li
+                  key={document.id}
+                  className="flex flex-col gap-3 rounded-xl border border-border/60 bg-muted/30 p-3 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start gap-3">
+                      <div className="rounded-lg bg-background p-2 text-muted-foreground">
+                        <FileTextIcon className="size-4" />
+                      </div>
+                      <div className="min-w-0 space-y-1">
+                        <p className="truncate text-sm font-medium">
+                          {document.file_name}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {document.mime_type} |{" "}
+                          {dateFormatter.format(new Date(document.uploaded_at))}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <RemoveDocumentButton
-                  documentId={document.id}
-                  fileName={document.file_name}
-                  requestId={requestId}
-                />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className="mt-4 rounded-xl border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
-            Se a coleta automática não tiver sido suficiente, você pode anexar
-            comprovantes aqui antes de seguir para o consentimento.
-          </div>
-        )}
+                  <RemoveDocumentButton
+                    documentId={document.id}
+                    fileName={document.file_name}
+                    requestId={requestId}
+                  />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="rounded-xl border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
+              Se a coleta automática não tiver sido suficiente, você pode anexar
+              comprovantes aqui antes de seguir para o consentimento.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
