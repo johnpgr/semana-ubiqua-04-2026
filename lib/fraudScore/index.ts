@@ -405,9 +405,11 @@ function countMirroredTransfers(
   debits: DatedTransaction[],
 ) {
   let count = 0
+  const usedDebitIndices = new Set<number>()
 
   for (const credit of credits) {
-    const matchedDebit = debits.find((debit) => {
+    const matchIndex = debits.findIndex((debit, index) => {
+      if (usedDebitIndices.has(index)) return false
       const timeDiffMs =
         debit.occurredAtDate.getTime() - credit.occurredAtDate.getTime()
       const hoursApart = timeDiffMs / (1000 * 60 * 60)
@@ -416,7 +418,8 @@ function countMirroredTransfers(
       return hoursApart >= 0 && hoursApart <= 48 && amountDiffRatio <= 0.12
     })
 
-    if (matchedDebit) {
+    if (matchIndex !== -1) {
+      usedDebitIndices.add(matchIndex)
       count += 1
     }
   }
@@ -435,16 +438,20 @@ function computeFastOutflowRatio(
     return 0
   }
 
+  const usedDebitIndices = new Set<number>()
+
   for (const credit of credits) {
-    const debitsAfterCredit = debits.filter((debit) => {
+    debits.forEach((debit, index) => {
+      if (usedDebitIndices.has(index)) return
       const hoursApart =
         (debit.occurredAtDate.getTime() - credit.occurredAtDate.getTime()) /
         (1000 * 60 * 60)
 
-      return hoursApart >= 0 && hoursApart <= 72
+      if (hoursApart >= 0 && hoursApart <= 72) {
+        usedDebitIndices.add(index)
+        suspiciousOutflow += debit.amount
+      }
     })
-
-    suspiciousOutflow += sum(debitsAfterCredit.map((debit) => debit.amount))
   }
 
   return clamp(suspiciousOutflow / totalIncome, 0, 1.4)
