@@ -168,6 +168,7 @@
 - [x] Definir templates de risco, segurança e operação
 - [x] Planejar trilha de auditoria para comunicações enviadas
 - [x] Consolidar a diretriz de comunicação oficial por email em `docs/comunicacao-email-oficial.md`
+- [x] Implementar MVP de comunicação oficial com `lib/emailCommunication`, geração de bundle, preview em resultado/admin e trilha em `audit_logs`
 
 ### 19. Integrações futuras com parceiros
 
@@ -176,6 +177,7 @@
 - [x] Documentar limites de uso de dados brutos versus indicadores processados
 - [x] Mapear impacto de indicadores externos no Credit Score e Fraud Score
 - [x] Consolidar a diretriz de integrações com parceiros em `docs/integracoes-parceiros-indicadores.md`
+- [x] Implementar MVP de indicadores de parceiros com `lib/partnerIndicators`, impacto controlado em crédito/fraude e exibição em resultado/admin
 
 ### 20. Backlog estratégico da próxima fase
 

@@ -1,7 +1,10 @@
 import { cpfTests } from "./unit/cpf.test"
+import { analysisPresentationTests } from "./unit/analysis-presentation.test"
 import { creditProgressionTests } from "./unit/credit-progression.test"
+import { emailCommunicationTests } from "./unit/email-communication.test"
 import { explainabilityTests } from "./unit/explainability.test"
 import { fraudScoreTests } from "./unit/fraud-score.test"
+import { partnerIndicatorTests } from "./unit/partner-indicators.test"
 import { postCreditMonitoringTests } from "./unit/post-credit-monitoring.test"
 import { scoreEngineTests } from "./unit/score-engine.test"
 
@@ -12,10 +15,13 @@ type NamedTest = {
 
 const tests: NamedTest[] = [
   ...cpfTests,
+  ...analysisPresentationTests,
   ...scoreEngineTests,
   ...creditProgressionTests,
+  ...emailCommunicationTests,
   ...explainabilityTests,
   ...fraudScoreTests,
+  ...partnerIndicatorTests,
   ...postCreditMonitoringTests,
 ]
 

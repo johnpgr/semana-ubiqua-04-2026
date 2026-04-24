@@ -509,3 +509,19 @@ Como diretriz futura, a comunicacao oficial por email do OpenCred deve:
 5. fortalecer juridico, operacao e confianca do usuario com uma trilha formal consistente.
 
 Assim, o OpenCred prepara uma camada de comunicacao profissional e auditavel sem depender ainda de implementacao tecnica real de envio.
+
+## Implementacao MVP atual
+
+O projeto agora possui uma camada real de comunicacao oficial em `lib/emailCommunication`.
+
+No MVP atual:
+
+- o sistema gera um bundle estruturado de comunicacoes por email ao final da analise;
+- existe email principal de decisao para `approved`, `approved_reduced`, `further_review` e `denied`;
+- existe email de transparencia e explicabilidade alinhado ao modulo `lib/explainability`;
+- existem comunicacoes complementares de risco, seguranca e operacao quando o caso pede cautela extra;
+- a trilha de comunicacao e registrada em `audit_logs` com categoria, tipo, assunto, preview, status conceitual e origem do disparo;
+- a pagina de resultado mostra preview do email principal;
+- o detalhe da solicitacao no admin mostra o bundle de comunicacoes e a trilha de auditoria correspondente.
+
+Essa implementacao nao envia emails por provedor externo ainda, mas deixa a base pronta para evoluir depois com fila, envio real e status de entrega.

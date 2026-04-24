@@ -98,16 +98,18 @@ function resolveDecisionMode(
   if (
     input.decision === "denied" &&
     (input.fraudScore?.riskLevel === "high" ||
-      input.fraudScore?.riskLevel === "critical")
+      input.fraudScore?.riskLevel === "critical" ||
+      input.monitoring?.riskLevel === "critical")
   ) {
     return "preventive_block"
   }
 
   if (
-    input.decision === "further_review" ||
+    (input.decision !== "denied" && input.decision === "further_review") ||
     input.fraudScore?.riskLevel === "high" ||
-    input.monitoring?.riskLevel === "high" ||
-    input.monitoring?.riskLevel === "critical"
+    (input.decision !== "denied" &&
+      (input.monitoring?.riskLevel === "high" ||
+        input.monitoring?.riskLevel === "critical"))
   ) {
     return "review_additional"
   }

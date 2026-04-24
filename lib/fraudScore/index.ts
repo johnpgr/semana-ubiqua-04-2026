@@ -3,6 +3,7 @@ import type { CreditDecision, ScoreTransaction } from "../scoreEngine/types"
 export type FraudRiskLevel = "low" | "moderate" | "high" | "critical"
 export type FraudSignalCategory =
   | "device_trust"
+  | "external_partner"
   | "pattern_repetition"
   | "synthetic_income"
 

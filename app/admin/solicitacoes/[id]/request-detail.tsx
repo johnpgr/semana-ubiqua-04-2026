@@ -38,9 +38,12 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { buildAnalysisView } from "@/lib/analysisView"
 import type { ProgressiveCreditState } from "@/lib/creditProgression"
+import { buildEmailCommunicationBundle } from "@/lib/emailCommunication"
 import { buildDecisionExplainability } from "@/lib/explainability"
 import { calculateFraudScore } from "@/lib/fraudScore"
+import { getMockPartnerIndicatorProfile } from "@/lib/partnerIndicators"
 import { evaluatePostCreditMonitoring } from "@/lib/postCreditMonitoring"
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
@@ -240,66 +243,32 @@ export function RequestDetail({
 }: RequestDetailProps) {
   const monthlyFlow = buildMonthlyFlow(transactions)
   const latestConsent = consents[0]
-  const fraudScore =
-    score && transactions.length > 0
-      ? calculateFraudScore({
-          transactions: transactions.map((transaction) => ({
-            occurredAt: transaction.occurred_at,
-            amount: transaction.amount,
-            kind: transaction.kind as "credit" | "debit",
-            category: transaction.category,
-            description: transaction.description,
-            source: transaction.source,
-          })),
-          deviceTrust: {
-            userAgent: latestConsent?.user_agent,
-            ipAddress: normalizeIpAddress(latestConsent?.ip_address),
-          },
-        })
-      : null
-  const monitoring =
-    score && progression
-      ? evaluatePostCreditMonitoring({
-          transactions: transactions.map((transaction) => ({
-            occurredAt: transaction.occurred_at,
-            amount: transaction.amount,
-            kind: transaction.kind as "credit" | "debit",
-            category: transaction.category,
-            description: transaction.description,
-            source: transaction.source,
-          })),
-          creditScoreValue: score.value,
-          creditDecision: (request.decision ?? "further_review") as
-            | "approved"
-            | "approved_reduced"
-            | "further_review"
-            | "denied",
-          suggestedLimit: score.suggested_limit,
-          approvedAmount: request.approved_amount,
-          fraudScoreValue: fraudScore?.value,
-          fraudRiskLevel: fraudScore?.riskLevel,
-          confidenceLevel: progression.level,
-          isFirstConcession: progression.isFirstConcession,
-          requestHistory,
-        })
-      : null
-  const explainability =
-    score && request.decision
-      ? buildDecisionExplainability({
-          decision: request.decision as
-            | "approved"
-            | "approved_reduced"
-            | "further_review"
-            | "denied",
-          scoreValue: score.value,
-          suggestedLimit: score.suggested_limit,
-          reasons: score.reasons,
-          consentScopes: latestConsent?.scopes,
-          progressiveCredit: progression,
-          fraudScore,
-          monitoring,
-        })
-      : null
+  const analysisView = buildAnalysisView({
+    request,
+    consent: latestConsent,
+    score,
+    transactions,
+    requestHistory: requestHistory.map((historyRow) => ({
+      id: historyRow.id,
+      status: "decided",
+      decision: historyRow.decision,
+      approved_amount: historyRow.approvedAmount,
+      created_at: historyRow.createdAt,
+      decided_at: historyRow.decidedAt,
+    })),
+    mockProfile: request.profile?.mock_profile,
+    recipientName: request.profile?.name,
+  })
+  const effectiveProgression = analysisView?.progressiveCredit ?? progression
+  const fraudScore = analysisView?.fraudScore ?? null
+  const partnerIndicators = analysisView?.partnerIndicators ?? null
+  const partnerFraud = analysisView?.partnerFraud ?? null
+  const monitoring = analysisView?.monitoring ?? null
+  const explainability = analysisView?.explainability ?? null
+  const emailCommunication = analysisView?.emailCommunication ?? null
+  const communicationAuditLogs = auditLogs.filter(
+    (log) => log.action === "email_communication_generated",
+  )
 
   const dimensions = score
     ? [
@@ -335,6 +304,7 @@ export function RequestDetail({
             <TabsTrigger value="consentimento">Consentimento</TabsTrigger>
             <TabsTrigger value="transacoes">Transações</TabsTrigger>
             <TabsTrigger value="score">Score</TabsTrigger>
+            <TabsTrigger value="comunicacoes">Comunicacoes</TabsTrigger>
             <TabsTrigger value="auditoria">Auditoria</TabsTrigger>
           </TabsList>
           <ScrollBar orientation="horizontal" />
@@ -378,25 +348,25 @@ export function RequestDetail({
                       : "—"}
                   </Badge>
                 </KeyValueRow>
-                {progression ? (
+                {effectiveProgression ? (
                   <KeyValueRow label="Nivel de confianca">
                     <Badge
                       variant={
-                        progression.level === "premium"
+                        effectiveProgression.level === "premium"
                           ? "default"
-                          : progression.level === "trusted"
+                          : effectiveProgression.level === "trusted"
                             ? "secondary"
                             : "outline"
                       }
                     >
-                      {progression.levelLabel}
+                      {effectiveProgression.levelLabel}
                     </Badge>
                   </KeyValueRow>
                 ) : null}
                 {fraudScore ? (
                   <KeyValueRow label="Risco de fraude">
-                    <Badge variant={getFraudBadgeVariant(fraudScore.riskLevel)}>
-                      {getFraudRiskLabel(fraudScore.riskLevel)}
+                    <Badge variant={getFraudBadgeVariant(partnerFraud?.riskLevel ?? fraudScore.riskLevel)}>
+                      {getFraudRiskLabel(partnerFraud?.riskLevel ?? fraudScore.riskLevel)}
                     </Badge>
                   </KeyValueRow>
                 ) : null}
@@ -419,7 +389,7 @@ export function RequestDetail({
             </Card>
           </div>
 
-          {progression ? (
+          {effectiveProgression ? (
             <Card className="rounded-2xl">
               <CardHeader>
                 <CardTitle>Credito progressivo</CardTitle>
@@ -428,21 +398,21 @@ export function RequestDetail({
                 <div className="flex flex-wrap gap-2">
                   <Badge
                     variant={
-                      progression.level === "premium"
+                      effectiveProgression.level === "premium"
                         ? "default"
-                        : progression.level === "trusted"
+                        : effectiveProgression.level === "trusted"
                           ? "secondary"
                           : "outline"
                     }
                   >
-                    {progression.levelLabel}
+                    {effectiveProgression.levelLabel}
                   </Badge>
-                  {progression.isConservativeInitialOffer ? (
+                  {effectiveProgression.isConservativeInitialOffer ? (
                     <Badge variant="outline">Concessao inicial conservadora</Badge>
                   ) : null}
                 </div>
                 <p className="text-muted-foreground">
-                  {progression.progressionSummary}
+                  {effectiveProgression.progressionSummary}
                 </p>
                 <div className="grid gap-3 md:grid-cols-3">
                   <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
@@ -450,25 +420,25 @@ export function RequestDetail({
                       Aprovadas anteriormente
                     </div>
                     <div className="mt-1 font-medium">
-                      {progression.stats.previousApprovedRequests}
+                      {effectiveProgression.stats.previousApprovedRequests}
                     </div>
                   </div>
                   <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
                     <div className="text-muted-foreground">Teto desta etapa</div>
                     <div className="mt-1 font-medium">
-                      {currencyFormatter.format(progression.appliedCap)}
+                      {currencyFormatter.format(effectiveProgression.appliedCap)}
                     </div>
                   </div>
                   <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
                     <div className="text-muted-foreground">Ciclos pagos em dia</div>
                     <div className="mt-1 font-medium">
-                      {progression.stats.onTimeCycles}
+                      {effectiveProgression.stats.onTimeCycles}
                     </div>
                   </div>
                 </div>
-                {progression.policyNotes.length > 0 ? (
+                {effectiveProgression.policyNotes.length > 0 ? (
                   <ul className="list-disc space-y-1 pl-4 text-sm">
-                    {progression.policyNotes.map((note) => (
+                    {effectiveProgression.policyNotes.map((note) => (
                       <li key={note}>{note}</li>
                     ))}
                   </ul>
@@ -477,44 +447,44 @@ export function RequestDetail({
             </Card>
           ) : null}
 
-          {fraudScore ? (
+          {partnerFraud ? (
             <Card className="rounded-2xl">
               <CardHeader>
                 <CardTitle>Fraud Score</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 text-sm">
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant={getFraudBadgeVariant(fraudScore.riskLevel)}>
-                    {getFraudRiskLabel(fraudScore.riskLevel)}
+                  <Badge variant={getFraudBadgeVariant(partnerFraud.riskLevel)}>
+                    {getFraudRiskLabel(partnerFraud.riskLevel)}
                   </Badge>
-                  <Badge variant="outline">Score {fraudScore.value}</Badge>
+                  <Badge variant="outline">Score {partnerFraud.value}</Badge>
                 </div>
                 <p className="text-muted-foreground">
-                  {fraudScore.operationalRecommendation}
+                  {partnerFraud.operationalRecommendation}
                 </p>
                 <div className="grid gap-3 md:grid-cols-3">
                   <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
                     <div className="text-muted-foreground">Transferencias espelhadas</div>
                     <div className="mt-1 font-medium">
-                      {fraudScore.metrics.mirroredTransferCount}
+                      {partnerFraud.metrics.mirroredTransferCount}
                     </div>
                   </div>
                   <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
                     <div className="text-muted-foreground">Saida rapida</div>
                     <div className="mt-1 font-medium">
-                      {Math.round(fraudScore.metrics.fastOutflowRatio * 100)}%
+                      {Math.round(partnerFraud.metrics.fastOutflowRatio * 100)}%
                     </div>
                   </div>
                   <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
                     <div className="text-muted-foreground">Repeticao de valores</div>
                     <div className="mt-1 font-medium">
-                      {Math.round(fraudScore.metrics.repeatedAmountRatio * 100)}%
+                      {Math.round(partnerFraud.metrics.repeatedAmountRatio * 100)}%
                     </div>
                   </div>
                 </div>
-                {fraudScore.signals.length > 0 ? (
+                {partnerFraud.signals.length > 0 ? (
                   <ul className="list-disc space-y-1 pl-4 text-sm">
-                    {fraudScore.signals.slice(0, 4).map((signal) => (
+                    {partnerFraud.signals.slice(0, 4).map((signal) => (
                       <li key={signal.key}>
                         <span className="font-medium">{signal.label}:</span>{" "}
                         {signal.detail}
@@ -529,7 +499,7 @@ export function RequestDetail({
           {monitoring ? (
             <Card className="rounded-2xl">
               <CardHeader>
-                <CardTitle>Monitoramento pos-credito</CardTitle>
+                <CardTitle>Acompanhamento inicial de risco</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 text-sm">
                 <div className="flex flex-wrap gap-2">
@@ -541,7 +511,8 @@ export function RequestDetail({
                   </Badge>
                 </div>
                 <p className="text-muted-foreground">
-                  {monitoring.monitoringSummary}
+                  Leitura projetada no momento da concessao. Ciclos reais de
+                  pagamento ainda serao incorporados em evolucoes futuras.
                 </p>
                 <div className="grid gap-3 md:grid-cols-2">
                   <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
@@ -567,6 +538,50 @@ export function RequestDetail({
                     ))}
                   </ul>
                 ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {partnerIndicators ? (
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <CardTitle>Indicadores de parceiro</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm">
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary">{partnerIndicators.partnerName}</Badge>
+                  <Badge variant={getPartnerSignalBadgeVariant(partnerIndicators.impact.confidenceSignal)}>
+                    {getPartnerSignalLabel(partnerIndicators.impact.confidenceSignal)}
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground">{partnerIndicators.summary}</p>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                    <div className="text-muted-foreground">Credito</div>
+                    <div className="mt-1 font-medium">
+                      {formatSignedNumber(partnerIndicators.impact.creditScoreDelta)} pontos
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                    <div className="text-muted-foreground">Fraude</div>
+                    <div className="mt-1 font-medium">
+                      {formatSignedNumber(partnerIndicators.impact.fraudScoreDelta)} pontos
+                    </div>
+                  </div>
+                </div>
+                <ul className="list-disc space-y-1 pl-4 text-sm">
+                  {partnerIndicators.indicators.map((indicator) => (
+                    <li key={`${indicator.partnerId}-${indicator.indicatorType}`}>
+                      <span className="font-medium">
+                        {getPartnerIndicatorLabel(indicator.indicatorType)}:
+                      </span>{" "}
+                      {indicator.indicatorValue}/100 com confianca {Math.round(indicator.confidenceLevel * 100)}%.
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-muted-foreground">
+                  {partnerIndicators.impact.summary}
+                </p>
               </CardContent>
             </Card>
           ) : null}
@@ -635,6 +650,38 @@ export function RequestDetail({
                     </p>
                   </div>
                 ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {emailCommunication ? (
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <CardTitle>Comunicacao oficial</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm">
+                <div className="flex flex-wrap gap-2">
+                  <Badge
+                    variant={getEmailCategoryBadgeVariant(emailCommunication.primary.category)}
+                  >
+                    {getEmailCategoryLabel(emailCommunication.primary.category)}
+                  </Badge>
+                  <Badge variant="outline">
+                    {getEmailStatusLabel(emailCommunication.primary.status)}
+                  </Badge>
+                </div>
+                <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                  <div className="text-muted-foreground">Assunto principal</div>
+                  <div className="mt-1 font-medium">
+                    {emailCommunication.primary.subject}
+                  </div>
+                </div>
+                <p className="text-muted-foreground">
+                  {emailCommunication.primary.preview}
+                </p>
+                <KeyValueRow label="Comunicacoes geradas">
+                  {emailCommunication.communications.length}
+                </KeyValueRow>
               </CardContent>
             </Card>
           ) : null}
@@ -847,15 +894,15 @@ export function RequestDetail({
                   {fraudScore ? (
                     <KeyValueRow label="Fraud Score">
                       <div className="flex flex-wrap items-center justify-end gap-2">
-                        <Badge variant={getFraudBadgeVariant(fraudScore.riskLevel)}>
-                          {getFraudRiskLabel(fraudScore.riskLevel)}
+                        <Badge variant={getFraudBadgeVariant(partnerFraud?.riskLevel ?? fraudScore.riskLevel)}>
+                          {getFraudRiskLabel(partnerFraud?.riskLevel ?? fraudScore.riskLevel)}
                         </Badge>
-                        <span className="font-medium">{fraudScore.value}</span>
+                        <span className="font-medium">{partnerFraud?.value ?? fraudScore.value}</span>
                       </div>
                     </KeyValueRow>
                   ) : null}
                   {monitoring ? (
-                    <KeyValueRow label="Pos-credito">
+                    <KeyValueRow label="Acompanhamento inicial">
                       <div className="flex flex-wrap items-center justify-end gap-2">
                         <Badge variant={getMonitoringBadgeVariant(monitoring.riskLevel)}>
                           {getMonitoringRiskLabel(monitoring.riskLevel)}
@@ -929,6 +976,136 @@ export function RequestDetail({
                   </CardContent>
                 </Card>
               ) : null}
+            </>
+          )}
+        </TabsContent>
+
+        <TabsContent value="comunicacoes" className="space-y-4 pt-4">
+          {!emailCommunication ? (
+            <SectionEmpty
+              title="Nenhuma comunicacao disponivel"
+              description="A comunicacao oficial por email ainda nao foi composta para esta solicitacao."
+            />
+          ) : (
+            <>
+              <Card className="rounded-2xl">
+                <CardHeader>
+                  <CardTitle>Email principal</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm">
+                  <div className="flex flex-wrap gap-2">
+                    <Badge
+                      variant={getEmailCategoryBadgeVariant(emailCommunication.primary.category)}
+                    >
+                      {getEmailCategoryLabel(emailCommunication.primary.category)}
+                    </Badge>
+                    <Badge variant="outline">
+                      {getEmailStatusLabel(emailCommunication.primary.status)}
+                    </Badge>
+                  </div>
+                  <KeyValueRow label="Tipo">
+                    {emailCommunication.primary.type}
+                  </KeyValueRow>
+                  <KeyValueRow label="Assunto">
+                    <span className="block break-words">
+                      {emailCommunication.primary.subject}
+                    </span>
+                  </KeyValueRow>
+                  <KeyValueRow label="Resumo">
+                    <span className="block break-words">
+                      {emailCommunication.primary.preview}
+                    </span>
+                  </KeyValueRow>
+                  <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                    <div className="font-medium">Corpo resumido</div>
+                    <p className="mt-2">{emailCommunication.primary.content.intro}</p>
+                    <ul className="mt-3 list-disc space-y-1 pl-4">
+                      {emailCommunication.primary.content.highlights.map((highlight) => (
+                        <li key={highlight}>{highlight}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-2xl">
+                <CardHeader>
+                  <CardTitle>Bundle de comunicacoes</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  {emailCommunication.communications.map((communication) => (
+                    <div
+                      key={communication.id}
+                      className="rounded-xl border border-border/70 bg-muted/30 p-3"
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge
+                          variant={getEmailCategoryBadgeVariant(communication.category)}
+                        >
+                          {getEmailCategoryLabel(communication.category)}
+                        </Badge>
+                        <Badge variant="outline">
+                          {getEmailStatusLabel(communication.status)}
+                        </Badge>
+                      </div>
+                      <div className="mt-3 font-medium">{communication.subject}</div>
+                      <p className="mt-1 text-muted-foreground">
+                        {communication.preview}
+                      </p>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-2xl">
+                <CardHeader>
+                  <CardTitle>Trilha de auditoria da comunicacao</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  {communicationAuditLogs.length === 0 ? (
+                    <SectionEmpty
+                      title="Sem eventos de comunicacao"
+                      description="A auditoria ainda nao registrou geracao formal de comunicacoes para esta solicitacao."
+                    />
+                  ) : (
+                    communicationAuditLogs.map((log) => {
+                      const metadata = parseEmailAuditMetadata(log.metadata)
+
+                      return (
+                        <div
+                          key={`${log.created_at}-${log.action}-${log.actor}`}
+                          className="rounded-xl border border-border/70 bg-muted/30 p-3"
+                        >
+                          <div className="flex flex-wrap items-center gap-2">
+                            <div className="font-medium">{log.action}</div>
+                            {metadata?.category ? (
+                              <Badge variant={getEmailCategoryBadgeVariant(metadata.category)}>
+                                {getEmailCategoryLabel(metadata.category)}
+                              </Badge>
+                            ) : null}
+                            {metadata?.status ? (
+                              <Badge variant="outline">
+                                {getEmailStatusLabel(metadata.status)}
+                              </Badge>
+                            ) : null}
+                          </div>
+                          <p className="mt-1 text-muted-foreground">
+                            {dateTimeFormatter.format(new Date(log.created_at))}
+                          </p>
+                          {metadata?.subject ? (
+                            <p className="mt-2 text-sm">{metadata.subject}</p>
+                          ) : null}
+                          {metadata?.preview ? (
+                            <p className="mt-1 text-sm text-muted-foreground">
+                              {metadata.preview}
+                            </p>
+                          ) : null}
+                        </div>
+                      )
+                    })
+                  )}
+                </CardContent>
+              </Card>
             </>
           )}
         </TabsContent>
@@ -1064,6 +1241,128 @@ function getDecisionModeBadgeVariant(
   }
 }
 
+function getPartnerSignalBadgeVariant(
+  signal: NonNullable<ReturnType<typeof getMockPartnerIndicatorProfile>>["impact"]["confidenceSignal"],
+) {
+  switch (signal) {
+    case "caution":
+      return "outline"
+    case "neutral":
+      return "secondary"
+    case "reinforce":
+    default:
+      return "default"
+  }
+}
+
+function getPartnerSignalLabel(
+  signal: NonNullable<ReturnType<typeof getMockPartnerIndicatorProfile>>["impact"]["confidenceSignal"],
+) {
+  switch (signal) {
+    case "caution":
+      return "Reforca cautela"
+    case "neutral":
+      return "Complemento moderado"
+    case "reinforce":
+    default:
+      return "Reforca confianca"
+  }
+}
+
+function getPartnerIndicatorLabel(
+  indicatorType: NonNullable<ReturnType<typeof getMockPartnerIndicatorProfile>>["indicators"][number]["indicatorType"],
+) {
+  switch (indicatorType) {
+    case "performance_score":
+      return "Score de desempenho"
+    case "activity_regularity":
+      return "Regularidade de atividade"
+    case "activity_level":
+      return "Nivel de atividade"
+    case "external_trust":
+      return "Confianca externa"
+    case "operational_consistency":
+    default:
+      return "Consistencia operacional"
+  }
+}
+
+function formatSignedNumber(value: number) {
+  return value > 0 ? `+${value}` : `${value}`
+}
+
+function getEmailCategoryBadgeVariant(
+  category: ReturnType<typeof buildEmailCommunicationBundle>["primary"]["category"],
+) {
+  switch (category) {
+    case "security":
+      return "destructive"
+    case "risk":
+      return "outline"
+    case "operation":
+      return "secondary"
+    case "transparency":
+      return "outline"
+    case "decision":
+    default:
+      return "secondary"
+  }
+}
+
+function getEmailCategoryLabel(
+  category: ReturnType<typeof buildEmailCommunicationBundle>["primary"]["category"],
+) {
+  switch (category) {
+    case "decision":
+      return "Decisao"
+    case "transparency":
+      return "Transparencia"
+    case "risk":
+      return "Risco"
+    case "security":
+      return "Seguranca"
+    case "operation":
+    default:
+      return "Operacao"
+  }
+}
+
+function getEmailStatusLabel(
+  status: ReturnType<typeof buildEmailCommunicationBundle>["primary"]["status"],
+) {
+  switch (status) {
+    case "sent_mock":
+      return "Envio mockado"
+    case "queued":
+      return "Na fila"
+    case "previewed":
+      return "Preview"
+    case "generated":
+    default:
+      return "Gerado"
+  }
+}
+
+function parseEmailAuditMetadata(metadata: unknown) {
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) {
+    return null
+  }
+
+  const value = metadata as {
+    category?: ReturnType<typeof buildEmailCommunicationBundle>["primary"]["category"]
+    status?: ReturnType<typeof buildEmailCommunicationBundle>["primary"]["status"]
+    subject?: string
+    preview?: string
+  }
+
+  return {
+    category: value.category,
+    status: value.status,
+    subject: value.subject,
+    preview: value.preview,
+  }
+}
+
 function getEligibilityLabel(
   status: ReturnType<typeof evaluatePostCreditMonitoring>["eligibility"]["status"],
 ) {
@@ -1097,21 +1396,5 @@ function getLimitActionLabel(
     case "maintain":
     default:
       return "Manter limite"
-  }
-}
-
-function normalizeIpAddress(value: unknown) {
-  if (typeof value === "string") {
-    return value
-  }
-
-  if (value == null) {
-    return null
-  }
-
-  try {
-    return JSON.stringify(value)
-  } catch {
-    return null
   }
 }

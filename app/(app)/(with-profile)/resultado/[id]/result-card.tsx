@@ -11,9 +11,17 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Spinner } from "@/components/ui/spinner"
-import { evaluateProgressiveCreditState } from "@/lib/creditProgression"
+import {
+  getMonitoringPresentationCopy,
+  getUserSafeFraudSummary,
+  getUserSafePartnerSummary,
+  getUserVisibleCommunications,
+} from "@/lib/analysisPresentation"
+import { buildAnalysisView } from "@/lib/analysisView"
+import { buildEmailCommunicationBundle } from "@/lib/emailCommunication"
 import { buildDecisionExplainability } from "@/lib/explainability"
 import { calculateFraudScore } from "@/lib/fraudScore"
+import { getMockPartnerIndicatorProfile } from "@/lib/partnerIndicators"
 import { evaluatePostCreditMonitoring } from "@/lib/postCreditMonitoring"
 import { createClient } from "@/lib/supabase/client"
 import type { Database } from "@/lib/supabase/database.types"
@@ -58,6 +66,7 @@ type ResultCardProps = {
   initialScore: ScoreRow | null
   initialTransactions: TransactionRow[]
   requestHistory: RequestHistoryRow[]
+  initialMockProfile: string | null
 }
 
 export function ResultCard({
@@ -66,6 +75,7 @@ export function ResultCard({
   initialScore,
   initialTransactions,
   requestHistory,
+  initialMockProfile,
 }: ResultCardProps) {
   const [request, setRequest] = useState(initialRequest)
   const [score, setScore] = useState(initialScore)
@@ -143,100 +153,26 @@ export function ResultCard({
   }, [initialRequest.id, isComplete, supabase])
 
   const processedScore = score && request.decision ? score : null
-  const progressiveCredit =
-    processedScore && request.decision
-      ? evaluateProgressiveCreditState({
-          requestedAmount: request.requested_amount,
-          score: processedScore.value,
-          baseDecision: request.decision,
-          baseSuggestedLimit: processedScore.suggested_limit,
-          requestHistory: requestHistory.map((historyRow) => ({
-            id: historyRow.id,
-            status: historyRow.status,
-            decision:
-              historyRow.decision as
-                | "approved"
-                | "approved_reduced"
-                | "further_review"
-                | "denied"
-                | null,
-            approvedAmount: historyRow.approved_amount,
-            createdAt: historyRow.created_at,
-            decidedAt: historyRow.decided_at,
-          })),
-        })
-      : null
-  const fraudScore =
-    processedScore && transactions.length > 0
-      ? calculateFraudScore({
-          transactions: transactions.map((transaction) => ({
-            occurredAt: transaction.occurred_at,
-            amount: transaction.amount,
-            kind: transaction.kind,
-            category: transaction.category,
-            description: transaction.description,
-          })),
-          deviceTrust: {
-            userAgent: initialConsent?.user_agent,
-            ipAddress: normalizeIpAddress(initialConsent?.ip_address),
-          },
-        })
-      : null
-  const monitoring =
-    processedScore && progressiveCredit
-      ? evaluatePostCreditMonitoring({
-          transactions: transactions.map((transaction) => ({
-            occurredAt: transaction.occurred_at,
-            amount: transaction.amount,
-            kind: transaction.kind,
-            category: transaction.category,
-            description: transaction.description,
-          })),
-          creditScoreValue: processedScore.value,
-          creditDecision: request.decision as
-            | "approved"
-            | "approved_reduced"
-            | "further_review"
-            | "denied",
-          suggestedLimit: processedScore.suggested_limit,
-          approvedAmount: request.approved_amount,
-          fraudScoreValue: fraudScore?.value,
-          fraudRiskLevel: fraudScore?.riskLevel,
-          confidenceLevel: progressiveCredit.level,
-          isFirstConcession: progressiveCredit.isFirstConcession,
-          requestHistory: requestHistory.map((historyRow) => ({
-            id: historyRow.id,
-            status: historyRow.status,
-            decision:
-              historyRow.decision as
-                | "approved"
-                | "approved_reduced"
-                | "further_review"
-                | "denied"
-                | null,
-            approvedAmount: historyRow.approved_amount,
-            createdAt: historyRow.created_at,
-            decidedAt: historyRow.decided_at,
-          })),
-        })
-      : null
-  const explainability =
-    processedScore && request.decision
-      ? buildDecisionExplainability({
-          decision: request.decision as
-            | "approved"
-            | "approved_reduced"
-            | "further_review"
-            | "denied",
-          scoreValue: processedScore.value,
-          suggestedLimit: processedScore.suggested_limit,
-          reasons: processedScore.reasons,
-          consentScopes: initialConsent?.scopes,
-          progressiveCredit,
-          fraudScore,
-          monitoring,
-        })
-      : null
+  const analysisView = buildAnalysisView({
+    request,
+    consent: initialConsent,
+    score: processedScore,
+    transactions,
+    requestHistory,
+    mockProfile: initialMockProfile,
+  })
+  const progressiveCredit = analysisView?.progressiveCredit ?? null
+  const fraudScore = analysisView?.fraudScore ?? null
+  const partnerFraud = analysisView?.partnerFraud ?? null
+  const monitoring = analysisView?.monitoring ?? null
+  const partnerIndicators = analysisView?.partnerIndicators ?? null
+  const explainability = analysisView?.explainability ?? null
+  const emailCommunication = analysisView?.emailCommunication ?? null
+  const userEmailCommunication = getUserVisibleCommunications(emailCommunication)
+  const safeFraudSummary = partnerFraud
+    ? getUserSafeFraudSummary(partnerFraud)
+    : null
+  const monitoringCopy = monitoring ? getMonitoringPresentationCopy(monitoring) : null
 
   const progressiveBadgeVariant =
     progressiveCredit?.level === "premium"
@@ -266,7 +202,7 @@ export function ResultCard({
         <CardContent className="space-y-6">
           {processedScore ? (
             <div className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-5">
+              <div className="grid gap-4 sm:grid-cols-3">
                 <div className="rounded-xl border border-border/70 bg-muted/40 p-4">
                   <div className="text-sm text-muted-foreground">Score</div>
                   <div className="mt-1 text-2xl font-semibold">
@@ -285,30 +221,6 @@ export function ResultCard({
                   </div>
                   <div className="mt-1 text-base font-semibold">
                     {currencyFormatter.format(processedScore.suggested_limit)}
-                  </div>
-                </div>
-                <div className="rounded-xl border border-border/70 bg-muted/40 p-4">
-                  <div className="text-sm text-muted-foreground">Risco de fraude</div>
-                  <div className="mt-2">
-                    {fraudScore ? (
-                      <Badge variant={getFraudBadgeVariant(fraudScore.riskLevel)}>
-                        {getFraudRiskLabel(fraudScore.riskLevel)}
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline">Aguardando</Badge>
-                    )}
-                  </div>
-                </div>
-                <div className="rounded-xl border border-border/70 bg-muted/40 p-4">
-                  <div className="text-sm text-muted-foreground">Monitoramento</div>
-                  <div className="mt-2">
-                    {monitoring ? (
-                      <Badge variant={getMonitoringBadgeVariant(monitoring.riskLevel)}>
-                        {getMonitoringRiskLabel(monitoring.riskLevel)}
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline">Aguardando</Badge>
-                    )}
                   </div>
                 </div>
               </div>
@@ -368,28 +280,29 @@ export function ResultCard({
                 </div>
               ) : null}
 
-              {fraudScore ? (
+              {partnerFraud ? (
                 <div className="space-y-3 rounded-2xl border border-border/70 bg-muted/25 p-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={getFraudBadgeVariant(fraudScore.riskLevel)}>
-                      {getFraudRiskLabel(fraudScore.riskLevel)}
+                    <Badge variant={getFraudBadgeVariant(partnerFraud.riskLevel)}>
+                      {getFraudRiskLabel(partnerFraud.riskLevel)}
                     </Badge>
-                    <Badge variant="outline">Fraud Score {fraudScore.value}</Badge>
+                    <Badge variant="outline">Resumo de seguranca</Badge>
                   </div>
                   <div className="space-y-1">
-                    <h2 className="text-sm font-semibold">Antifraude comportamental</h2>
+                    <h2 className="text-sm font-semibold">
+                      {safeFraudSummary?.title}
+                    </h2>
                     <p className="text-sm text-muted-foreground">
-                      {fraudScore.operationalRecommendation}
+                      {safeFraudSummary?.summary}
                     </p>
                   </div>
                   <ul className="space-y-2 text-sm leading-6">
-                    {fraudScore.signals.slice(0, 3).map((signal) => (
+                    {safeFraudSummary?.notes.map((note) => (
                       <li
-                        key={signal.key}
+                        key={note}
                         className="rounded-lg border border-border/70 bg-background/60 px-3 py-2"
                       >
-                        <span className="font-medium">{signal.label}:</span>{" "}
-                        {signal.detail}
+                        {note}
                       </li>
                     ))}
                   </ul>
@@ -407,27 +320,18 @@ export function ResultCard({
                     </Badge>
                   </div>
                   <div className="space-y-1">
-                    <h2 className="text-sm font-semibold">Monitoramento pos-credito</h2>
+                    <h2 className="text-sm font-semibold">
+                      {monitoringCopy?.title}
+                    </h2>
                     <p className="text-sm text-muted-foreground">
-                      {monitoring.monitoringSummary}
+                      {monitoringCopy?.summary}
                     </p>
                   </div>
-                  <ul className="space-y-2 text-sm leading-6">
-                    {monitoring.alerts.slice(0, 3).map((alert) => (
-                      <li
-                        key={alert.key}
-                        className="rounded-lg border border-border/70 bg-background/60 px-3 py-2"
-                      >
-                        <span className="font-medium">{alert.title}:</span>{" "}
-                        {alert.detail}
-                      </li>
-                    ))}
-                  </ul>
                   <div className="grid gap-3 text-sm sm:grid-cols-2">
                     <div className="rounded-xl border border-border/70 bg-background/60 p-3">
-                      <div className="text-muted-foreground">Elegibilidade</div>
+                      <div className="text-muted-foreground">Leitura inicial</div>
                       <div className="mt-1 font-semibold">
-                        {getEligibilityLabel(monitoring.eligibility.status)}
+                        {monitoringCopy?.status}
                       </div>
                     </div>
                     <div className="rounded-xl border border-border/70 bg-background/60 p-3">
@@ -437,6 +341,28 @@ export function ResultCard({
                       </div>
                     </div>
                   </div>
+                </div>
+              ) : null}
+
+              {partnerIndicators ? (
+                <div className="space-y-4 rounded-2xl border border-border/70 bg-muted/25 p-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="secondary">{partnerIndicators.partnerName}</Badge>
+                    <Badge variant={getPartnerSignalBadgeVariant(partnerIndicators.impact.confidenceSignal)}>
+                      {getPartnerSignalLabel(partnerIndicators.impact.confidenceSignal)}
+                    </Badge>
+                  </div>
+                  <div className="space-y-1">
+                    <h2 className="text-sm font-semibold">
+                      Indicadores externos de parceiro
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {partnerIndicators.summary}
+                    </p>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {getUserSafePartnerSummary(partnerIndicators.impact.confidenceSignal)}
+                  </p>
                 </div>
               ) : null}
 
@@ -518,6 +444,74 @@ export function ResultCard({
                   ) : null}
                 </div>
               ) : null}
+
+              {userEmailCommunication.primary ? (
+                <div className="space-y-4 rounded-2xl border border-border/70 bg-muted/25 p-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant={getEmailCategoryBadgeVariant(userEmailCommunication.primary.category)}>
+                      {getEmailCategoryLabel(userEmailCommunication.primary.category)}
+                    </Badge>
+                    <Badge variant="outline">{getEmailStatusLabel(userEmailCommunication.primary.status)}</Badge>
+                  </div>
+                  <div className="space-y-1">
+                    <h2 className="text-sm font-semibold">
+                      Comunicacao oficial por email
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      Preview do email principal que o OpenCred geraria neste momento.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border/70 bg-background/60 p-4">
+                    <div className="text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+                      Assunto
+                    </div>
+                    <div className="mt-1 text-sm font-medium">
+                      {userEmailCommunication.primary.subject}
+                    </div>
+                    <p className="mt-3 text-sm text-muted-foreground">
+                      {userEmailCommunication.primary.preview}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border/70 bg-background/60 p-4">
+                    <div className="text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+                      Corpo resumido
+                    </div>
+                    <p className="mt-2 text-sm">
+                      {userEmailCommunication.primary.content.intro}
+                    </p>
+                    <ul className="mt-3 space-y-2 text-sm leading-6">
+                      {userEmailCommunication.primary.content.highlights.map((highlight) => (
+                        <li
+                          key={highlight}
+                          className="rounded-lg border border-border/70 bg-muted/30 px-3 py-2"
+                        >
+                          {highlight}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  {userEmailCommunication.communications.length > 1 ? (
+                    <div className="space-y-2">
+                      <h3 className="text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+                        Outras comunicacoes geradas
+                      </h3>
+                      <ul className="space-y-2 text-sm">
+                        {userEmailCommunication.communications.slice(1).map((communication) => (
+                          <li
+                            key={communication.id}
+                            className="rounded-lg border border-border/70 bg-background/60 px-3 py-2"
+                          >
+                            <span className="font-medium">{communication.subject}</span>
+                            <span className="block text-muted-foreground">
+                              {communication.preview}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           ) : (
             <div className="space-y-3">
@@ -562,7 +556,7 @@ export function ResultCard({
             ) : null}
             {fraudScore ? (
               <p>
-                Fraude: <strong>{getFraudRiskLabel(fraudScore.riskLevel)}</strong>
+                Fraude: <strong>{getFraudRiskLabel(partnerFraud?.riskLevel ?? fraudScore.riskLevel)}</strong>
               </p>
             ) : null}
             {monitoring ? (
@@ -660,21 +654,83 @@ function getDecisionModeBadgeVariant(
   }
 }
 
-function getEligibilityLabel(
-  status: ReturnType<typeof evaluatePostCreditMonitoring>["eligibility"]["status"],
+function getPartnerSignalBadgeVariant(
+  signal: NonNullable<ReturnType<typeof getMockPartnerIndicatorProfile>>["impact"]["confidenceSignal"],
+) {
+  switch (signal) {
+    case "caution":
+      return "outline"
+    case "neutral":
+      return "secondary"
+    case "reinforce":
+    default:
+      return "default"
+  }
+}
+
+function getPartnerSignalLabel(
+  signal: NonNullable<ReturnType<typeof getMockPartnerIndicatorProfile>>["impact"]["confidenceSignal"],
+) {
+  switch (signal) {
+    case "caution":
+      return "Reforca cautela"
+    case "neutral":
+      return "Complemento moderado"
+    case "reinforce":
+    default:
+      return "Reforca confianca"
+  }
+}
+
+function getEmailCategoryBadgeVariant(
+  category: ReturnType<typeof buildEmailCommunicationBundle>["primary"]["category"],
+) {
+  switch (category) {
+    case "security":
+      return "destructive"
+    case "risk":
+      return "outline"
+    case "operation":
+      return "secondary"
+    case "transparency":
+      return "outline"
+    case "decision":
+    default:
+      return "secondary"
+  }
+}
+
+function getEmailCategoryLabel(
+  category: ReturnType<typeof buildEmailCommunicationBundle>["primary"]["category"],
+) {
+  switch (category) {
+    case "decision":
+      return "Decisao"
+    case "transparency":
+      return "Transparencia"
+    case "risk":
+      return "Risco"
+    case "security":
+      return "Seguranca"
+    case "operation":
+    default:
+      return "Operacao"
+  }
+}
+
+function getEmailStatusLabel(
+  status: ReturnType<typeof buildEmailCommunicationBundle>["primary"]["status"],
 ) {
   switch (status) {
-    case "blocked":
-      return "Bloqueada"
-    case "review_required":
-      return "Revisao obrigatoria"
-    case "frozen":
-      return "Congelada"
-    case "watch":
-      return "Em observacao"
-    case "eligible":
+    case "sent_mock":
+      return "Envio mockado"
+    case "queued":
+      return "Na fila"
+    case "previewed":
+      return "Preview"
+    case "generated":
     default:
-      return "Elegivel"
+      return "Gerado"
   }
 }
 
@@ -693,21 +749,5 @@ function getLimitActionLabel(
     case "maintain":
     default:
       return "Manter limite"
-  }
-}
-
-function normalizeIpAddress(value: unknown) {
-  if (typeof value === "string") {
-    return value
-  }
-
-  if (value == null) {
-    return null
-  }
-
-  try {
-    return JSON.stringify(value)
-  } catch {
-    return null
   }
 }

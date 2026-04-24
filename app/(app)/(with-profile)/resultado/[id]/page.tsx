@@ -92,6 +92,7 @@ export default async function ResultadoPage({ params }: ResultadoPageProps) {
       initialScore={score}
       initialTransactions={(transactions ?? []) as ResultTransactionRow[]}
       requestHistory={(requestHistory ?? []) as RequestHistoryRow[]}
+      initialMockProfile={profile.mock_profile}
     />
   )
 }

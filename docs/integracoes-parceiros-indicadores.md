@@ -242,3 +242,20 @@ Como diretriz futura, a estrategia de integracoes com parceiros do OpenCred deve
 5. enriquecer Credit Score e Fraud Score sem substituir totalmente a logica interna.
 
 Assim, o OpenCred se prepara para integrar parceiros de forma pragmatica, escalavel e alinhada a compliance, mesmo em contextos onde dado bruto completo nao esta disponivel.
+
+## Implementacao MVP atual
+
+O projeto agora possui uma camada real de indicadores agregados em `lib/partnerIndicators`.
+
+No MVP atual:
+
+- existe um contrato tipado para indicadores externos com `partnerId`, `indicatorType`, `indicatorValue`, `timeWindow`, `confidenceLevel`, `measuredAt`, `usageContext` e `metadata`;
+- o sistema usa parceiros mockados por perfil, como `UrbanMove`, `RotaFlex`, `FreelaHub`, `QuickDrop` e `CorridaJa`;
+- os indicadores externos enriquecem a analise de forma controlada, sem substituir os motores internos;
+- ha impacto real em credito e fraude:
+  - reforco de score e limite quando a confianca externa e boa;
+  - aumento de cautela quando o parceiro indica baixa regularidade ou baixa consistencia;
+- a trilha fica registrada em `audit_logs` com o evento `partner_indicators_enriched`;
+- a pagina de resultado e o detalhe da solicitacao no admin exibem parceiro, indicadores recebidos e resumo do impacto aplicado.
+
+Essa implementacao nao usa integracao externa real ainda, mas deixa a base pronta para evoluir para multiplos parceiros, APIs reais e governanca mais forte de consentimento e compliance.
