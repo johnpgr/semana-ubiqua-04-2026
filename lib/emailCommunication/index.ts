@@ -65,7 +65,10 @@ export type EmailCommunication = {
 export type EmailCommunicationBundle = {
   primary: EmailCommunication
   communications: EmailCommunication[]
+  engineVersion: string
 }
+
+export const EMAIL_COMMUNICATION_ENGINE_VERSION = "1.0.0"
 
 export type EmailCommunicationInput = {
   requestId: string
@@ -216,6 +219,7 @@ export function buildEmailCommunicationBundle(
   return {
     primary: communications[0],
     communications,
+    engineVersion: EMAIL_COMMUNICATION_ENGINE_VERSION,
   }
 }
 

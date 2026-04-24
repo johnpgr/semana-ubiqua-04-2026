@@ -27,9 +27,10 @@ Preencha:
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
+EMAIL_OPERATIONS_INBOX=
 ```
 
-Use a URL e a anon key do projeto Supabase correto. A service role key deve ficar apenas em ambiente servidor/local e nunca deve ser exposta no cliente.
+Use a URL e a anon key do projeto Supabase correto. A service role key deve ficar apenas em ambiente servidor/local e nunca deve ser exposta no cliente. `EMAIL_OPERATIONS_INBOX` e opcional e define o destinatario das comunicacoes internas (audiencias `operations`, `admin`, `risk`, `security`); quando nao configurado, esses e-mails aparecem como `skipped` em `audit_logs`.
 
 ### Vincular o projeto remoto
 
@@ -59,6 +60,34 @@ Depois que o schema estiver aplicado no projeto vinculado:
 
 ```bash
 npm run db:types
+```
+
+### Envio de e-mails
+
+A comunicacao oficial (decisao, transparencia, risco, seguranca, operacao) e enviada por uma Edge Function Supabase em `supabase/functions/send-email`. As credenciais SMTP ficam em Supabase secrets, nao em `.env.local`.
+
+Deploy da funcao:
+
+```bash
+npx supabase functions deploy send-email
+```
+
+Configurar SMTP (qualquer provedor: Gmail com senha de app, SendGrid, Amazon SES, Resend como SMTP etc.). Use porta 465 (TLS implícito) — o Supabase bloqueia saída na porta 587 (STARTTLS):
+
+```bash
+npx supabase secrets set \
+  SMTP_HOST=smtp.example.com \
+  SMTP_PORT=465 \
+  SMTP_USERNAME=usuario \
+  SMTP_PASSWORD=senha \
+  SMTP_FROM_EMAIL=noreply@example.com \
+  SMTP_FROM_NAME="OpenCred"
+```
+
+Se as secrets SMTP nao estiverem configuradas, a funcao roda em modo dry-run (registra `email_delivery_dry_run` em `audit_logs` e nao tenta SMTP). Isso mantem o fluxo de analise funcionando em checkouts frescos. Para iterar localmente:
+
+```bash
+npx supabase functions serve send-email
 ```
 
 ## shadcn/ui

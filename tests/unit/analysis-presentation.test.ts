@@ -75,6 +75,7 @@ const communicationBundle: EmailCommunicationBundle = {
       },
     },
   ],
+  engineVersion: "1.0.0",
 }
 
 const highFraudScore: FraudScoreResult = {
@@ -105,6 +106,7 @@ const highFraudScore: FraudScoreResult = {
     hasUserAgent: true,
     hasIpAddress: true,
   },
+  engineVersion: "1.0.0",
 }
 
 export const analysisPresentationTests: NamedTest[] = [

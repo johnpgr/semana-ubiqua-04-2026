@@ -385,3 +385,25 @@ No estado atual do sistema:
 - o risco de fraude e exibido na pagina de resultado e no detalhe do admin.
 
 Esta implementacao ainda e um MVP de hackathon, mas ja deixa a base preparada para evolucao com sinais reais de dispositivo, correlacao entre usuarios, indicadores externos e monitoramento posterior.
+
+## Device Trust e correlacao entre usuarios
+
+**Estado hoje**
+
+O sinal de Device Trust consome apenas `consents.user_agent` e `consents.ip_address`. Isso ja basta para penalizar casos sem contexto de dispositivo e casos com IP ausente, mas nao detecta reuso de dispositivo entre contas nem padroes coordenados.
+
+**Sinais planejados:**
+
+- **fingerprint estavel:** hash deterministico de `(user_agent normalizado, familia de IP)`, armazenado por solicitacao para permitir lookup historico sem expor o valor bruto;
+- **reuso do mesmo dispositivo por contas diferentes:** contagem de usuarios distintos que ja aparecem com o mesmo hash acima de um limiar;
+- **reuso de faixa de IP:** heuristica mais fraca, usada como evidencia secundaria junto com fingerprint;
+- **razao dispositivos por usuario:** muitos dispositivos em curto periodo para o mesmo usuario tambem pode ser sinal de take-over;
+- **reuso cruzado com resultado ruim:** fingerprint que ja aparece em casos `denied` ou `further_review` recebe penalidade adicional em novas tentativas.
+
+**Guardrails de consentimento:**
+
+Sinais mais ricos de dispositivo sao dados sensiveis do ponto de vista de LGPD. Antes de sair do UA + IP, o catalogo de consentimentos precisa ganhar a categoria "telemetria de dispositivo" (ver `docs/roadmap-20-estrategico.md`, secao 20.4) para tornar explicito para o usuario que o OpenCred vai consumir telemetria, separada de dados financeiros.
+
+**Correlacao entre usuarios:**
+
+A correlacao cross-user (clusters suspeitos, renda espelhada entre contas, padroes repetidos) depende de armazenar `hash_fingerprint` e metricas agregadas por solicitacao. O ponto de entrada natural e uma nova tabela de sinais de fraude, alimentada a partir do resultado de `lib/fraudScore`. O MVP atual ainda armazena tudo em `audit_logs.metadata`; a evolucao para tabela dedicada virao quando o volume pedir indice proprio.

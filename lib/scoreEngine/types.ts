@@ -46,6 +46,7 @@ export type ScoreResult = {
   reasons: string[]
   breakdown: ScoreBreakdown
   metrics: ScoreMetrics
+  engineVersion: string
 }
 
 export type ScoreMetrics = {

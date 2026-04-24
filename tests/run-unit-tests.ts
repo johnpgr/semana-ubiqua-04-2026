@@ -2,6 +2,7 @@ import { cpfTests } from "./unit/cpf.test"
 import { analysisPresentationTests } from "./unit/analysis-presentation.test"
 import { creditProgressionTests } from "./unit/credit-progression.test"
 import { emailCommunicationTests } from "./unit/email-communication.test"
+import { emailRenderTests } from "./unit/email-render.test"
 import { explainabilityTests } from "./unit/explainability.test"
 import { fraudScoreTests } from "./unit/fraud-score.test"
 import { partnerIndicatorTests } from "./unit/partner-indicators.test"
@@ -19,6 +20,7 @@ const tests: NamedTest[] = [
   ...scoreEngineTests,
   ...creditProgressionTests,
   ...emailCommunicationTests,
+  ...emailRenderTests,
   ...explainabilityTests,
   ...fraudScoreTests,
   ...partnerIndicatorTests,

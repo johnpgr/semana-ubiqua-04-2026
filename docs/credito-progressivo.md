@@ -303,3 +303,29 @@ Nesta versao MVP:
 - a UI de resultado e o detalhe do admin exibem nivel de confianca, contexto de concessao inicial conservadora e teto da etapa atual.
 
 Essa base nao implementa cobranca real nem evolucao por pagamento efetivo ainda, mas deixa o ponto de extensao concreto para adicionar sinais futuros de ciclos, atraso e confianca acumulada.
+
+## Reavaliacao continua
+
+A reavaliacao continua e o ponto em que o credito progressivo deixa de depender apenas da primeira analise e passa a acompanhar o relacionamento.
+
+**Gatilhos futuros de reavaliacao:**
+
+- nova solicitacao do mesmo usuario (ja acontece hoje, via `requestHistory` passado para a politica);
+- fim de ciclo de pagamento (quando existir cobranca real);
+- janela de inatividade significativa (por exemplo, mais de 90 dias sem novo sinal);
+- evento de risco externo (parceiro, monitoramento ou fraude).
+
+**O que muda em uma reavaliacao vs. primeira concessao:**
+
+- o peso relativo de `behavior` no motor financeiro deve aumentar quando ja existe historico observado pos-concessao;
+- o peso de `dataQuality` deve cair na mesma medida, porque ja nao e a maior incerteza;
+- a politica progressiva deve deixar de aplicar o teto conservador de "primeira concessao" quando o usuario acumulou ciclos completos com bom desempenho;
+- a decisao deve permitir elevacao de limite ate o nivel seguinte de confianca, respeitando o teto da faixa.
+
+**Estados operacionais que impedem progressao automatica:**
+
+- monitoramento pos-credito em `high` ou `critical`;
+- Fraud Score em `moderate` ou pior;
+- elegibilidade em `frozen`, `review_required` ou `blocked`.
+
+Esses estados sao descritos em `docs/monitoramento-pos-credito.md` e ja sao consumidos pelo MVP atual como bloqueadores. Em reavaliacoes futuras, eles devem permanecer como travas explicitas antes de qualquer elevacao.

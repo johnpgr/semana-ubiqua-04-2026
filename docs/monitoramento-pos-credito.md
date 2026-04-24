@@ -414,3 +414,21 @@ No estado atual:
 - o estado de monitoramento aparece na pagina de resultado e no detalhe do admin.
 
 Este MVP ainda nao implementa cobranca, cron, atraso real ou renegociacao executavel, mas ja deixa a base pronta para evoluir com ciclos reais de pagamento e revisoes periodicas futuras.
+
+## Operacao e renegociacao
+
+Cada estado de monitoramento pos-credito (`eligible`, `watch`, `frozen`, `review_required`, `blocked`) se conecta a acoes operacionais de saida.
+
+| Estado | E-mail enviado | Acao admin | Cadencia minima |
+|---|---|---|---|
+| `eligible` | nenhum automatico | nenhuma | - |
+| `watch` | `risk_alert` (audiencia `risk`) | acompanhar | reavaliacao a cada nova solicitacao |
+| `frozen` | `operational_watch` (audiencia `operations`) | revisar elegibilidade | reavaliacao somente por decisao manual |
+| `review_required` | `risk_alert` (audiencia `security`) + `operational_watch` (audiencia `operations`) | decidir entre renegociacao ou bloqueio | bloqueio automatico apos 7 dias sem acao |
+| `blocked` | `operational_watch` (audiencia `operations`) | desbloqueio manual apenas | reavaliacao somente por decisao manual |
+
+**Renegociacao:** A renegociacao faz sentido quando o cliente mostra deterioracao real mas nao necessariamente fraude, existe sinal de dificuldade crescente antes do atraso, e uma abordagem preventiva pode reduzir perda e preservar relacionamento.
+
+**Encaminhamento operacional:** Ganha prioridade quando o risco sobe de forma consistente, alertas preventivos se acumulam, e a situacao pede intervencao antes de dano maior.
+
+Os e-mails mencionados acima (`risk_alert`, `operational_watch`) ja sao gerados pelo bundle de comunicacao e enviados pela Edge Function `send-email` quando acionados. A tabela acima torna explicito qual estado dispara qual comunicacao.
