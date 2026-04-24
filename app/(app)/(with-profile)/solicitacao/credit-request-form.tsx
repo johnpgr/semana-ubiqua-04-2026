@@ -28,6 +28,14 @@ type CreditRequestFormAction =
   | React.ChangeEvent<HTMLInputElement>
   | React.FocusEvent<HTMLInputElement>
   | React.FormEvent<HTMLFormElement>
+  | { type: "preset"; digits: string }
+
+const QUICK_AMOUNTS = [
+  { label: "R$ 500", digits: "50000" },
+  { label: "R$ 1.000", digits: "100000" },
+  { label: "R$ 1.500", digits: "150000" },
+  { label: "R$ 3.000", digits: "300000" },
+]
 
 function formatEditableAmount(digits: string) {
   if (!digits) {
@@ -49,6 +57,14 @@ function creditRequestFormReducer(
   state: CreditRequestFormState,
   action: CreditRequestFormAction
 ): CreditRequestFormState {
+  if ("digits" in action) {
+    return {
+      ...state,
+      digits: action.digits,
+      isTouched: true,
+    }
+  }
+
   if (action.type === "submit") {
     return { ...state, isTouched: true }
   }
@@ -115,8 +131,8 @@ export function CreditRequestForm() {
       onBlurCapture={dispatch}
     >
       <input type="hidden" name="requested_amount" value={digits} />
-      <CardContent className="space-y-4 pb-4">
-        <div className="space-y-2">
+      <CardContent className="flex flex-col gap-5 pb-4">
+        <div className="flex flex-col gap-2">
           <label
             className="text-sm font-medium"
             htmlFor="requested_amount_display"
@@ -139,10 +155,33 @@ export function CreditRequestForm() {
             <p className="text-sm text-destructive">{requestedAmountError}</p>
           ) : null}
           <p className="text-sm text-muted-foreground">
-            O valor é armazenado como número e segue para consentimento na etapa
-            seguinte.
+            O valor aprovado pode ser menor que o solicitado. A primeira
+            concessão tende a ser conservadora para iniciar o relacionamento.
           </p>
         </div>
+
+        <div className="flex flex-col gap-3">
+          <p className="text-sm font-medium">Valores rápidos</p>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {QUICK_AMOUNTS.map((amount) => (
+              <Button
+                key={amount.digits}
+                type="button"
+                variant={digits === amount.digits ? "default" : "outline"}
+                onClick={() =>
+                  dispatch({ type: "preset", digits: amount.digits })
+                }
+              >
+                {amount.label}
+              </Button>
+            ))}
+          </div>
+          <p className="text-sm leading-6 text-muted-foreground">
+            Pagamentos futuros em dia podem ajudar a aumentar o limite potencial
+            em novas análises.
+          </p>
+        </div>
+
         {state.formError ? (
           <p className="text-sm text-destructive">{state.formError}</p>
         ) : null}

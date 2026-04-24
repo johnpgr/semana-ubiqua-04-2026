@@ -1,0 +1,153 @@
+"use server"
+
+import { revalidatePath } from "next/cache"
+import { z } from "zod"
+
+import { requireCurrentProfile } from "@/lib/auth/profile"
+import type { FormActionState } from "@/lib/form-action"
+import type { Json, TablesInsert } from "@/lib/supabase/database.types"
+import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
+
+type DisbursementData = {
+  approvedAmount: number
+  destination: string
+  disbursedAt: string
+  status: "active"
+}
+
+export type SimulateDisbursementState = FormActionState<
+  "request_id",
+  DisbursementData
+>
+
+type AuditLogInsert = TablesInsert<"audit_logs">
+
+const RequestPayload = z.object({
+  request_id: z.uuid("Solicitação inválida."),
+})
+
+const DISBURSEMENT_ACTION = "credit_disbursement_simulated"
+const SIMULATED_DESTINATION = "Banco Horizonte Simulado"
+
+export async function simulateCreditDisbursement(
+  _prevState: SimulateDisbursementState,
+  formData: FormData
+): Promise<SimulateDisbursementState> {
+  const parsed = RequestPayload.safeParse({
+    request_id: formData.get("request_id"),
+  })
+
+  if (!parsed.success) {
+    return {
+      ok: false,
+      formError: "Não foi possível identificar a solicitação.",
+      fieldErrors: {
+        request_id: ["Solicitação inválida."],
+      },
+    }
+  }
+
+  const profile = await requireCurrentProfile()
+  const supabase = await createClient()
+  const { data: request, error: requestError } = await supabase
+    .from("credit_requests")
+    .select("id, user_id, decision, approved_amount")
+    .eq("id", parsed.data.request_id)
+    .eq("user_id", profile.id)
+    .maybeSingle()
+
+  if (requestError) {
+    return {
+      ok: false,
+      formError: "Não foi possível carregar a solicitação.",
+    }
+  }
+
+  if (!request) {
+    return {
+      ok: false,
+      formError: "Solicitação não encontrada.",
+    }
+  }
+
+  if (
+    request.decision !== "approved" &&
+    request.decision !== "approved_reduced"
+  ) {
+    return {
+      ok: false,
+      formError: "Esta decisão não permite liberação de crédito.",
+    }
+  }
+
+  if (!request.approved_amount || request.approved_amount <= 0) {
+    return {
+      ok: false,
+      formError: "A solicitação aprovada não possui valor liberável.",
+    }
+  }
+
+  const service = createServiceClient()
+  const { data: existingDisbursement, error: existingError } = await service
+    .from("audit_logs")
+    .select("created_at")
+    .eq("entity_type", "credit_request")
+    .eq("entity_id", request.id)
+    .eq("action", DISBURSEMENT_ACTION)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (existingError) {
+    return {
+      ok: false,
+      formError: "Não foi possível verificar a liberação simulada.",
+    }
+  }
+
+  const disbursedAt = existingDisbursement?.created_at ?? new Date().toISOString()
+
+  if (!existingDisbursement) {
+    const auditRow: AuditLogInsert = {
+      entity_type: "credit_request",
+      entity_id: request.id,
+      actor: profile.id,
+      action: DISBURSEMENT_ACTION,
+      created_at: disbursedAt,
+      metadata: {
+        requestId: request.id,
+        userId: request.user_id,
+        approvedAmount: request.approved_amount,
+        destination: SIMULATED_DESTINATION,
+        status: "active",
+        timestamp: disbursedAt,
+        source: "user_action",
+      } satisfies Json,
+    }
+
+    const { error: auditError } = await service
+      .from("audit_logs")
+      .insert(auditRow)
+
+    if (auditError) {
+      return {
+        ok: false,
+        formError: "Não foi possível registrar a liberação simulada.",
+      }
+    }
+  }
+
+  revalidatePath(`/resultado/${request.id}`)
+  revalidatePath("/minha-conta")
+
+  return {
+    ok: true,
+    data: {
+      approvedAmount: request.approved_amount,
+      destination: SIMULATED_DESTINATION,
+      disbursedAt,
+      status: "active",
+    },
+  }
+}

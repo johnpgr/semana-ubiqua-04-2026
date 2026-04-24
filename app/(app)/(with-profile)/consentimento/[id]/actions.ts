@@ -15,8 +15,6 @@ import {
 import { createClient } from "@/lib/supabase/server"
 import { Consent } from "@/validation/consent"
 
-import { processCreditAnalysis } from "../../score-actions"
-
 export type GiveConsentState = FormActionState<"scopes">
 export type UploadDocumentState = FormActionState<
   "file" | "request_id",
@@ -89,6 +87,13 @@ export async function giveConsent(
     }
   }
 
+  if (
+    request.status === "collecting_data" ||
+    request.status === "scoring"
+  ) {
+    redirect(`/analise/${request.id}`)
+  }
+
   if (request.status !== "awaiting_consent") {
     redirect(`/resultado/${request.id}`)
   }
@@ -124,15 +129,9 @@ export async function giveConsent(
     }
   }
 
-  const analysis = await processCreditAnalysis(request.id)
-
-  if (!analysis.ok) {
-    revalidatePath(`/resultado/${request.id}`)
-    redirect(`/resultado/${request.id}`)
-  }
-
+  revalidatePath(`/analise/${request.id}`)
   revalidatePath(`/resultado/${request.id}`)
-  redirect(`/resultado/${request.id}`)
+  redirect(`/analise/${request.id}`)
 }
 
 export async function uploadDocument(

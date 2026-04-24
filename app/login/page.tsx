@@ -15,7 +15,7 @@ export default async function LoginPage() {
 
   if (user) {
     const profile = await getCurrentProfile()
-    redirect(profile ? "/solicitacao" : "/cadastro")
+    redirect(profile ? "/minha-conta" : "/cadastro")
   }
 
   return (

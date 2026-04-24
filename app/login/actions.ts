@@ -80,5 +80,5 @@ export async function verifyOtp(
 
   const profile = await getCurrentProfile()
 
-  redirect(profile ? "/solicitacao" : "/cadastro")
+  redirect(profile ? "/minha-conta" : "/cadastro")
 }
