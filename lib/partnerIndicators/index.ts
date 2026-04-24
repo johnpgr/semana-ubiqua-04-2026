@@ -415,9 +415,7 @@ export function applyPartnerIndicatorsToFraudScore({
   const adjustedRiskLevel = getFraudRiskLevelFromValue(adjustedValue)
   const partnerSignal = buildPartnerFraudSignal(partnerProfile)
   const signals = partnerSignal
-    ? [partnerSignal, ...fraudScore.signals].toSorted(
-        (first, second) => second.severity - first.severity,
-      )
+    ? sortFraudSignals([partnerSignal, ...fraudScore.signals])
     : fraudScore.signals
   const adjustedFraudScore: FraudScoreResult = {
     ...fraudScore,
@@ -591,6 +589,12 @@ function buildPartnerFraudSignal(
         ? "Indicadores agregados de parceiro reforcaram cautela operacional neste caso."
         : "Indicadores agregados de parceiro reforcaram autenticidade operacional neste caso.",
   }
+}
+
+function sortFraudSignals(signals: FraudSignal[]) {
+  // Keep ES2017 compatibility for the shared pure module.
+  // oxlint-disable-next-line unicorn/no-array-sort
+  return signals.sort((first, second) => second.severity - first.severity)
 }
 
 function getFraudOperationalRecommendation(riskLevel: FraudRiskLevel) {

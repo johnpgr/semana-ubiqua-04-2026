@@ -238,7 +238,7 @@ function buildDecisionCommunication(
             input.explainability.reasons[0]?.message ??
               "Os sinais analisados ainda nao sustentam esta concessao.",
             input.explainability.decisionMode === "preventive_block"
-              ? "O caso exige uma verificacao reforcada de seguranca antes de qualquer avanço."
+              ? "O caso exige uma verificacao reforcada de seguranca antes de qualquer avanco."
               : "O historico atual ainda pede maior cautela para esta concessao.",
             "No aplicativo, voce pode consultar os fatores principais considerados na analise.",
           ],

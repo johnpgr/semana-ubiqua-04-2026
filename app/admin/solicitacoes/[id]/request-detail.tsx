@@ -250,7 +250,7 @@ export function RequestDetail({
     transactions,
     requestHistory: requestHistory.map((historyRow) => ({
       id: historyRow.id,
-      status: "decided",
+      status: historyRow.status,
       decision: historyRow.decision,
       approved_amount: historyRow.approvedAmount,
       created_at: historyRow.createdAt,
