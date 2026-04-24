@@ -81,10 +81,128 @@ export type EmailCommunicationInput = {
   monitoring?: PostCreditMonitoringResult | null
 }
 
+type DecisionCommunicationConfig = {
+  id: string
+  type: EmailCommunicationType
+  subject: string
+  preview: string
+  summary: string
+  intro: string
+  closing: string
+  buildHighlights: (
+    input: EmailCommunicationInput,
+    limitText: string,
+  ) => string[]
+}
+
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
   currency: "BRL",
 })
+
+const DECISION_COMMUNICATION_CONFIG = {
+  approved: {
+    id: "decision-approved",
+    type: "decision_approved",
+    subject: "OpenCred: sua solicitacao foi aprovada",
+    preview:
+      "Sua analise foi aprovada com base nos dados autorizados e no comportamento observado ate aqui.",
+    summary:
+      "Email principal de aprovacao com resultado, limite e resumo da decisao.",
+    intro:
+      "Sua solicitacao foi aprovada. A decisao considerou os dados autorizados e os sinais financeiros observados no momento da analise.",
+    closing:
+      "Consulte o OpenCred para ver os detalhes da sua analise e acompanhar a evolucao futura do relacionamento.",
+    buildHighlights: (input, limitText) => [
+      `Valor aprovado nesta etapa: ${limitText}.`,
+      input.explainability.reasons[0]?.message ??
+        "A aprovacao foi definida com base nos sinais favoraveis do caso.",
+      input.explainability.primaryFactors[0]?.summary ??
+        "O caso apresentou sinais suficientes para esta concessao.",
+    ],
+  },
+  approved_reduced: {
+    id: "decision-approved-reduced",
+    type: "decision_approved_reduced",
+    subject: "OpenCred: sua solicitacao foi aprovada com limite reduzido",
+    preview:
+      "A solicitacao foi aprovada com valor controlado, mantendo uma concessao inicial mais segura.",
+    summary:
+      "Email principal de aprovacao reduzida com reforco de cautela e evolucao futura.",
+    intro:
+      "Sua solicitacao foi aprovada, mas com limite reduzido. Nesta etapa, o OpenCred manteve uma liberacao mais controlada para combinar com o estagio atual do relacionamento.",
+    closing:
+      "Consulte o OpenCred para ver os fatores principais considerados e acompanhar sua evolucao de confianca.",
+    buildHighlights: (input, limitText) => [
+      `Valor aprovado nesta etapa: ${limitText}.`,
+      input.explainability.reasons[0]?.message ??
+        "A aprovacao ocorreu com cautela adicional.",
+      input.progressiveCredit?.isConservativeInitialOffer
+        ? "Como esta ainda e uma concessao inicial, a exposicao foi mantida em faixa conservadora."
+        : "A evolucao de limite continua dependente do comportamento observado ao longo do tempo.",
+    ],
+  },
+  further_review: {
+    id: "decision-further-review",
+    type: "decision_further_review",
+    subject: "OpenCred: sua solicitacao esta em revisao adicional",
+    preview:
+      "A analise ainda depende de verificacao complementar antes de uma decisao final automatica.",
+    summary:
+      "Email principal de revisao adicional com status, cautela e orientacao de acompanhamento.",
+    intro:
+      "Sua solicitacao segue em revisao adicional. O caso ainda precisa de verificacao complementar antes de uma conclusao automatica.",
+    closing:
+      "Assim que houver atualizacao relevante, ela continuara registrada no OpenCred como canal oficial.",
+    buildHighlights: (input) => [
+      input.explainability.reasons[0]?.message ??
+        "O caso exige uma analise mais cuidadosa neste momento.",
+      input.explainability.primaryFactors[0]?.summary ??
+        "Alguns fatores ainda precisam ser confirmados.",
+      "Voce pode acompanhar a atualizacao do status diretamente no OpenCred.",
+    ],
+  },
+  denied: {
+    id: "decision-denied",
+    type: "decision_denied",
+    subject: "OpenCred: resultado da sua solicitacao de credito",
+    preview:
+      "Neste momento, a solicitacao nao pode seguir com concessao automatica dentro do fluxo atual.",
+    summary:
+      "Email principal de negativa com linguagem clara, sem expor logica interna sensivel.",
+    intro:
+      "Neste momento, nao foi possivel aprovar sua solicitacao dentro do fluxo automatico do OpenCred.",
+    closing:
+      "O OpenCred continuara usando o app como canal oficial para dar transparencia ao resultado e a futuras evolucoes do relacionamento.",
+    buildHighlights: (input) => [
+      input.explainability.reasons[0]?.message ??
+        "Os sinais analisados ainda nao sustentam esta concessao.",
+      input.explainability.decisionMode === "preventive_block"
+        ? "O caso exige uma verificacao reforcada de seguranca antes de qualquer avanco."
+        : "O historico atual ainda pede maior cautela para esta concessao.",
+      "No aplicativo, voce pode consultar os fatores principais considerados na analise.",
+    ],
+  },
+} as const satisfies Record<CreditDecision, DecisionCommunicationConfig>
+
+const SUPPLEMENTARY_SECURITY_RISK_LEVELS = new Set<FraudScoreResult["riskLevel"]>([
+  "moderate",
+  "high",
+  "critical",
+])
+
+const SUPPLEMENTARY_MONITORING_RISK_LEVELS = new Set<
+  PostCreditMonitoringResult["riskLevel"]
+>(["moderate", "high", "critical"])
+
+const OPERATIONAL_WATCH_ACTIONS = new Set<
+  PostCreditMonitoringResult["limitRecommendation"]["action"]
+>([
+  "freeze_growth",
+  "reduce_future_exposure",
+  "renegotiation_watch",
+  "manual_review",
+])
 
 export function buildEmailCommunicationBundle(
   input: EmailCommunicationInput,
@@ -109,151 +227,31 @@ function buildDecisionCommunication(
     input.approvedAmount != null && input.approvedAmount > 0
       ? currencyFormatter.format(input.approvedAmount)
       : currencyFormatter.format(0)
+  const config = DECISION_COMMUNICATION_CONFIG[input.decision]
 
-  switch (input.decision) {
-    case "approved":
-      return {
-        id: "decision-approved",
-        category: "decision",
-        type: "decision_approved",
-        audience: "user",
-        status: "generated",
-        subject: "OpenCred: sua solicitacao foi aprovada",
-        preview:
-          "Sua analise foi aprovada com base nos dados autorizados e no comportamento observado ate aqui.",
-        summary:
-          "Email principal de aprovacao com resultado, limite e resumo da decisao.",
-        content: {
-          greeting,
-          intro:
-            "Sua solicitacao foi aprovada. A decisao considerou os dados autorizados e os sinais financeiros observados no momento da analise.",
-          highlights: [
-            `Valor aprovado nesta etapa: ${limitText}.`,
-            input.explainability.reasons[0]?.message ??
-              "A aprovacao foi definida com base nos sinais favoraveis do caso.",
-            input.explainability.primaryFactors[0]?.summary ??
-              "O caso apresentou sinais suficientes para esta concessao.",
-          ],
-          closing:
-            "Consulte o OpenCred para ver os detalhes da sua analise e acompanhar a evolucao futura do relacionamento.",
-        },
-        audit: {
-          templateKey: "decision-approved-v1",
-          trigger: "decision",
-          decision: input.decision,
-          decisionMode: input.explainability.decisionMode,
-          fraudRiskLevel: input.fraudScore?.riskLevel ?? null,
-          monitoringRiskLevel: input.monitoring?.riskLevel ?? null,
-        },
-      }
-    case "approved_reduced":
-      return {
-        id: "decision-approved-reduced",
-        category: "decision",
-        type: "decision_approved_reduced",
-        audience: "user",
-        status: "generated",
-        subject: "OpenCred: sua solicitacao foi aprovada com limite reduzido",
-        preview:
-          "A solicitacao foi aprovada com valor controlado, mantendo uma concessao inicial mais segura.",
-        summary:
-          "Email principal de aprovacao reduzida com reforco de cautela e evolucao futura.",
-        content: {
-          greeting,
-          intro:
-            "Sua solicitacao foi aprovada, mas com limite reduzido. Nesta etapa, o OpenCred manteve uma liberacao mais controlada para combinar com o estagio atual do relacionamento.",
-          highlights: [
-            `Valor aprovado nesta etapa: ${limitText}.`,
-            input.explainability.reasons[0]?.message ??
-              "A aprovacao ocorreu com cautela adicional.",
-            input.progressiveCredit?.isConservativeInitialOffer
-              ? "Como esta ainda e uma concessao inicial, a exposicao foi mantida em faixa conservadora."
-              : "A evolucao de limite continua dependente do comportamento observado ao longo do tempo.",
-          ],
-          closing:
-            "Consulte o OpenCred para ver os fatores principais considerados e acompanhar sua evolucao de confianca.",
-        },
-        audit: {
-          templateKey: "decision-approved-reduced-v1",
-          trigger: "decision",
-          decision: input.decision,
-          decisionMode: input.explainability.decisionMode,
-          fraudRiskLevel: input.fraudScore?.riskLevel ?? null,
-          monitoringRiskLevel: input.monitoring?.riskLevel ?? null,
-        },
-      }
-    case "further_review":
-      return {
-        id: "decision-further-review",
-        category: "decision",
-        type: "decision_further_review",
-        audience: "user",
-        status: "generated",
-        subject: "OpenCred: sua solicitacao esta em revisao adicional",
-        preview:
-          "A analise ainda depende de verificacao complementar antes de uma decisao final automatica.",
-        summary:
-          "Email principal de revisao adicional com status, cautela e orientacao de acompanhamento.",
-        content: {
-          greeting,
-          intro:
-            "Sua solicitacao segue em revisao adicional. O caso ainda precisa de verificacao complementar antes de uma conclusao automatica.",
-          highlights: [
-            input.explainability.reasons[0]?.message ??
-              "O caso exige uma analise mais cuidadosa neste momento.",
-            input.explainability.primaryFactors[0]?.summary ??
-              "Alguns fatores ainda precisam ser confirmados.",
-            "Voce pode acompanhar a atualizacao do status diretamente no OpenCred.",
-          ],
-          closing:
-            "Assim que houver atualizacao relevante, ela continuara registrada no OpenCred como canal oficial.",
-        },
-        audit: {
-          templateKey: "decision-further-review-v1",
-          trigger: "decision",
-          decision: input.decision,
-          decisionMode: input.explainability.decisionMode,
-          fraudRiskLevel: input.fraudScore?.riskLevel ?? null,
-          monitoringRiskLevel: input.monitoring?.riskLevel ?? null,
-        },
-      }
-    case "denied":
-    default:
-      return {
-        id: "decision-denied",
-        category: "decision",
-        type: "decision_denied",
-        audience: "user",
-        status: "generated",
-        subject: "OpenCred: resultado da sua solicitacao de credito",
-        preview:
-          "Neste momento, a solicitacao nao pode seguir com concessao automatica dentro do fluxo atual.",
-        summary:
-          "Email principal de negativa com linguagem clara, sem expor logica interna sensivel.",
-        content: {
-          greeting,
-          intro:
-            "Neste momento, nao foi possivel aprovar sua solicitacao dentro do fluxo automatico do OpenCred.",
-          highlights: [
-            input.explainability.reasons[0]?.message ??
-              "Os sinais analisados ainda nao sustentam esta concessao.",
-            input.explainability.decisionMode === "preventive_block"
-              ? "O caso exige uma verificacao reforcada de seguranca antes de qualquer avanco."
-              : "O historico atual ainda pede maior cautela para esta concessao.",
-            "No aplicativo, voce pode consultar os fatores principais considerados na analise.",
-          ],
-          closing:
-            "O OpenCred continuara usando o app como canal oficial para dar transparencia ao resultado e a futuras evolucoes do relacionamento.",
-        },
-        audit: {
-          templateKey: "decision-denied-v1",
-          trigger: "decision",
-          decision: input.decision,
-          decisionMode: input.explainability.decisionMode,
-          fraudRiskLevel: input.fraudScore?.riskLevel ?? null,
-          monitoringRiskLevel: input.monitoring?.riskLevel ?? null,
-        },
-      }
+  return {
+    id: config.id,
+    category: "decision",
+    type: config.type,
+    audience: "user",
+    status: "generated",
+    subject: config.subject,
+    preview: config.preview,
+    summary: config.summary,
+    content: {
+      greeting,
+      intro: config.intro,
+      highlights: config.buildHighlights(input, limitText),
+      closing: config.closing,
+    },
+    audit: {
+      templateKey: `${config.id}-v1`,
+      trigger: "decision",
+      decision: input.decision,
+      decisionMode: input.explainability.decisionMode,
+      fraudRiskLevel: input.fraudScore?.riskLevel ?? null,
+      monitoringRiskLevel: input.monitoring?.riskLevel ?? null,
+    },
   }
 }
 
@@ -304,9 +302,7 @@ function buildSupplementaryCommunications(
 
   if (
     input.fraudScore &&
-    (input.fraudScore.riskLevel === "moderate" ||
-      input.fraudScore.riskLevel === "high" ||
-      input.fraudScore.riskLevel === "critical")
+    SUPPLEMENTARY_SECURITY_RISK_LEVELS.has(input.fraudScore.riskLevel)
   ) {
     communications.push({
       id: "security-review",
@@ -347,9 +343,7 @@ function buildSupplementaryCommunications(
 
   if (
     input.monitoring &&
-    (input.monitoring.riskLevel === "moderate" ||
-      input.monitoring.riskLevel === "high" ||
-      input.monitoring.riskLevel === "critical")
+    SUPPLEMENTARY_MONITORING_RISK_LEVELS.has(input.monitoring.riskLevel)
   ) {
     communications.push({
       id: "risk-alert",
@@ -387,10 +381,7 @@ function buildSupplementaryCommunications(
 
   if (
     input.monitoring &&
-    (input.monitoring.limitRecommendation.action === "freeze_growth" ||
-      input.monitoring.limitRecommendation.action === "reduce_future_exposure" ||
-      input.monitoring.limitRecommendation.action === "renegotiation_watch" ||
-      input.monitoring.limitRecommendation.action === "manual_review")
+    OPERATIONAL_WATCH_ACTIONS.has(input.monitoring.limitRecommendation.action)
   ) {
     communications.push({
       id: "operational-watch",

@@ -58,6 +58,21 @@ type DatedTransaction = ScoreTransaction & {
   occurredAtDate: Date
 }
 
+const FRAUD_OPERATIONAL_RECOMMENDATIONS = {
+  critical:
+    "Bloquear concessao automatica e registrar trilha reforcada para revisao.",
+  high: "Encaminhar para revisao manual antes de qualquer liberacao.",
+  moderate: "Reduzir exposicao inicial e monitorar sinais de autenticidade.",
+  low: "Seguir fluxo normal com monitoramento antifraude padrao.",
+} as const satisfies Record<FraudRiskLevel, string>
+
+const FRAUD_RISK_REASONS = {
+  critical: ["Risco critico de fraude identificado na analise comportamental."],
+  high: ["Risco alto de fraude exige revisao adicional antes da concessao."],
+  moderate: ["Risco moderado de fraude recomenda cautela extra nesta concessao."],
+  low: ["Nao identificamos sinais fortes de fraude na analise atual."],
+} as const satisfies Record<FraudRiskLevel, readonly string[]>
+
 export function calculateFraudScore({
   transactions,
   deviceTrust,
@@ -92,7 +107,7 @@ export function calculateFraudScore({
     // oxlint-disable-next-line unicorn/no-array-sort
   ].sort((first, second) => second.severity - first.severity)
   const reasons = dedupe([
-    ...buildRiskReasons(riskLevel),
+    ...FRAUD_RISK_REASONS[riskLevel],
     ...signals.map((signal) => signal.detail),
   ]).slice(0, 6)
 
@@ -101,7 +116,7 @@ export function calculateFraudScore({
     riskLevel,
     signals,
     reasons,
-    operationalRecommendation: getOperationalRecommendation(riskLevel),
+    operationalRecommendation: FRAUD_OPERATIONAL_RECOMMENDATIONS[riskLevel],
     breakdown: {
       syntheticIncome: syntheticIncome.value,
       patternRepetition: patternRepetition.value,
@@ -449,34 +464,6 @@ function getFraudRiskLevel(value: number): FraudRiskLevel {
   }
 
   return "low"
-}
-
-function getOperationalRecommendation(riskLevel: FraudRiskLevel) {
-  switch (riskLevel) {
-    case "critical":
-      return "Bloquear concessao automatica e registrar trilha reforcada para revisao."
-    case "high":
-      return "Encaminhar para revisao manual antes de qualquer liberacao."
-    case "moderate":
-      return "Reduzir exposicao inicial e monitorar sinais de autenticidade."
-    case "low":
-    default:
-      return "Seguir fluxo normal com monitoramento antifraude padrao."
-  }
-}
-
-function buildRiskReasons(riskLevel: FraudRiskLevel) {
-  switch (riskLevel) {
-    case "critical":
-      return ["Risco critico de fraude identificado na analise comportamental."]
-    case "high":
-      return ["Risco alto de fraude exige revisao adicional antes da concessao."]
-    case "moderate":
-      return ["Risco moderado de fraude recomenda cautela extra nesta concessao."]
-    case "low":
-    default:
-      return ["Nao identificamos sinais fortes de fraude na analise atual."]
-  }
 }
 
 function sum(values: number[]) {

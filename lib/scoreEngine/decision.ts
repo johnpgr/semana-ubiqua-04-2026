@@ -1,6 +1,20 @@
 import { clamp, round } from "./helpers"
 import type { CreditDecision, ScoreBreakdown, ScoreMetrics } from "./types"
 
+const APPROVED_REASON_BY_REQUEST_CONTEXT = {
+  requested: "Score e limite estimado sustentam a aprovação solicitada.",
+  automatic: "Score e limite estimado sustentam aprovação automática.",
+} as const
+
+const DECISION_BASE_REASONS = {
+  approved_reduced:
+    "Crédito aprovado com valor conservador para preservar capacidade de pagamento.",
+  further_review:
+    "A solicitação exige análise complementar antes da decisão final.",
+  denied:
+    "O risco observado está acima do aceitável para concessão automática.",
+} as const satisfies Partial<Record<CreditDecision, string>>
+
 export function decideCredit({
   score,
   requestedAmount,
@@ -63,26 +77,26 @@ export function buildDecisionReasons({
   const reasons: string[] = []
 
   if (decision === "approved" && requestedAmount !== undefined && requestedAmount > 0) {
-    reasons.push("Score e limite estimado sustentam a aprovação solicitada.")
+    reasons.push(APPROVED_REASON_BY_REQUEST_CONTEXT.requested)
   }
 
   if (
     decision === "approved" &&
     (requestedAmount === undefined || requestedAmount <= 0)
   ) {
-    reasons.push("Score e limite estimado sustentam aprovação automática.")
+    reasons.push(APPROVED_REASON_BY_REQUEST_CONTEXT.automatic)
   }
 
   if (decision === "approved_reduced") {
-    reasons.push("Crédito aprovado com valor conservador para preservar capacidade de pagamento.")
+    reasons.push(DECISION_BASE_REASONS.approved_reduced)
   }
 
   if (decision === "further_review") {
-    reasons.push("A solicitação exige análise complementar antes da decisão final.")
+    reasons.push(DECISION_BASE_REASONS.further_review)
   }
 
   if (decision === "denied") {
-    reasons.push("O risco observado está acima do aceitável para concessão automática.")
+    reasons.push(DECISION_BASE_REASONS.denied)
   }
 
   if (

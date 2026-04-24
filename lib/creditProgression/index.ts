@@ -59,6 +59,15 @@ export type ProgressiveCreditResult = ProgressiveCreditState & {
   reasons: string[]
 }
 
+type ApprovedDecision = Extract<
+  CreditDecision,
+  "approved" | "approved_reduced"
+>
+
+const APPROVED_DECISIONS = ["approved", "approved_reduced"] as const satisfies readonly ApprovedDecision[]
+
+const APPROVED_DECISION_SET = new Set<CreditDecision>(APPROVED_DECISIONS)
+
 const LEVEL_CONFIG = {
   entry: {
     label: "Entrada",
@@ -127,8 +136,8 @@ export function evaluateProgressiveCreditState(
   const previousRequests = input.requestHistory.length
   const previousApprovedRequests = input.requestHistory.filter(
     (request) =>
-      (request.decision === "approved" ||
-        request.decision === "approved_reduced") &&
+      request.decision !== null &&
+      APPROVED_DECISION_SET.has(request.decision) &&
       (request.approvedAmount ?? 0) > 0,
   ).length
   const isFirstConcession =
@@ -143,9 +152,7 @@ export function evaluateProgressiveCreditState(
     input.requestedAmount > 0 ? input.requestedAmount : config.maxSuggestedLimit
   const appliedCap = Math.min(requestedCap, config.maxSuggestedLimit)
   const isConservativeInitialOffer =
-    isFirstConcession &&
-    (input.baseDecision === "approved" ||
-      input.baseDecision === "approved_reduced")
+    isFirstConcession && APPROVED_DECISION_SET.has(input.baseDecision)
 
   return {
     level,

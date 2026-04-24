@@ -70,6 +70,27 @@ type DatedTransaction = ScoreTransaction & {
   occurredAtDate: Date
 }
 
+const APPROVED_DECISIONS = ["approved", "approved_reduced"] as const satisfies readonly CreditDecision[]
+
+const RISK_EVENT_DECISIONS = ["further_review", "denied"] as const satisfies readonly CreditDecision[]
+
+const APPROVED_DECISION_SET = new Set<CreditDecision>(APPROVED_DECISIONS)
+const RISK_EVENT_DECISION_SET = new Set<CreditDecision>(RISK_EVENT_DECISIONS)
+
+const POST_CREDIT_RISK_REASONS = {
+  critical: ["Relacionamento em risco critico e sem espaco para evolucao automatica."],
+  high: ["Relacionamento em risco alto e com necessidade de revisao reforcada."],
+  moderate: ["Relacionamento em observacao, com cautela extra para proximas ofertas."],
+  low: ["Relacionamento em risco baixo para o estagio atual do MVP."],
+} as const satisfies Record<PostCreditRiskLevel, readonly string[]>
+
+const ALERT_SEVERITY_RANK = {
+  critical: 4,
+  high: 3,
+  moderate: 2,
+  low: 1,
+} as const satisfies Record<PostCreditRiskLevel, number>
+
 export function evaluatePostCreditMonitoring(
   input: PostCreditMonitoringInput,
 ): PostCreditMonitoringResult {
@@ -96,13 +117,13 @@ export function evaluatePostCreditMonitoring(
   const activeMonthCount = getActiveMonthCount(transactions)
   const previousApprovedRequests = (input.requestHistory ?? []).filter(
     (request) =>
-      (request.decision === "approved" ||
-        request.decision === "approved_reduced") &&
+      request.decision !== null &&
+      APPROVED_DECISION_SET.has(request.decision) &&
       (request.approvedAmount ?? 0) > 0,
   ).length
   const previousRiskEvents = (input.requestHistory ?? []).filter(
     (request) =>
-      request.decision === "further_review" || request.decision === "denied",
+      request.decision !== null && RISK_EVENT_DECISION_SET.has(request.decision),
   ).length
   const isFirstConcession = Boolean(
     input.isFirstConcession ?? previousApprovedRequests === 0,
@@ -240,7 +261,7 @@ export function evaluatePostCreditMonitoring(
 
   const riskLevel = getRiskLevel(riskPoints)
   const reasons = dedupe([
-    ...buildRiskReasons(riskLevel),
+    ...POST_CREDIT_RISK_REASONS[riskLevel],
     ...alerts.map((alert) => alert.detail),
   ]).slice(0, 6)
   const limitRecommendation = buildLimitRecommendation({
@@ -260,7 +281,7 @@ export function evaluatePostCreditMonitoring(
     alerts: alerts
       // Keep ES2017 compatibility for the shared pure module.
       // oxlint-disable-next-line unicorn/no-array-sort
-      .sort((first, second) => getAlertSeverity(second.level) - getAlertSeverity(first.level))
+      .sort((first, second) => ALERT_SEVERITY_RANK[second.level] - ALERT_SEVERITY_RANK[first.level])
       .slice(0, 6),
     operationalRecommendation: getOperationalRecommendation({
       riskLevel,
@@ -303,20 +324,6 @@ function getRiskLevel(value: number): PostCreditRiskLevel {
   }
 
   return "low"
-}
-
-function buildRiskReasons(riskLevel: PostCreditRiskLevel) {
-  switch (riskLevel) {
-    case "critical":
-      return ["Relacionamento em risco critico e sem espaco para evolucao automatica."]
-    case "high":
-      return ["Relacionamento em risco alto e com necessidade de revisao reforcada."]
-    case "moderate":
-      return ["Relacionamento em observacao, com cautela extra para proximas ofertas."]
-    case "low":
-    default:
-      return ["Relacionamento em risco baixo para o estagio atual do MVP."]
-  }
 }
 
 function buildLimitRecommendation({
@@ -480,20 +487,6 @@ function computeFastOutflowRatio(
   }
 
   return clamp(suspiciousOutflow / totalIncome, 0, 1.4)
-}
-
-function getAlertSeverity(riskLevel: PostCreditRiskLevel) {
-  switch (riskLevel) {
-    case "critical":
-      return 4
-    case "high":
-      return 3
-    case "moderate":
-      return 2
-    case "low":
-    default:
-      return 1
-  }
 }
 
 function sum(values: number[]) {

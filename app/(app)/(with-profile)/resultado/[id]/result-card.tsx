@@ -101,31 +101,36 @@ export function ResultCard({
       isPolling = true
 
       try {
-        const [requestResult, scoreResult, transactionsResult] = await Promise.all([
-          supabase
-            .from("credit_requests")
-            .select("id, requested_amount, status, decision, approved_amount")
-            .eq("id", initialRequest.id)
-            .maybeSingle(),
-          supabase
-            .from("scores")
-            .select("value, reasons, suggested_limit")
-            .eq("request_id", initialRequest.id)
-            .maybeSingle(),
-          supabase
-            .from("transactions")
-            .select("amount, category, description, kind, occurred_at")
-            .eq("request_id", initialRequest.id)
-            .order("occurred_at", { ascending: false })
-            .limit(200),
-        ])
+        const [requestResult, scoreResult, transactionsResult] =
+          await Promise.all([
+            supabase
+              .from("credit_requests")
+              .select("id, requested_amount, status, decision, approved_amount")
+              .eq("id", initialRequest.id)
+              .maybeSingle(),
+            supabase
+              .from("scores")
+              .select("value, reasons, suggested_limit")
+              .eq("request_id", initialRequest.id)
+              .maybeSingle(),
+            supabase
+              .from("transactions")
+              .select("amount, category, description, kind, occurred_at")
+              .eq("request_id", initialRequest.id)
+              .order("occurred_at", { ascending: false })
+              .limit(200),
+          ])
 
         if (cancelled) {
           return
         }
 
-        if (requestResult.error || scoreResult.error || transactionsResult.error) {
-          setPollError("Nao foi possivel atualizar o resultado agora.")
+        if (
+          requestResult.error ||
+          scoreResult.error ||
+          transactionsResult.error
+        ) {
+          setPollError("Não foi possível atualizar o resultado agora.")
           return
         }
 
@@ -168,11 +173,14 @@ export function ResultCard({
   const partnerIndicators = analysisView?.partnerIndicators ?? null
   const explainability = analysisView?.explainability ?? null
   const emailCommunication = analysisView?.emailCommunication ?? null
-  const userEmailCommunication = getUserVisibleCommunications(emailCommunication)
+  const userEmailCommunication =
+    getUserVisibleCommunications(emailCommunication)
   const safeFraudSummary = partnerFraud
     ? getUserSafeFraudSummary(partnerFraud)
     : null
-  const monitoringCopy = monitoring ? getMonitoringPresentationCopy(monitoring) : null
+  const monitoringCopy = monitoring
+    ? getMonitoringPresentationCopy(monitoring)
+    : null
 
   const progressiveBadgeVariant =
     progressiveCredit?.level === "premium"
@@ -232,7 +240,9 @@ export function ResultCard({
                       {progressiveCredit.levelLabel}
                     </Badge>
                     {progressiveCredit.isConservativeInitialOffer ? (
-                      <Badge variant="outline">Concessao inicial conservadora</Badge>
+                      <Badge variant="outline">
+                        Concessao inicial conservadora
+                      </Badge>
                     ) : null}
                   </div>
                   <div className="space-y-1">
@@ -263,13 +273,17 @@ export function ResultCard({
                       </div>
                     </div>
                     <div className="rounded-xl border border-border/70 bg-background/60 p-3">
-                      <div className="text-muted-foreground">Teto desta etapa</div>
+                      <div className="text-muted-foreground">
+                        Teto desta etapa
+                      </div>
                       <div className="mt-1 font-semibold">
                         {currencyFormatter.format(progressiveCredit.appliedCap)}
                       </div>
                     </div>
                     <div className="rounded-xl border border-border/70 bg-background/60 p-3">
-                      <div className="text-muted-foreground">Evolucao futura</div>
+                      <div className="text-muted-foreground">
+                        Evolucao futura
+                      </div>
                       <div className="mt-1 font-semibold">
                         {progressiveCredit.isFirstConcession
                           ? "Observar ciclos futuros"
@@ -283,8 +297,10 @@ export function ResultCard({
               {partnerFraud ? (
                 <div className="space-y-3 rounded-2xl border border-border/70 bg-muted/25 p-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={getFraudBadgeVariant(partnerFraud.riskLevel)}>
-                      {getFraudRiskLabel(partnerFraud.riskLevel)}
+                    <Badge
+                      variant={RISK_BADGE_VARIANTS[partnerFraud.riskLevel]}
+                    >
+                      {FRAUD_RISK_LABELS[partnerFraud.riskLevel]}
                     </Badge>
                     <Badge variant="outline">Resumo de seguranca</Badge>
                   </div>
@@ -312,11 +328,13 @@ export function ResultCard({
               {monitoring ? (
                 <div className="space-y-3 rounded-2xl border border-border/70 bg-muted/25 p-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={getMonitoringBadgeVariant(monitoring.riskLevel)}>
-                      {getMonitoringRiskLabel(monitoring.riskLevel)}
+                    <Badge
+                      variant={RISK_BADGE_VARIANTS[monitoring.riskLevel]}
+                    >
+                      {MONITORING_RISK_LABELS[monitoring.riskLevel]}
                     </Badge>
                     <Badge variant="outline">
-                      {getLimitActionLabel(monitoring.limitRecommendation.action)}
+                      {LIMIT_ACTION_LABELS[monitoring.limitRecommendation.action]}
                     </Badge>
                   </div>
                   <div className="space-y-1">
@@ -329,7 +347,9 @@ export function ResultCard({
                   </div>
                   <div className="grid gap-3 text-sm sm:grid-cols-2">
                     <div className="rounded-xl border border-border/70 bg-background/60 p-3">
-                      <div className="text-muted-foreground">Leitura inicial</div>
+                      <div className="text-muted-foreground">
+                        Leitura inicial
+                      </div>
                       <div className="mt-1 font-semibold">
                         {monitoringCopy?.status}
                       </div>
@@ -337,7 +357,7 @@ export function ResultCard({
                     <div className="rounded-xl border border-border/70 bg-background/60 p-3">
                       <div className="text-muted-foreground">Limite futuro</div>
                       <div className="mt-1 font-semibold">
-                        {getLimitActionLabel(monitoring.limitRecommendation.action)}
+                        {LIMIT_ACTION_LABELS[monitoring.limitRecommendation.action]}
                       </div>
                     </div>
                   </div>
@@ -347,9 +367,21 @@ export function ResultCard({
               {partnerIndicators ? (
                 <div className="space-y-4 rounded-2xl border border-border/70 bg-muted/25 p-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="secondary">{partnerIndicators.partnerName}</Badge>
-                    <Badge variant={getPartnerSignalBadgeVariant(partnerIndicators.impact.confidenceSignal)}>
-                      {getPartnerSignalLabel(partnerIndicators.impact.confidenceSignal)}
+                    <Badge variant="secondary">
+                      {partnerIndicators.partnerName}
+                    </Badge>
+                    <Badge
+                      variant={
+                        PARTNER_SIGNAL_CONFIG[
+                          partnerIndicators.impact.confidenceSignal
+                        ].badgeVariant
+                      }
+                    >
+                      {
+                        PARTNER_SIGNAL_CONFIG[
+                          partnerIndicators.impact.confidenceSignal
+                        ].label
+                      }
                     </Badge>
                   </div>
                   <div className="space-y-1">
@@ -361,7 +393,9 @@ export function ResultCard({
                     </p>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {getUserSafePartnerSummary(partnerIndicators.impact.confidenceSignal)}
+                    {getUserSafePartnerSummary(
+                      partnerIndicators.impact.confidenceSignal
+                    )}
                   </p>
                 </div>
               ) : null}
@@ -369,7 +403,13 @@ export function ResultCard({
               {explainability ? (
                 <div className="space-y-4 rounded-2xl border border-border/70 bg-muted/25 p-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={getDecisionModeBadgeVariant(explainability.decisionMode)}>
+                    <Badge
+                      variant={
+                        DECISION_MODE_BADGE_VARIANTS[
+                          explainability.decisionMode
+                        ]
+                      }
+                    >
                       {explainability.decisionModeLabel}
                     </Badge>
                     <Badge variant="outline">Explicacao da decisao</Badge>
@@ -383,7 +423,9 @@ export function ResultCard({
                     </p>
                   </div>
                   <div className="rounded-xl border border-border/70 bg-background/60 p-4">
-                    <div className="text-sm font-medium">{explainability.headline}</div>
+                    <div className="text-sm font-medium">
+                      {explainability.headline}
+                    </div>
                     <p className="mt-2 text-sm text-muted-foreground">
                       {explainability.decisionModeDescription}
                     </p>
@@ -448,17 +490,30 @@ export function ResultCard({
               {userEmailCommunication.primary ? (
                 <div className="space-y-4 rounded-2xl border border-border/70 bg-muted/25 p-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={getEmailCategoryBadgeVariant(userEmailCommunication.primary.category)}>
-                      {getEmailCategoryLabel(userEmailCommunication.primary.category)}
+                    <Badge
+                      variant={
+                        EMAIL_CATEGORY_CONFIG[
+                          userEmailCommunication.primary.category
+                        ].badgeVariant
+                      }
+                    >
+                      {
+                        EMAIL_CATEGORY_CONFIG[
+                          userEmailCommunication.primary.category
+                        ].label
+                      }
                     </Badge>
-                    <Badge variant="outline">{getEmailStatusLabel(userEmailCommunication.primary.status)}</Badge>
+                    <Badge variant="outline">
+                      {EMAIL_STATUS_LABELS[userEmailCommunication.primary.status]}
+                    </Badge>
                   </div>
                   <div className="space-y-1">
                     <h2 className="text-sm font-semibold">
                       Comunicacao oficial por email
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      Preview do email principal que o OpenCred geraria neste momento.
+                      Preview do email principal que o OpenCred geraria neste
+                      momento.
                     </p>
                   </div>
                   <div className="rounded-xl border border-border/70 bg-background/60 p-4">
@@ -480,14 +535,16 @@ export function ResultCard({
                       {userEmailCommunication.primary.content.intro}
                     </p>
                     <ul className="mt-3 space-y-2 text-sm leading-6">
-                      {userEmailCommunication.primary.content.highlights.map((highlight) => (
-                        <li
-                          key={highlight}
-                          className="rounded-lg border border-border/70 bg-muted/30 px-3 py-2"
-                        >
-                          {highlight}
-                        </li>
-                      ))}
+                      {userEmailCommunication.primary.content.highlights.map(
+                        (highlight) => (
+                          <li
+                            key={highlight}
+                            className="rounded-lg border border-border/70 bg-muted/30 px-3 py-2"
+                          >
+                            {highlight}
+                          </li>
+                        )
+                      )}
                     </ul>
                   </div>
                   {userEmailCommunication.communications.length > 1 ? (
@@ -496,17 +553,21 @@ export function ResultCard({
                         Outras comunicacoes geradas
                       </h3>
                       <ul className="space-y-2 text-sm">
-                        {userEmailCommunication.communications.slice(1).map((communication) => (
-                          <li
-                            key={communication.id}
-                            className="rounded-lg border border-border/70 bg-background/60 px-3 py-2"
-                          >
-                            <span className="font-medium">{communication.subject}</span>
-                            <span className="block text-muted-foreground">
-                              {communication.preview}
-                            </span>
-                          </li>
-                        ))}
+                        {userEmailCommunication.communications
+                          .slice(1)
+                          .map((communication) => (
+                            <li
+                              key={communication.id}
+                              className="rounded-lg border border-border/70 bg-background/60 px-3 py-2"
+                            >
+                              <span className="font-medium">
+                                {communication.subject}
+                              </span>
+                              <span className="block text-muted-foreground">
+                                {communication.preview}
+                              </span>
+                            </li>
+                          ))}
                       </ul>
                     </div>
                   ) : null}
@@ -520,7 +581,8 @@ export function ResultCard({
                 <div className="space-y-1">
                   <p className="font-medium">Processando sua analise...</p>
                   <p className="text-sm text-muted-foreground">
-                    Atualizamos este resultado automaticamente a cada 3 segundos.
+                    Atualizamos este resultado automaticamente a cada 3
+                    segundos.
                   </p>
                 </div>
               </div>
@@ -556,13 +618,16 @@ export function ResultCard({
             ) : null}
             {fraudScore ? (
               <p>
-                Fraude: <strong>{getFraudRiskLabel(partnerFraud?.riskLevel ?? fraudScore.riskLevel)}</strong>
+                Fraude:{" "}
+                <strong>
+                  {FRAUD_RISK_LABELS[partnerFraud?.riskLevel ?? fraudScore.riskLevel]}
+                </strong>
               </p>
             ) : null}
             {monitoring ? (
               <p>
                 Monitoramento:{" "}
-                <strong>{getMonitoringRiskLabel(monitoring.riskLevel)}</strong>
+                <strong>{MONITORING_RISK_LABELS[monitoring.riskLevel]}</strong>
               </p>
             ) : null}
             <p>
@@ -580,174 +645,108 @@ export function ResultCard({
   )
 }
 
-function getFraudBadgeVariant(riskLevel: ReturnType<typeof calculateFraudScore>["riskLevel"]) {
-  switch (riskLevel) {
-    case "critical":
-      return "destructive"
-    case "high":
-      return "destructive"
-    case "moderate":
-      return "outline"
-    case "low":
-    default:
-      return "secondary"
-  }
-}
+type FraudRiskLevel = ReturnType<typeof calculateFraudScore>["riskLevel"]
+type MonitoringRiskLevel = ReturnType<
+  typeof evaluatePostCreditMonitoring
+>["riskLevel"]
+type DecisionMode = ReturnType<
+  typeof buildDecisionExplainability
+>["decisionMode"]
+type PartnerConfidenceSignal = NonNullable<
+  ReturnType<typeof getMockPartnerIndicatorProfile>
+>["impact"]["confidenceSignal"]
+type EmailCategory = ReturnType<
+  typeof buildEmailCommunicationBundle
+>["primary"]["category"]
+type EmailStatus = ReturnType<
+  typeof buildEmailCommunicationBundle
+>["primary"]["status"]
+type LimitAction = ReturnType<
+  typeof evaluatePostCreditMonitoring
+>["limitRecommendation"]["action"]
 
-function getFraudRiskLabel(riskLevel: ReturnType<typeof calculateFraudScore>["riskLevel"]) {
-  switch (riskLevel) {
-    case "critical":
-      return "Fraude critica"
-    case "high":
-      return "Fraude alta"
-    case "moderate":
-      return "Fraude moderada"
-    case "low":
-    default:
-      return "Fraude baixa"
-  }
-}
+const RISK_BADGE_VARIANTS = {
+  critical: "destructive",
+  high: "destructive",
+  moderate: "outline",
+  low: "secondary",
+} as const satisfies Record<FraudRiskLevel | MonitoringRiskLevel, string>
 
-function getMonitoringBadgeVariant(
-  riskLevel: ReturnType<typeof evaluatePostCreditMonitoring>["riskLevel"],
-) {
-  switch (riskLevel) {
-    case "critical":
-      return "destructive"
-    case "high":
-      return "destructive"
-    case "moderate":
-      return "outline"
-    case "low":
-    default:
-      return "secondary"
-  }
-}
+const FRAUD_RISK_LABELS = {
+  critical: "Fraude critica",
+  high: "Fraude alta",
+  moderate: "Fraude moderada",
+  low: "Fraude baixa",
+} as const satisfies Record<FraudRiskLevel, string>
 
-function getMonitoringRiskLabel(
-  riskLevel: ReturnType<typeof evaluatePostCreditMonitoring>["riskLevel"],
-) {
-  switch (riskLevel) {
-    case "critical":
-      return "Risco critico"
-    case "high":
-      return "Risco alto"
-    case "moderate":
-      return "Risco moderado"
-    case "low":
-    default:
-      return "Risco baixo"
-  }
-}
+const MONITORING_RISK_LABELS = {
+  critical: "Risco critico",
+  high: "Risco alto",
+  moderate: "Risco moderado",
+  low: "Risco baixo",
+} as const satisfies Record<MonitoringRiskLevel, string>
 
-function getDecisionModeBadgeVariant(
-  decisionMode: ReturnType<typeof buildDecisionExplainability>["decisionMode"],
-) {
-  switch (decisionMode) {
-    case "preventive_block":
-      return "destructive"
-    case "review_additional":
-      return "outline"
-    case "automatic":
-    default:
-      return "secondary"
-  }
-}
+const DECISION_MODE_BADGE_VARIANTS = {
+  preventive_block: "destructive",
+  review_additional: "outline",
+  automatic: "secondary",
+} as const satisfies Record<DecisionMode, string>
 
-function getPartnerSignalBadgeVariant(
-  signal: NonNullable<ReturnType<typeof getMockPartnerIndicatorProfile>>["impact"]["confidenceSignal"],
-) {
-  switch (signal) {
-    case "caution":
-      return "outline"
-    case "neutral":
-      return "secondary"
-    case "reinforce":
-    default:
-      return "default"
-  }
-}
+const PARTNER_SIGNAL_CONFIG = {
+  caution: {
+    badgeVariant: "outline",
+    label: "Reforca cautela",
+  },
+  neutral: {
+    badgeVariant: "secondary",
+    label: "Complemento moderado",
+  },
+  reinforce: {
+    badgeVariant: "default",
+    label: "Reforca confianca",
+  },
+} as const satisfies Record<
+  PartnerConfidenceSignal,
+  { badgeVariant: string; label: string }
+>
 
-function getPartnerSignalLabel(
-  signal: NonNullable<ReturnType<typeof getMockPartnerIndicatorProfile>>["impact"]["confidenceSignal"],
-) {
-  switch (signal) {
-    case "caution":
-      return "Reforca cautela"
-    case "neutral":
-      return "Complemento moderado"
-    case "reinforce":
-    default:
-      return "Reforca confianca"
-  }
-}
+const EMAIL_CATEGORY_CONFIG = {
+  decision: {
+    badgeVariant: "secondary",
+    label: "Decisao",
+  },
+  transparency: {
+    badgeVariant: "outline",
+    label: "Transparencia",
+  },
+  risk: {
+    badgeVariant: "outline",
+    label: "Risco",
+  },
+  security: {
+    badgeVariant: "destructive",
+    label: "Seguranca",
+  },
+  operation: {
+    badgeVariant: "secondary",
+    label: "Operacao",
+  },
+} as const satisfies Record<
+  EmailCategory,
+  { badgeVariant: string; label: string }
+>
 
-function getEmailCategoryBadgeVariant(
-  category: ReturnType<typeof buildEmailCommunicationBundle>["primary"]["category"],
-) {
-  switch (category) {
-    case "security":
-      return "destructive"
-    case "risk":
-      return "outline"
-    case "operation":
-      return "secondary"
-    case "transparency":
-      return "outline"
-    case "decision":
-    default:
-      return "secondary"
-  }
-}
+const EMAIL_STATUS_LABELS = {
+  sent_mock: "Envio mockado",
+  queued: "Na fila",
+  previewed: "Preview",
+  generated: "Gerado",
+} as const satisfies Record<EmailStatus, string>
 
-function getEmailCategoryLabel(
-  category: ReturnType<typeof buildEmailCommunicationBundle>["primary"]["category"],
-) {
-  switch (category) {
-    case "decision":
-      return "Decisao"
-    case "transparency":
-      return "Transparencia"
-    case "risk":
-      return "Risco"
-    case "security":
-      return "Seguranca"
-    case "operation":
-    default:
-      return "Operacao"
-  }
-}
-
-function getEmailStatusLabel(
-  status: ReturnType<typeof buildEmailCommunicationBundle>["primary"]["status"],
-) {
-  switch (status) {
-    case "sent_mock":
-      return "Envio mockado"
-    case "queued":
-      return "Na fila"
-    case "previewed":
-      return "Preview"
-    case "generated":
-    default:
-      return "Gerado"
-  }
-}
-
-function getLimitActionLabel(
-  action: ReturnType<typeof evaluatePostCreditMonitoring>["limitRecommendation"]["action"],
-) {
-  switch (action) {
-    case "manual_review":
-      return "Revisao manual"
-    case "reduce_future_exposure":
-      return "Reduzir exposicao"
-    case "freeze_growth":
-      return "Congelar crescimento"
-    case "renegotiation_watch":
-      return "Observar renegociacao"
-    case "maintain":
-    default:
-      return "Manter limite"
-  }
-}
+const LIMIT_ACTION_LABELS = {
+  manual_review: "Revisao manual",
+  reduce_future_exposure: "Reduzir exposicao",
+  freeze_growth: "Congelar crescimento",
+  renegotiation_watch: "Observar renegociacao",
+  maintain: "Manter limite",
+} as const satisfies Record<LimitAction, string>

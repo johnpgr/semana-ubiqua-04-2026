@@ -9,6 +9,15 @@ import {
 import { evaluatePostCreditMonitoring } from "../postCreditMonitoring"
 import type { CreditDecision, ScoreTransaction } from "../scoreEngine"
 
+const CREDIT_DECISIONS = [
+  "approved",
+  "approved_reduced",
+  "further_review",
+  "denied",
+] as const satisfies readonly CreditDecision[]
+
+const CREDIT_DECISION_SET = new Set<string>(CREDIT_DECISIONS)
+
 type AnalysisRequestSnapshot = {
   id: string
   requested_amount: number
@@ -63,14 +72,18 @@ export function buildAnalysisView({
   mockProfile?: string | null
   recipientName?: string | null
 }) {
-  if (!score || !isCreditDecision(request.decision)) {
+  if (!score || !request.decision || !CREDIT_DECISION_SET.has(request.decision)) {
     return null
   }
 
+  const decision = request.decision as CreditDecision
   const history = requestHistory.map((historyRow) => ({
     id: historyRow.id,
     status: historyRow.status,
-    decision: isCreditDecision(historyRow.decision) ? historyRow.decision : null,
+    decision:
+      historyRow.decision && CREDIT_DECISION_SET.has(historyRow.decision)
+        ? (historyRow.decision as CreditDecision)
+        : null,
     approvedAmount: historyRow.approved_amount,
     createdAt: historyRow.created_at,
     decidedAt: historyRow.decided_at,
@@ -79,7 +92,7 @@ export function buildAnalysisView({
   const progressiveCredit = evaluateProgressiveCreditState({
     requestedAmount: request.requested_amount,
     score: score.value,
-    baseDecision: request.decision,
+    baseDecision: decision,
     baseSuggestedLimit: score.suggested_limit,
     requestHistory: history,
   })
@@ -103,7 +116,7 @@ export function buildAnalysisView({
   const monitoring = evaluatePostCreditMonitoring({
     transactions: scoreTransactions,
     creditScoreValue: score.value,
-    creditDecision: request.decision,
+    creditDecision: decision,
     suggestedLimit: score.suggested_limit,
     approvedAmount: request.approved_amount,
     fraudScoreValue: partnerFraud?.value,
@@ -113,7 +126,7 @@ export function buildAnalysisView({
     requestHistory: history,
   })
   const explainability = buildDecisionExplainability({
-    decision: request.decision,
+    decision,
     scoreValue: score.value,
     suggestedLimit: score.suggested_limit,
     reasons: score.reasons,
@@ -127,7 +140,7 @@ export function buildAnalysisView({
     recipientName,
     requestedAmount: request.requested_amount,
     approvedAmount: request.approved_amount ?? score.suggested_limit,
-    decision: request.decision,
+    decision,
     scoreValue: score.value,
     explainability,
     progressiveCredit,
@@ -163,15 +176,6 @@ function mapTransactions(
       description: transaction.description ?? undefined,
       source: transaction.source ?? undefined,
     }))
-}
-
-function isCreditDecision(value: string | null): value is CreditDecision {
-  return (
-    value === "approved" ||
-    value === "approved_reduced" ||
-    value === "further_review" ||
-    value === "denied"
-  )
 }
 
 function normalizeIpAddress(value: unknown) {

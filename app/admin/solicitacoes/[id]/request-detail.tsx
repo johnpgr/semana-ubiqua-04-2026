@@ -365,15 +365,15 @@ export function RequestDetail({
                 ) : null}
                 {fraudScore ? (
                   <KeyValueRow label="Risco de fraude">
-                    <Badge variant={getFraudBadgeVariant(partnerFraud?.riskLevel ?? fraudScore.riskLevel)}>
-                      {getFraudRiskLabel(partnerFraud?.riskLevel ?? fraudScore.riskLevel)}
+                    <Badge variant={RISK_BADGE_VARIANTS[partnerFraud?.riskLevel ?? fraudScore.riskLevel]}>
+                      {FRAUD_RISK_LABELS[partnerFraud?.riskLevel ?? fraudScore.riskLevel]}
                     </Badge>
                   </KeyValueRow>
                 ) : null}
                 {monitoring ? (
                   <KeyValueRow label="Monitoramento">
-                    <Badge variant={getMonitoringBadgeVariant(monitoring.riskLevel)}>
-                      {getMonitoringRiskLabel(monitoring.riskLevel)}
+                    <Badge variant={RISK_BADGE_VARIANTS[monitoring.riskLevel]}>
+                      {MONITORING_RISK_LABELS[monitoring.riskLevel]}
                     </Badge>
                   </KeyValueRow>
                 ) : null}
@@ -454,8 +454,8 @@ export function RequestDetail({
               </CardHeader>
               <CardContent className="space-y-4 text-sm">
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant={getFraudBadgeVariant(partnerFraud.riskLevel)}>
-                    {getFraudRiskLabel(partnerFraud.riskLevel)}
+                  <Badge variant={RISK_BADGE_VARIANTS[partnerFraud.riskLevel]}>
+                    {FRAUD_RISK_LABELS[partnerFraud.riskLevel]}
                   </Badge>
                   <Badge variant="outline">Score {partnerFraud.value}</Badge>
                 </div>
@@ -503,11 +503,11 @@ export function RequestDetail({
               </CardHeader>
               <CardContent className="space-y-4 text-sm">
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant={getMonitoringBadgeVariant(monitoring.riskLevel)}>
-                    {getMonitoringRiskLabel(monitoring.riskLevel)}
+                  <Badge variant={RISK_BADGE_VARIANTS[monitoring.riskLevel]}>
+                    {MONITORING_RISK_LABELS[monitoring.riskLevel]}
                   </Badge>
                   <Badge variant="outline">
-                    {getLimitActionLabel(monitoring.limitRecommendation.action)}
+                    {LIMIT_ACTION_LABELS[monitoring.limitRecommendation.action]}
                   </Badge>
                 </div>
                 <p className="text-muted-foreground">
@@ -515,18 +515,18 @@ export function RequestDetail({
                   pagamento ainda serao incorporados em evolucoes futuras.
                 </p>
                 <div className="grid gap-3 md:grid-cols-2">
-                  <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
-                    <div className="text-muted-foreground">Elegibilidade</div>
-                    <div className="mt-1 font-medium">
-                      {getEligibilityLabel(monitoring.eligibility.status)}
+                    <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                      <div className="text-muted-foreground">Elegibilidade</div>
+                      <div className="mt-1 font-medium">
+                        {ELIGIBILITY_LABELS[monitoring.eligibility.status]}
+                      </div>
                     </div>
-                  </div>
-                  <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
-                    <div className="text-muted-foreground">Limite futuro</div>
-                    <div className="mt-1 font-medium">
-                      {getLimitActionLabel(monitoring.limitRecommendation.action)}
+                    <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                      <div className="text-muted-foreground">Limite futuro</div>
+                      <div className="mt-1 font-medium">
+                        {LIMIT_ACTION_LABELS[monitoring.limitRecommendation.action]}
+                      </div>
                     </div>
-                  </div>
                 </div>
                 {monitoring.alerts.length > 0 ? (
                   <ul className="list-disc space-y-1 pl-4 text-sm">
@@ -550,8 +550,12 @@ export function RequestDetail({
               <CardContent className="space-y-4 text-sm">
                 <div className="flex flex-wrap gap-2">
                   <Badge variant="secondary">{partnerIndicators.partnerName}</Badge>
-                  <Badge variant={getPartnerSignalBadgeVariant(partnerIndicators.impact.confidenceSignal)}>
-                    {getPartnerSignalLabel(partnerIndicators.impact.confidenceSignal)}
+                  <Badge
+                    variant={
+                      PARTNER_SIGNAL_CONFIG[partnerIndicators.impact.confidenceSignal].badgeVariant
+                    }
+                  >
+                    {PARTNER_SIGNAL_CONFIG[partnerIndicators.impact.confidenceSignal].label}
                   </Badge>
                 </div>
                 <p className="text-muted-foreground">{partnerIndicators.summary}</p>
@@ -570,13 +574,13 @@ export function RequestDetail({
                   </div>
                 </div>
                 <ul className="list-disc space-y-1 pl-4 text-sm">
-                  {partnerIndicators.indicators.map((indicator) => (
-                    <li key={`${indicator.partnerId}-${indicator.indicatorType}`}>
-                      <span className="font-medium">
-                        {getPartnerIndicatorLabel(indicator.indicatorType)}:
-                      </span>{" "}
-                      {indicator.indicatorValue}/100 com confianca {Math.round(indicator.confidenceLevel * 100)}%.
-                    </li>
+                    {partnerIndicators.indicators.map((indicator) => (
+                      <li key={`${indicator.partnerId}-${indicator.indicatorType}`}>
+                        <span className="font-medium">
+                          {PARTNER_INDICATOR_LABELS[indicator.indicatorType]}:
+                        </span>{" "}
+                        {indicator.indicatorValue}/100 com confianca {Math.round(indicator.confidenceLevel * 100)}%.
+                      </li>
                   ))}
                 </ul>
                 <p className="text-muted-foreground">
@@ -593,9 +597,7 @@ export function RequestDetail({
               </CardHeader>
               <CardContent className="space-y-4 text-sm">
                 <div className="flex flex-wrap gap-2">
-                  <Badge
-                    variant={getDecisionModeBadgeVariant(explainability.decisionMode)}
-                  >
+                  <Badge variant={DECISION_MODE_BADGE_VARIANTS[explainability.decisionMode]}>
                     {explainability.decisionModeLabel}
                   </Badge>
                   <Badge variant="outline">Mensagem ao usuario</Badge>
@@ -662,12 +664,12 @@ export function RequestDetail({
               <CardContent className="space-y-4 text-sm">
                 <div className="flex flex-wrap gap-2">
                   <Badge
-                    variant={getEmailCategoryBadgeVariant(emailCommunication.primary.category)}
+                    variant={EMAIL_CATEGORY_CONFIG[emailCommunication.primary.category].badgeVariant}
                   >
-                    {getEmailCategoryLabel(emailCommunication.primary.category)}
+                    {EMAIL_CATEGORY_CONFIG[emailCommunication.primary.category].label}
                   </Badge>
                   <Badge variant="outline">
-                    {getEmailStatusLabel(emailCommunication.primary.status)}
+                    {EMAIL_STATUS_LABELS[emailCommunication.primary.status]}
                   </Badge>
                 </div>
                 <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
@@ -894,8 +896,8 @@ export function RequestDetail({
                   {fraudScore ? (
                     <KeyValueRow label="Fraud Score">
                       <div className="flex flex-wrap items-center justify-end gap-2">
-                        <Badge variant={getFraudBadgeVariant(partnerFraud?.riskLevel ?? fraudScore.riskLevel)}>
-                          {getFraudRiskLabel(partnerFraud?.riskLevel ?? fraudScore.riskLevel)}
+                        <Badge variant={RISK_BADGE_VARIANTS[partnerFraud?.riskLevel ?? fraudScore.riskLevel]}>
+                          {FRAUD_RISK_LABELS[partnerFraud?.riskLevel ?? fraudScore.riskLevel]}
                         </Badge>
                         <span className="font-medium">{partnerFraud?.value ?? fraudScore.value}</span>
                       </div>
@@ -904,11 +906,11 @@ export function RequestDetail({
                   {monitoring ? (
                     <KeyValueRow label="Acompanhamento inicial">
                       <div className="flex flex-wrap items-center justify-end gap-2">
-                        <Badge variant={getMonitoringBadgeVariant(monitoring.riskLevel)}>
-                          {getMonitoringRiskLabel(monitoring.riskLevel)}
+                        <Badge variant={RISK_BADGE_VARIANTS[monitoring.riskLevel]}>
+                          {MONITORING_RISK_LABELS[monitoring.riskLevel]}
                         </Badge>
                         <span className="font-medium">
-                          {getEligibilityLabel(monitoring.eligibility.status)}
+                          {ELIGIBILITY_LABELS[monitoring.eligibility.status]}
                         </span>
                       </div>
                     </KeyValueRow>
@@ -957,9 +959,7 @@ export function RequestDetail({
                   </CardHeader>
                   <CardContent className="space-y-3 text-sm">
                     <KeyValueRow label="Modo da decisao">
-                      <Badge
-                        variant={getDecisionModeBadgeVariant(explainability.decisionMode)}
-                      >
+                      <Badge variant={DECISION_MODE_BADGE_VARIANTS[explainability.decisionMode]}>
                         {explainability.decisionModeLabel}
                       </Badge>
                     </KeyValueRow>
@@ -995,12 +995,12 @@ export function RequestDetail({
                 <CardContent className="space-y-4 text-sm">
                   <div className="flex flex-wrap gap-2">
                     <Badge
-                      variant={getEmailCategoryBadgeVariant(emailCommunication.primary.category)}
+                      variant={EMAIL_CATEGORY_CONFIG[emailCommunication.primary.category].badgeVariant}
                     >
-                      {getEmailCategoryLabel(emailCommunication.primary.category)}
+                      {EMAIL_CATEGORY_CONFIG[emailCommunication.primary.category].label}
                     </Badge>
                     <Badge variant="outline">
-                      {getEmailStatusLabel(emailCommunication.primary.status)}
+                      {EMAIL_STATUS_LABELS[emailCommunication.primary.status]}
                     </Badge>
                   </div>
                   <KeyValueRow label="Tipo">
@@ -1038,16 +1038,16 @@ export function RequestDetail({
                       key={communication.id}
                       className="rounded-xl border border-border/70 bg-muted/30 p-3"
                     >
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge
-                          variant={getEmailCategoryBadgeVariant(communication.category)}
-                        >
-                          {getEmailCategoryLabel(communication.category)}
-                        </Badge>
-                        <Badge variant="outline">
-                          {getEmailStatusLabel(communication.status)}
-                        </Badge>
-                      </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge
+                            variant={EMAIL_CATEGORY_CONFIG[communication.category].badgeVariant}
+                          >
+                            {EMAIL_CATEGORY_CONFIG[communication.category].label}
+                          </Badge>
+                          <Badge variant="outline">
+                            {EMAIL_STATUS_LABELS[communication.status]}
+                          </Badge>
+                        </div>
                       <div className="mt-3 font-medium">{communication.subject}</div>
                       <p className="mt-1 text-muted-foreground">
                         {communication.preview}
@@ -1079,13 +1079,13 @@ export function RequestDetail({
                           <div className="flex flex-wrap items-center gap-2">
                             <div className="font-medium">{log.action}</div>
                             {metadata?.category ? (
-                              <Badge variant={getEmailCategoryBadgeVariant(metadata.category)}>
-                                {getEmailCategoryLabel(metadata.category)}
+                              <Badge variant={EMAIL_CATEGORY_CONFIG[metadata.category].badgeVariant}>
+                                {EMAIL_CATEGORY_CONFIG[metadata.category].label}
                               </Badge>
                             ) : null}
                             {metadata?.status ? (
                               <Badge variant="outline">
-                                {getEmailStatusLabel(metadata.status)}
+                                {EMAIL_STATUS_LABELS[metadata.status]}
                               </Badge>
                             ) : null}
                           </div>
@@ -1167,181 +1167,106 @@ export function RequestDetail({
   )
 }
 
-function getFraudBadgeVariant(riskLevel: ReturnType<typeof calculateFraudScore>["riskLevel"]) {
-  switch (riskLevel) {
-    case "critical":
-      return "destructive"
-    case "high":
-      return "destructive"
-    case "moderate":
-      return "outline"
-    case "low":
-    default:
-      return "secondary"
-  }
-}
+type FraudRiskLevel = ReturnType<typeof calculateFraudScore>["riskLevel"]
+type MonitoringRiskLevel = ReturnType<typeof evaluatePostCreditMonitoring>["riskLevel"]
+type DecisionMode = ReturnType<typeof buildDecisionExplainability>["decisionMode"]
+type PartnerConfidenceSignal = NonNullable<
+  ReturnType<typeof getMockPartnerIndicatorProfile>
+>["impact"]["confidenceSignal"]
+type PartnerIndicatorType = NonNullable<
+  ReturnType<typeof getMockPartnerIndicatorProfile>
+>["indicators"][number]["indicatorType"]
+type EmailCategory = ReturnType<typeof buildEmailCommunicationBundle>["primary"]["category"]
+type EmailStatus = ReturnType<typeof buildEmailCommunicationBundle>["primary"]["status"]
+type EligibilityStatus = ReturnType<typeof evaluatePostCreditMonitoring>["eligibility"]["status"]
+type LimitAction = ReturnType<typeof evaluatePostCreditMonitoring>["limitRecommendation"]["action"]
 
-function getFraudRiskLabel(riskLevel: ReturnType<typeof calculateFraudScore>["riskLevel"]) {
-  switch (riskLevel) {
-    case "critical":
-      return "Fraude critica"
-    case "high":
-      return "Fraude alta"
-    case "moderate":
-      return "Fraude moderada"
-    case "low":
-    default:
-      return "Fraude baixa"
-  }
-}
+const RISK_BADGE_VARIANTS = {
+  critical: "destructive",
+  high: "destructive",
+  moderate: "outline",
+  low: "secondary",
+} as const satisfies Record<FraudRiskLevel | MonitoringRiskLevel, BadgeVariant>
 
-function getMonitoringBadgeVariant(
-  riskLevel: ReturnType<typeof evaluatePostCreditMonitoring>["riskLevel"],
-) {
-  switch (riskLevel) {
-    case "critical":
-      return "destructive"
-    case "high":
-      return "destructive"
-    case "moderate":
-      return "outline"
-    case "low":
-    default:
-      return "secondary"
-  }
-}
+const FRAUD_RISK_LABELS = {
+  critical: "Fraude critica",
+  high: "Fraude alta",
+  moderate: "Fraude moderada",
+  low: "Fraude baixa",
+} as const satisfies Record<FraudRiskLevel, string>
 
-function getMonitoringRiskLabel(
-  riskLevel: ReturnType<typeof evaluatePostCreditMonitoring>["riskLevel"],
-) {
-  switch (riskLevel) {
-    case "critical":
-      return "Risco critico"
-    case "high":
-      return "Risco alto"
-    case "moderate":
-      return "Risco moderado"
-    case "low":
-    default:
-      return "Risco baixo"
-  }
-}
+const MONITORING_RISK_LABELS = {
+  critical: "Risco critico",
+  high: "Risco alto",
+  moderate: "Risco moderado",
+  low: "Risco baixo",
+} as const satisfies Record<MonitoringRiskLevel, string>
 
-function getDecisionModeBadgeVariant(
-  decisionMode: ReturnType<typeof buildDecisionExplainability>["decisionMode"],
-) {
-  switch (decisionMode) {
-    case "preventive_block":
-      return "destructive"
-    case "review_additional":
-      return "outline"
-    case "automatic":
-    default:
-      return "secondary"
-  }
-}
+const DECISION_MODE_BADGE_VARIANTS = {
+  preventive_block: "destructive",
+  review_additional: "outline",
+  automatic: "secondary",
+} as const satisfies Record<DecisionMode, BadgeVariant>
 
-function getPartnerSignalBadgeVariant(
-  signal: NonNullable<ReturnType<typeof getMockPartnerIndicatorProfile>>["impact"]["confidenceSignal"],
-) {
-  switch (signal) {
-    case "caution":
-      return "outline"
-    case "neutral":
-      return "secondary"
-    case "reinforce":
-    default:
-      return "default"
-  }
-}
+const PARTNER_SIGNAL_CONFIG = {
+  caution: {
+    badgeVariant: "outline",
+    label: "Reforca cautela",
+  },
+  neutral: {
+    badgeVariant: "secondary",
+    label: "Complemento moderado",
+  },
+  reinforce: {
+    badgeVariant: "default",
+    label: "Reforca confianca",
+  },
+} as const satisfies Record<
+  PartnerConfidenceSignal,
+  { badgeVariant: BadgeVariant; label: string }
+>
 
-function getPartnerSignalLabel(
-  signal: NonNullable<ReturnType<typeof getMockPartnerIndicatorProfile>>["impact"]["confidenceSignal"],
-) {
-  switch (signal) {
-    case "caution":
-      return "Reforca cautela"
-    case "neutral":
-      return "Complemento moderado"
-    case "reinforce":
-    default:
-      return "Reforca confianca"
-  }
-}
-
-function getPartnerIndicatorLabel(
-  indicatorType: NonNullable<ReturnType<typeof getMockPartnerIndicatorProfile>>["indicators"][number]["indicatorType"],
-) {
-  switch (indicatorType) {
-    case "performance_score":
-      return "Score de desempenho"
-    case "activity_regularity":
-      return "Regularidade de atividade"
-    case "activity_level":
-      return "Nivel de atividade"
-    case "external_trust":
-      return "Confianca externa"
-    case "operational_consistency":
-    default:
-      return "Consistencia operacional"
-  }
-}
+const PARTNER_INDICATOR_LABELS = {
+  performance_score: "Score de desempenho",
+  activity_regularity: "Regularidade de atividade",
+  activity_level: "Nivel de atividade",
+  external_trust: "Confianca externa",
+  operational_consistency: "Consistencia operacional",
+} as const satisfies Record<PartnerIndicatorType, string>
 
 function formatSignedNumber(value: number) {
   return value > 0 ? `+${value}` : `${value}`
 }
 
-function getEmailCategoryBadgeVariant(
-  category: ReturnType<typeof buildEmailCommunicationBundle>["primary"]["category"],
-) {
-  switch (category) {
-    case "security":
-      return "destructive"
-    case "risk":
-      return "outline"
-    case "operation":
-      return "secondary"
-    case "transparency":
-      return "outline"
-    case "decision":
-    default:
-      return "secondary"
-  }
-}
+const EMAIL_CATEGORY_CONFIG = {
+  decision: {
+    badgeVariant: "secondary",
+    label: "Decisao",
+  },
+  transparency: {
+    badgeVariant: "outline",
+    label: "Transparencia",
+  },
+  risk: {
+    badgeVariant: "outline",
+    label: "Risco",
+  },
+  security: {
+    badgeVariant: "destructive",
+    label: "Seguranca",
+  },
+  operation: {
+    badgeVariant: "secondary",
+    label: "Operacao",
+  },
+} as const satisfies Record<EmailCategory, { badgeVariant: BadgeVariant; label: string }>
 
-function getEmailCategoryLabel(
-  category: ReturnType<typeof buildEmailCommunicationBundle>["primary"]["category"],
-) {
-  switch (category) {
-    case "decision":
-      return "Decisao"
-    case "transparency":
-      return "Transparencia"
-    case "risk":
-      return "Risco"
-    case "security":
-      return "Seguranca"
-    case "operation":
-    default:
-      return "Operacao"
-  }
-}
-
-function getEmailStatusLabel(
-  status: ReturnType<typeof buildEmailCommunicationBundle>["primary"]["status"],
-) {
-  switch (status) {
-    case "sent_mock":
-      return "Envio mockado"
-    case "queued":
-      return "Na fila"
-    case "previewed":
-      return "Preview"
-    case "generated":
-    default:
-      return "Gerado"
-  }
-}
+const EMAIL_STATUS_LABELS = {
+  sent_mock: "Envio mockado",
+  queued: "Na fila",
+  previewed: "Preview",
+  generated: "Gerado",
+} as const satisfies Record<EmailStatus, string>
 
 function parseEmailAuditMetadata(metadata: unknown) {
   if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) {
@@ -1363,38 +1288,18 @@ function parseEmailAuditMetadata(metadata: unknown) {
   }
 }
 
-function getEligibilityLabel(
-  status: ReturnType<typeof evaluatePostCreditMonitoring>["eligibility"]["status"],
-) {
-  switch (status) {
-    case "blocked":
-      return "Bloqueada"
-    case "review_required":
-      return "Revisao obrigatoria"
-    case "frozen":
-      return "Congelada"
-    case "watch":
-      return "Em observacao"
-    case "eligible":
-    default:
-      return "Elegivel"
-  }
-}
+const ELIGIBILITY_LABELS = {
+  blocked: "Bloqueada",
+  review_required: "Revisao obrigatoria",
+  frozen: "Congelada",
+  watch: "Em observacao",
+  eligible: "Elegivel",
+} as const satisfies Record<EligibilityStatus, string>
 
-function getLimitActionLabel(
-  action: ReturnType<typeof evaluatePostCreditMonitoring>["limitRecommendation"]["action"],
-) {
-  switch (action) {
-    case "manual_review":
-      return "Revisao manual"
-    case "reduce_future_exposure":
-      return "Reduzir exposicao"
-    case "freeze_growth":
-      return "Congelar crescimento"
-    case "renegotiation_watch":
-      return "Observar renegociacao"
-    case "maintain":
-    default:
-      return "Manter limite"
-  }
-}
+const LIMIT_ACTION_LABELS = {
+  manual_review: "Revisao manual",
+  reduce_future_exposure: "Reduzir exposicao",
+  freeze_growth: "Congelar crescimento",
+  renegotiation_watch: "Observar renegociacao",
+  maintain: "Manter limite",
+} as const satisfies Record<LimitAction, string>

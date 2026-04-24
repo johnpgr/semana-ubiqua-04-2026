@@ -1,4 +1,5 @@
 import { decideCredit } from "../scoreEngine/decision"
+import type { MockProfile } from "../mockData/profiles"
 import type { CreditDecision, ScoreBreakdown } from "../scoreEngine/types"
 import type { FraudRiskLevel, FraudScoreResult, FraudSignal } from "../fraudScore"
 
@@ -64,263 +65,273 @@ export type PartnerFraudAdjustment = {
   impactSummary: string
 }
 
+const MOCK_PARTNER_PROFILE_MEASURED_AT = "2026-04-01T12:00:00.000Z"
+
+const MOCK_PARTNER_INDICATOR_PROFILES = {
+  perfil_forte: {
+    partnerId: "urban-move",
+    partnerName: "UrbanMove",
+    partnerCategory: "mobility",
+    summary:
+      "Indicadores agregados mostram atividade forte, regularidade alta e boa confianca operacional.",
+    indicators: [
+      buildIndicator({
+        partnerId: "urban-move",
+        partnerName: "UrbanMove",
+        indicatorType: "performance_score",
+        indicatorValue: 92,
+        timeWindow: "last_90_days",
+        confidenceLevel: 0.9,
+        measuredAt: MOCK_PARTNER_PROFILE_MEASURED_AT,
+        usageContext: "credit_score",
+        metadata: { label: "Desempenho operacional premium" },
+      }),
+      buildIndicator({
+        partnerId: "urban-move",
+        partnerName: "UrbanMove",
+        indicatorType: "activity_regularity",
+        indicatorValue: 88,
+        timeWindow: "last_90_days",
+        confidenceLevel: 0.88,
+        measuredAt: MOCK_PARTNER_PROFILE_MEASURED_AT,
+        usageContext: "shared",
+        metadata: { label: "Regularidade muito alta" },
+      }),
+      buildIndicator({
+        partnerId: "urban-move",
+        partnerName: "UrbanMove",
+        indicatorType: "external_trust",
+        indicatorValue: 91,
+        timeWindow: "last_180_days",
+        confidenceLevel: 0.87,
+        measuredAt: MOCK_PARTNER_PROFILE_MEASURED_AT,
+        usageContext: "fraud_score",
+        metadata: { label: "Confianca externa forte" },
+      }),
+    ],
+    impact: {
+      creditScoreDelta: 34,
+      suggestedLimitMultiplier: 1.08,
+      fraudScoreDelta: -40,
+      confidenceSignal: "reinforce",
+      summary:
+        "Os indicadores externos reforcam estabilidade e autenticidade, sem substituir a leitura interna.",
+    },
+  },
+  motorista_consistente: {
+    partnerId: "rota-flex",
+    partnerName: "RotaFlex",
+    partnerCategory: "mobility",
+    summary:
+      "O parceiro mostra boa frequencia de atividade, regularidade consistente e confianca externa favoravel.",
+    indicators: [
+      buildIndicator({
+        partnerId: "rota-flex",
+        partnerName: "RotaFlex",
+        indicatorType: "activity_level",
+        indicatorValue: 79,
+        timeWindow: "last_90_days",
+        confidenceLevel: 0.82,
+        measuredAt: MOCK_PARTNER_PROFILE_MEASURED_AT,
+        usageContext: "credit_score",
+        metadata: { label: "Atividade alta" },
+      }),
+      buildIndicator({
+        partnerId: "rota-flex",
+        partnerName: "RotaFlex",
+        indicatorType: "activity_regularity",
+        indicatorValue: 77,
+        timeWindow: "last_90_days",
+        confidenceLevel: 0.84,
+        measuredAt: MOCK_PARTNER_PROFILE_MEASURED_AT,
+        usageContext: "shared",
+        metadata: { label: "Regularidade consistente" },
+      }),
+      buildIndicator({
+        partnerId: "rota-flex",
+        partnerName: "RotaFlex",
+        indicatorType: "operational_consistency",
+        indicatorValue: 81,
+        timeWindow: "last_90_days",
+        confidenceLevel: 0.79,
+        measuredAt: MOCK_PARTNER_PROFILE_MEASURED_AT,
+        usageContext: "fraud_score",
+        metadata: { label: "Consistencia operacional boa" },
+      }),
+    ],
+    impact: {
+      creditScoreDelta: 22,
+      suggestedLimitMultiplier: 1.05,
+      fraudScoreDelta: -24,
+      confidenceSignal: "reinforce",
+      summary:
+        "Os indicadores externos ajudam a reduzir incerteza e reforcam atividade recorrente observada fora do app.",
+    },
+  },
+  autonomo_irregular: {
+    partnerId: "freela-hub",
+    partnerName: "FreelaHub",
+    partnerCategory: "marketplace",
+    summary:
+      "Ha sinais mistos de atividade e desempenho, com reforco moderado de confianca, mas sem estabilidade plena.",
+    indicators: [
+      buildIndicator({
+        partnerId: "freela-hub",
+        partnerName: "FreelaHub",
+        indicatorType: "performance_score",
+        indicatorValue: 64,
+        timeWindow: "last_90_days",
+        confidenceLevel: 0.68,
+        measuredAt: MOCK_PARTNER_PROFILE_MEASURED_AT,
+        usageContext: "credit_score",
+        metadata: { label: "Desempenho moderado" },
+      }),
+      buildIndicator({
+        partnerId: "freela-hub",
+        partnerName: "FreelaHub",
+        indicatorType: "activity_regularity",
+        indicatorValue: 49,
+        timeWindow: "last_90_days",
+        confidenceLevel: 0.62,
+        measuredAt: MOCK_PARTNER_PROFILE_MEASURED_AT,
+        usageContext: "shared",
+        metadata: { label: "Regularidade irregular" },
+      }),
+      buildIndicator({
+        partnerId: "freela-hub",
+        partnerName: "FreelaHub",
+        indicatorType: "external_trust",
+        indicatorValue: 58,
+        timeWindow: "last_180_days",
+        confidenceLevel: 0.64,
+        measuredAt: MOCK_PARTNER_PROFILE_MEASURED_AT,
+        usageContext: "fraud_score",
+        metadata: { label: "Confianca externa moderada" },
+      }),
+    ],
+    impact: {
+      creditScoreDelta: 8,
+      suggestedLimitMultiplier: 1.02,
+      fraudScoreDelta: -6,
+      confidenceSignal: "neutral",
+      summary:
+        "Os indicadores externos ajudam um pouco, mas ainda mantem leitura cautelosa por causa da irregularidade.",
+    },
+  },
+  fluxo_instavel: {
+    partnerId: "quickdrop",
+    partnerName: "QuickDrop",
+    partnerCategory: "delivery",
+    summary:
+      "O parceiro mostra oscilacao operacional, baixa regularidade e sinais que pedem cautela adicional.",
+    indicators: [
+      buildIndicator({
+        partnerId: "quickdrop",
+        partnerName: "QuickDrop",
+        indicatorType: "activity_regularity",
+        indicatorValue: 28,
+        timeWindow: "last_60_days",
+        confidenceLevel: 0.77,
+        measuredAt: MOCK_PARTNER_PROFILE_MEASURED_AT,
+        usageContext: "shared",
+        metadata: { label: "Regularidade baixa" },
+      }),
+      buildIndicator({
+        partnerId: "quickdrop",
+        partnerName: "QuickDrop",
+        indicatorType: "operational_consistency",
+        indicatorValue: 33,
+        timeWindow: "last_60_days",
+        confidenceLevel: 0.74,
+        measuredAt: MOCK_PARTNER_PROFILE_MEASURED_AT,
+        usageContext: "fraud_score",
+        metadata: { label: "Consistencia operacional fraca" },
+      }),
+      buildIndicator({
+        partnerId: "quickdrop",
+        partnerName: "QuickDrop",
+        indicatorType: "external_trust",
+        indicatorValue: 41,
+        timeWindow: "last_90_days",
+        confidenceLevel: 0.71,
+        measuredAt: MOCK_PARTNER_PROFILE_MEASURED_AT,
+        usageContext: "shared",
+        metadata: { label: "Confianca externa baixa" },
+      }),
+    ],
+    impact: {
+      creditScoreDelta: -28,
+      suggestedLimitMultiplier: 0.9,
+      fraudScoreDelta: 65,
+      confidenceSignal: "caution",
+      summary:
+        "Os indicadores externos reforcam cautela e ajudam a conter confianca quando o comportamento operacional externo e fraco.",
+    },
+  },
+  historico_insuficiente: {
+    partnerId: "corrida-ja",
+    partnerName: "CorridaJa",
+    partnerCategory: "mobility",
+    summary:
+      "Existe atividade externa recente, mas em janela curta e com confianca ainda limitada para reduzir cautela por completo.",
+    indicators: [
+      buildIndicator({
+        partnerId: "corrida-ja",
+        partnerName: "CorridaJa",
+        indicatorType: "activity_level",
+        indicatorValue: 61,
+        timeWindow: "last_30_days",
+        confidenceLevel: 0.55,
+        measuredAt: MOCK_PARTNER_PROFILE_MEASURED_AT,
+        usageContext: "credit_score",
+        metadata: { label: "Atividade recente" },
+      }),
+      buildIndicator({
+        partnerId: "corrida-ja",
+        partnerName: "CorridaJa",
+        indicatorType: "external_trust",
+        indicatorValue: 57,
+        timeWindow: "last_30_days",
+        confidenceLevel: 0.52,
+        measuredAt: MOCK_PARTNER_PROFILE_MEASURED_AT,
+        usageContext: "fraud_score",
+        metadata: { label: "Confianca externa ainda curta" },
+      }),
+    ],
+    impact: {
+      creditScoreDelta: 10,
+      suggestedLimitMultiplier: 1,
+      fraudScoreDelta: -8,
+      confidenceSignal: "neutral",
+      summary:
+        "Os indicadores externos ajudam a reduzir um pouco a incerteza, mas nao substituem a falta de historico local mais profundo.",
+    },
+  },
+} as const satisfies Record<MockProfile, PartnerIndicatorProfile>
+
+const FRAUD_OPERATIONAL_RECOMMENDATIONS = {
+  critical:
+    "Bloquear concessao automatica e registrar trilha reforcada para revisao.",
+  high: "Encaminhar para revisao manual antes de qualquer liberacao.",
+  moderate: "Reduzir exposicao inicial e monitorar sinais de autenticidade.",
+  low: "Seguir fluxo normal com monitoramento antifraude padrao.",
+} as const satisfies Record<FraudRiskLevel, string>
+
+const FRAUD_RISK_LABELS = {
+  critical: "critico",
+  high: "alto",
+  moderate: "moderado",
+  low: "baixo",
+} as const satisfies Record<FraudRiskLevel, string>
+
 export function getMockPartnerIndicatorProfile(
   mockProfile: string | null | undefined,
 ): PartnerIndicatorProfile | null {
-  if (!mockProfile) {
+  if (!mockProfile || !(mockProfile in MOCK_PARTNER_INDICATOR_PROFILES)) {
     return null
   }
 
-  const measuredAt = "2026-04-01T12:00:00.000Z"
-
-  switch (mockProfile) {
-    case "perfil_forte":
-      return {
-        partnerId: "urban-move",
-        partnerName: "UrbanMove",
-        partnerCategory: "mobility",
-        summary:
-          "Indicadores agregados mostram atividade forte, regularidade alta e boa confianca operacional.",
-        indicators: [
-          buildIndicator({
-            partnerId: "urban-move",
-            partnerName: "UrbanMove",
-            indicatorType: "performance_score",
-            indicatorValue: 92,
-            timeWindow: "last_90_days",
-            confidenceLevel: 0.9,
-            measuredAt,
-            usageContext: "credit_score",
-            metadata: { label: "Desempenho operacional premium" },
-          }),
-          buildIndicator({
-            partnerId: "urban-move",
-            partnerName: "UrbanMove",
-            indicatorType: "activity_regularity",
-            indicatorValue: 88,
-            timeWindow: "last_90_days",
-            confidenceLevel: 0.88,
-            measuredAt,
-            usageContext: "shared",
-            metadata: { label: "Regularidade muito alta" },
-          }),
-          buildIndicator({
-            partnerId: "urban-move",
-            partnerName: "UrbanMove",
-            indicatorType: "external_trust",
-            indicatorValue: 91,
-            timeWindow: "last_180_days",
-            confidenceLevel: 0.87,
-            measuredAt,
-            usageContext: "fraud_score",
-            metadata: { label: "Confianca externa forte" },
-          }),
-        ],
-        impact: {
-          creditScoreDelta: 34,
-          suggestedLimitMultiplier: 1.08,
-          fraudScoreDelta: -40,
-          confidenceSignal: "reinforce",
-          summary:
-            "Os indicadores externos reforcam estabilidade e autenticidade, sem substituir a leitura interna.",
-        },
-      }
-    case "motorista_consistente":
-      return {
-        partnerId: "rota-flex",
-        partnerName: "RotaFlex",
-        partnerCategory: "mobility",
-        summary:
-          "O parceiro mostra boa frequencia de atividade, regularidade consistente e confianca externa favoravel.",
-        indicators: [
-          buildIndicator({
-            partnerId: "rota-flex",
-            partnerName: "RotaFlex",
-            indicatorType: "activity_level",
-            indicatorValue: 79,
-            timeWindow: "last_90_days",
-            confidenceLevel: 0.82,
-            measuredAt,
-            usageContext: "credit_score",
-            metadata: { label: "Atividade alta" },
-          }),
-          buildIndicator({
-            partnerId: "rota-flex",
-            partnerName: "RotaFlex",
-            indicatorType: "activity_regularity",
-            indicatorValue: 77,
-            timeWindow: "last_90_days",
-            confidenceLevel: 0.84,
-            measuredAt,
-            usageContext: "shared",
-            metadata: { label: "Regularidade consistente" },
-          }),
-          buildIndicator({
-            partnerId: "rota-flex",
-            partnerName: "RotaFlex",
-            indicatorType: "operational_consistency",
-            indicatorValue: 81,
-            timeWindow: "last_90_days",
-            confidenceLevel: 0.79,
-            measuredAt,
-            usageContext: "fraud_score",
-            metadata: { label: "Consistencia operacional boa" },
-          }),
-        ],
-        impact: {
-          creditScoreDelta: 22,
-          suggestedLimitMultiplier: 1.05,
-          fraudScoreDelta: -24,
-          confidenceSignal: "reinforce",
-          summary:
-            "Os indicadores externos ajudam a reduzir incerteza e reforcam atividade recorrente observada fora do app.",
-        },
-      }
-    case "autonomo_irregular":
-      return {
-        partnerId: "freela-hub",
-        partnerName: "FreelaHub",
-        partnerCategory: "marketplace",
-        summary:
-          "Ha sinais mistos de atividade e desempenho, com reforco moderado de confianca, mas sem estabilidade plena.",
-        indicators: [
-          buildIndicator({
-            partnerId: "freela-hub",
-            partnerName: "FreelaHub",
-            indicatorType: "performance_score",
-            indicatorValue: 64,
-            timeWindow: "last_90_days",
-            confidenceLevel: 0.68,
-            measuredAt,
-            usageContext: "credit_score",
-            metadata: { label: "Desempenho moderado" },
-          }),
-          buildIndicator({
-            partnerId: "freela-hub",
-            partnerName: "FreelaHub",
-            indicatorType: "activity_regularity",
-            indicatorValue: 49,
-            timeWindow: "last_90_days",
-            confidenceLevel: 0.62,
-            measuredAt,
-            usageContext: "shared",
-            metadata: { label: "Regularidade irregular" },
-          }),
-          buildIndicator({
-            partnerId: "freela-hub",
-            partnerName: "FreelaHub",
-            indicatorType: "external_trust",
-            indicatorValue: 58,
-            timeWindow: "last_180_days",
-            confidenceLevel: 0.64,
-            measuredAt,
-            usageContext: "fraud_score",
-            metadata: { label: "Confianca externa moderada" },
-          }),
-        ],
-        impact: {
-          creditScoreDelta: 8,
-          suggestedLimitMultiplier: 1.02,
-          fraudScoreDelta: -6,
-          confidenceSignal: "neutral",
-          summary:
-            "Os indicadores externos ajudam um pouco, mas ainda mantem leitura cautelosa por causa da irregularidade.",
-        },
-      }
-    case "fluxo_instavel":
-      return {
-        partnerId: "quickdrop",
-        partnerName: "QuickDrop",
-        partnerCategory: "delivery",
-        summary:
-          "O parceiro mostra oscilacao operacional, baixa regularidade e sinais que pedem cautela adicional.",
-        indicators: [
-          buildIndicator({
-            partnerId: "quickdrop",
-            partnerName: "QuickDrop",
-            indicatorType: "activity_regularity",
-            indicatorValue: 28,
-            timeWindow: "last_60_days",
-            confidenceLevel: 0.77,
-            measuredAt,
-            usageContext: "shared",
-            metadata: { label: "Regularidade baixa" },
-          }),
-          buildIndicator({
-            partnerId: "quickdrop",
-            partnerName: "QuickDrop",
-            indicatorType: "operational_consistency",
-            indicatorValue: 33,
-            timeWindow: "last_60_days",
-            confidenceLevel: 0.74,
-            measuredAt,
-            usageContext: "fraud_score",
-            metadata: { label: "Consistencia operacional fraca" },
-          }),
-          buildIndicator({
-            partnerId: "quickdrop",
-            partnerName: "QuickDrop",
-            indicatorType: "external_trust",
-            indicatorValue: 41,
-            timeWindow: "last_90_days",
-            confidenceLevel: 0.71,
-            measuredAt,
-            usageContext: "shared",
-            metadata: { label: "Confianca externa baixa" },
-          }),
-        ],
-        impact: {
-          creditScoreDelta: -28,
-          suggestedLimitMultiplier: 0.9,
-          fraudScoreDelta: 65,
-          confidenceSignal: "caution",
-          summary:
-            "Os indicadores externos reforcam cautela e ajudam a conter confianca quando o comportamento operacional externo e fraco.",
-        },
-      }
-    case "historico_insuficiente":
-      return {
-        partnerId: "corrida-ja",
-        partnerName: "CorridaJa",
-        partnerCategory: "mobility",
-        summary:
-          "Existe atividade externa recente, mas em janela curta e com confianca ainda limitada para reduzir cautela por completo.",
-        indicators: [
-          buildIndicator({
-            partnerId: "corrida-ja",
-            partnerName: "CorridaJa",
-            indicatorType: "activity_level",
-            indicatorValue: 61,
-            timeWindow: "last_30_days",
-            confidenceLevel: 0.55,
-            measuredAt,
-            usageContext: "credit_score",
-            metadata: { label: "Atividade recente" },
-          }),
-          buildIndicator({
-            partnerId: "corrida-ja",
-            partnerName: "CorridaJa",
-            indicatorType: "external_trust",
-            indicatorValue: 57,
-            timeWindow: "last_30_days",
-            confidenceLevel: 0.52,
-            measuredAt,
-            usageContext: "fraud_score",
-            metadata: { label: "Confianca externa ainda curta" },
-          }),
-        ],
-        impact: {
-          creditScoreDelta: 10,
-          suggestedLimitMultiplier: 1,
-          fraudScoreDelta: -8,
-          confidenceSignal: "neutral",
-          summary:
-            "Os indicadores externos ajudam a reduzir um pouco a incerteza, mas nao substituem a falta de historico local mais profundo.",
-        },
-      }
-    default:
-      return null
-  }
+  return MOCK_PARTNER_INDICATOR_PROFILES[mockProfile as MockProfile]
 }
 
 export function applyPartnerIndicatorsToCreditScore({
@@ -430,7 +441,7 @@ export function applyPartnerIndicatorsToFraudScore({
       ),
       ...fraudScore.reasons,
     ]).slice(0, 6),
-    operationalRecommendation: getFraudOperationalRecommendation(adjustedRiskLevel),
+    operationalRecommendation: FRAUD_OPERATIONAL_RECOMMENDATIONS[adjustedRiskLevel],
   }
 
   return {
@@ -568,7 +579,7 @@ function buildPartnerAdjustedFraudRiskReasons(
   }
 
   return [
-    `Indicadores externos ajustaram a classificacao antifraude de ${getFraudRiskLabel(previousRisk)} para ${getFraudRiskLabel(adjustedRisk)}.`,
+    `Indicadores externos ajustaram a classificacao antifraude de ${FRAUD_RISK_LABELS[previousRisk]} para ${FRAUD_RISK_LABELS[adjustedRisk]}.`,
   ]
 }
 
@@ -595,34 +606,6 @@ function sortFraudSignals(signals: FraudSignal[]) {
   // Keep ES2017 compatibility for the shared pure module.
   // oxlint-disable-next-line unicorn/no-array-sort
   return signals.sort((first, second) => second.severity - first.severity)
-}
-
-function getFraudOperationalRecommendation(riskLevel: FraudRiskLevel) {
-  switch (riskLevel) {
-    case "critical":
-      return "Bloquear concessao automatica e registrar trilha reforcada para revisao."
-    case "high":
-      return "Encaminhar para revisao manual antes de qualquer liberacao."
-    case "moderate":
-      return "Reduzir exposicao inicial e monitorar sinais de autenticidade."
-    case "low":
-    default:
-      return "Seguir fluxo normal com monitoramento antifraude padrao."
-  }
-}
-
-function getFraudRiskLabel(riskLevel: FraudRiskLevel) {
-  switch (riskLevel) {
-    case "critical":
-      return "critico"
-    case "high":
-      return "alto"
-    case "moderate":
-      return "moderado"
-    case "low":
-    default:
-      return "baixo"
-  }
 }
 
 function getFraudRiskLevelFromValue(value: number): FraudRiskLevel {

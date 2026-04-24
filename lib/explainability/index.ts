@@ -70,6 +70,62 @@ export type ExplainabilityInput = {
   monitoring?: PostCreditMonitoringResult | null
 }
 
+const REVIEW_REQUIRED_FRAUD_RISK_LEVELS = new Set<FraudScoreResult["riskLevel"]>([
+  "high",
+])
+
+const REVIEW_REQUIRED_MONITORING_RISK_LEVELS = new Set<
+  PostCreditMonitoringResult["riskLevel"]
+>(["high", "critical"])
+
+const HIGH_CONFIDENCE_LEVELS = new Set<ProgressiveCreditState["level"]>([
+  "trusted",
+  "premium",
+])
+
+const USER_VISIBLE_MONITORING_RISK_LEVELS = new Set<
+  PostCreditMonitoringResult["riskLevel"]
+>(["moderate", "high", "critical"])
+
+const USER_VISIBLE_FRAUD_RISK_LEVELS = new Set<FraudScoreResult["riskLevel"]>([
+  "moderate",
+  "high",
+  "critical",
+])
+
+const DECISION_HEADLINES = {
+  approved: "Sua solicitacao foi aprovada.",
+  approved_reduced: "Sua solicitacao foi aprovada com limite reduzido.",
+  further_review: "Sua solicitacao segue em revisao adicional.",
+  denied: "Sua solicitacao nao foi aprovada neste momento.",
+} as const satisfies Record<CreditDecision, string>
+
+const AUTOMATIC_DECISION_SUMMARIES = {
+  approved:
+    "A decisao foi tomada com base nos dados autorizados e nos sinais financeiros observados ate aqui.",
+  approved_reduced:
+    "O pedido foi aceito, mas com exposicao controlada para manter a concessao coerente com o estagio atual do relacionamento.",
+  denied:
+    "Os sinais analisados ainda nao sustentam uma concessao automatica segura neste momento.",
+  further_review:
+    "O caso precisa de verificacao adicional antes da conclusao.",
+} as const satisfies Record<CreditDecision, string>
+
+const DECISION_MODE_LABELS = {
+  review_additional: "Revisao adicional",
+  preventive_block: "Bloqueio preventivo",
+  automatic: "Decisao automatica",
+} as const satisfies Record<ExplainabilityDecisionMode, string>
+
+const DECISION_MODE_DESCRIPTIONS = {
+  review_additional:
+    "O caso ainda depende de analise complementar antes de uma liberacao automatica.",
+  preventive_block:
+    "A decisao automatica foi interrompida por risco relevante que exige verificacao reforcada.",
+  automatic:
+    "A decisao foi produzida dentro do fluxo normal do sistema, com base nos dados autorizados.",
+} as const satisfies Record<ExplainabilityDecisionMode, string>
+
 export function buildDecisionExplainability(
   input: ExplainabilityInput,
 ): ExplainabilityResult {
@@ -80,11 +136,19 @@ export function buildDecisionExplainability(
   const futureConsentNotice = buildFutureConsentNotice(input)
 
   return {
-    headline: getHeadline(input.decision, decisionMode),
-    summary: getSummary(input, decisionMode),
+    headline:
+      decisionMode === "preventive_block"
+        ? "Sua solicitacao foi interrompida preventivamente."
+        : DECISION_HEADLINES[input.decision],
+    summary:
+      decisionMode === "preventive_block"
+        ? "A concessao automatica foi bloqueada por cautela de seguranca e o caso precisa de tratamento reforcado."
+        : decisionMode === "review_additional"
+          ? "A analise identificou elementos que ainda precisam de verificacao complementar antes de seguir automaticamente."
+          : AUTOMATIC_DECISION_SUMMARIES[input.decision],
     decisionMode,
-    decisionModeLabel: getDecisionModeLabel(decisionMode),
-    decisionModeDescription: getDecisionModeDescription(decisionMode),
+    decisionModeLabel: DECISION_MODE_LABELS[decisionMode],
+    decisionModeDescription: DECISION_MODE_DESCRIPTIONS[decisionMode],
     reasons: reasonCatalog,
     primaryFactors,
     sensitiveDataNotice,
@@ -106,10 +170,11 @@ function resolveDecisionMode(
 
   if (
     (input.decision !== "denied" && input.decision === "further_review") ||
-    input.fraudScore?.riskLevel === "high" ||
+    (input.fraudScore != null &&
+      REVIEW_REQUIRED_FRAUD_RISK_LEVELS.has(input.fraudScore.riskLevel)) ||
     (input.decision !== "denied" &&
-      (input.monitoring?.riskLevel === "high" ||
-        input.monitoring?.riskLevel === "critical"))
+      input.monitoring != null &&
+      REVIEW_REQUIRED_MONITORING_RISK_LEVELS.has(input.monitoring.riskLevel))
   ) {
     return "review_additional"
   }
@@ -132,7 +197,10 @@ function buildReasonCatalog(
         "Sua solicitacao foi aprovada com base nos sinais financeiros observados ate aqui.",
     })
 
-    if (input.progressiveCredit?.level === "trusted" || input.progressiveCredit?.level === "premium") {
+    if (
+      input.progressiveCredit != null &&
+      HIGH_CONFIDENCE_LEVELS.has(input.progressiveCredit.level)
+    ) {
       reasons.push({
         id: "approved_confidence",
         category: "approval",
@@ -281,9 +349,7 @@ function buildPrimaryFactors(
 
   if (
     input.monitoring &&
-    (input.monitoring.riskLevel === "moderate" ||
-      input.monitoring.riskLevel === "high" ||
-      input.monitoring.riskLevel === "critical")
+    USER_VISIBLE_MONITORING_RISK_LEVELS.has(input.monitoring.riskLevel)
   ) {
     factors.push({
       key: "post_credit_watch",
@@ -306,9 +372,7 @@ function buildPrimaryFactors(
 
   if (
     input.fraudScore &&
-    (input.fraudScore.riskLevel === "moderate" ||
-      input.fraudScore.riskLevel === "high" ||
-      input.fraudScore.riskLevel === "critical")
+    USER_VISIBLE_FRAUD_RISK_LEVELS.has(input.fraudScore.riskLevel)
   ) {
     factors.push({
       key:
@@ -381,76 +445,6 @@ function buildFutureConsentNotice(
     title: "Evolucao com transparencia",
     message:
       "Se o produto usar sinais mais sensiveis no futuro, a comunicacao e o consentimento devem deixar clara a categoria de dado considerada, sem expor logica interna demais.",
-  }
-}
-
-function getHeadline(
-  decision: CreditDecision,
-  decisionMode: ExplainabilityDecisionMode,
-) {
-  if (decisionMode === "preventive_block") {
-    return "Sua solicitacao foi interrompida preventivamente."
-  }
-
-  switch (decision) {
-    case "approved":
-      return "Sua solicitacao foi aprovada."
-    case "approved_reduced":
-      return "Sua solicitacao foi aprovada com limite reduzido."
-    case "further_review":
-      return "Sua solicitacao segue em revisao adicional."
-    case "denied":
-    default:
-      return "Sua solicitacao nao foi aprovada neste momento."
-  }
-}
-
-function getSummary(
-  input: ExplainabilityInput,
-  decisionMode: ExplainabilityDecisionMode,
-) {
-  if (decisionMode === "preventive_block") {
-    return "A concessao automatica foi bloqueada por cautela de seguranca e o caso precisa de tratamento reforcado."
-  }
-
-  if (decisionMode === "review_additional") {
-    return "A analise identificou elementos que ainda precisam de verificacao complementar antes de seguir automaticamente."
-  }
-
-  switch (input.decision) {
-    case "approved":
-      return "A decisao foi tomada com base nos dados autorizados e nos sinais financeiros observados ate aqui."
-    case "approved_reduced":
-      return "O pedido foi aceito, mas com exposicao controlada para manter a concessao coerente com o estagio atual do relacionamento."
-    case "denied":
-      return "Os sinais analisados ainda nao sustentam uma concessao automatica segura neste momento."
-    case "further_review":
-    default:
-      return "O caso precisa de verificacao adicional antes da conclusao."
-  }
-}
-
-function getDecisionModeLabel(mode: ExplainabilityDecisionMode) {
-  switch (mode) {
-    case "review_additional":
-      return "Revisao adicional"
-    case "preventive_block":
-      return "Bloqueio preventivo"
-    case "automatic":
-    default:
-      return "Decisao automatica"
-  }
-}
-
-function getDecisionModeDescription(mode: ExplainabilityDecisionMode) {
-  switch (mode) {
-    case "review_additional":
-      return "O caso ainda depende de analise complementar antes de uma liberacao automatica."
-    case "preventive_block":
-      return "A decisao automatica foi interrompida por risco relevante que exige verificacao reforcada."
-    case "automatic":
-    default:
-      return "A decisao foi produzida dentro do fluxo normal do sistema, com base nos dados autorizados."
   }
 }
 
