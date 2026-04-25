@@ -59,10 +59,10 @@ export function SimulatedBankStatus({
   if (status === "error") {
     return (
       <StatusCard
-        badge="Atenção"
-        description="Não foi possível ler a conexão salva neste navegador. Você ainda pode continuar para consentimento."
+        badge="AtenÃ§Ã£o"
+        description="NÃ£o foi possÃ­vel ler a conexÃ£o salva neste navegador. VocÃª ainda pode continuar para consentimento."
         icon={AlertCircleIcon}
-        title="Conexão indisponível"
+        title="ConexÃ£o indisponÃ­vel"
       />
     )
   }
@@ -73,16 +73,16 @@ export function SimulatedBankStatus({
         badge="Conectada"
         description={
           connectedAt
-            ? `Banco Horizonte Simulado conectado em ${dateFormatter.format(
+            ? `Banco Horizonte conectado em ${dateFormatter.format(
                 new Date(connectedAt)
               )}.`
-            : "Banco Horizonte Simulado conectado para a demo."
+            : "Banco Horizonte conectado."
         }
         icon={CheckCircle2Icon}
-        title="Conta simulada pronta"
+        title="Conta financeira pronta"
       >
         <p className="text-sm leading-6 text-muted-foreground">
-          Sua conta simulada será usada como contexto visual para entradas
+          Sua conta financeira serÃ¡ usada como contexto visual para entradas
           recorrentes, estabilidade e comportamento financeiro autorizado.
         </p>
       </StatusCard>
@@ -92,9 +92,9 @@ export function SimulatedBankStatus({
   return (
     <StatusCard
       badge="Pendente"
-      description="Conectar a conta simulada antes do pedido ajuda a deixar a análise mais clara na demonstração."
+      description="Conectar a conta financeira antes do pedido ajuda a deixar a anÃ¡lise mais clara."
       icon={LandmarkIcon}
-      title="Conta simulada não conectada"
+      title="Conta financeira nÃ£o conectada"
     >
       <Link
         href="/minha-conta"
@@ -199,3 +199,6 @@ function StatusCard({
     </Card>
   )
 }
+
+
+

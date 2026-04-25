@@ -210,7 +210,7 @@ export async function processCreditAnalysis(
   if (!mockProfile) {
     return {
       ok: false,
-      formError: "Perfil mockado invÃ¡lido para anÃ¡lise",
+      formError: "Perfil financeiro invÃ¡lido para anÃ¡lise",
     }
   }
 

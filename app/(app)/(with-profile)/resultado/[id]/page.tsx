@@ -38,7 +38,7 @@ type ResultDisbursement = {
 }
 
 const DISBURSEMENT_ACTION = "credit_disbursement_simulated"
-const SIMULATED_DESTINATION = "Banco Horizonte Simulado"
+const SIMULATED_DESTINATION = "Banco Horizonte"
 
 export default async function ResultadoPage({ params }: ResultadoPageProps) {
   const { id } = await params
@@ -156,3 +156,4 @@ function mapDisbursement(
     status: "active",
   }
 }
+

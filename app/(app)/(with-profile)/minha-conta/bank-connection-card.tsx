@@ -55,7 +55,7 @@ type BankConnectionProps = {
   initialConnection: InitialBankConnection
 }
 
-const SIMULATED_INSTITUTION = "Banco Horizonte Simulado"
+const SIMULATED_INSTITUTION = "Banco Horizonte"
 const SIMULATED_SCOPES = [
   "Entradas recorrentes",
   "Estabilidade financeira",
@@ -86,7 +86,7 @@ function buildInitialState(
       connectedAt: initialConnection.connectedAt,
       institution: SIMULATED_INSTITUTION,
       scopes: SIMULATED_SCOPES,
-      message: "Conexão derivada do consentimento mais recente.",
+      message: "ConexÃ£o derivada do consentimento mais recente.",
     }
   }
 
@@ -113,7 +113,7 @@ export function BankConnectionSummary({
           <presentation.icon data-icon="inline-start" />
           <Badge variant={presentation.badgeVariant}>{presentation.badge}</Badge>
         </div>
-        <CardTitle className="text-base">Conta simulada</CardTitle>
+        <CardTitle className="text-base">Conta financeira</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         <div className="text-2xl font-semibold tracking-tight">
@@ -170,7 +170,7 @@ export function BankConnectionButton({
       )}
       {state.status === "connecting"
         ? "Conectando..."
-        : "Conectar conta simulada"}
+        : "Conectar conta financeira"}
     </Button>
   )
 }
@@ -191,12 +191,12 @@ export function BankConnectionPanel({
       <CardHeader className="gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={presentation.badgeVariant}>{presentation.badge}</Badge>
-          <Badge variant="outline">Open Finance simulado</Badge>
+          <Badge variant="outline">Análise financeira autorizada</Badge>
         </div>
-        <CardTitle>Conexão bancária simulada</CardTitle>
+        <CardTitle>ConexÃ£o bancÃ¡ria autorizada</CardTitle>
         <CardDescription>
-          Autorize uma conta fictícia para demonstrar como dados financeiros
-          ajudam a contextualizar a análise de crédito.
+          Autorize uma conta financeira para mostrar como dados financeiros
+          ajudam a contextualizar a anÃ¡lise de crÃ©dito.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
@@ -208,22 +208,22 @@ export function BankConnectionPanel({
 
         <div className="grid gap-3 sm:grid-cols-2">
           <InfoTile
-            label="Instituição"
+            label="InstituiÃ§Ã£o"
             value={isConnected ? state.institution : "Nenhuma conta conectada"}
           />
           <InfoTile
-            label="Última atualização"
+            label="Ãšltima atualizaÃ§Ã£o"
             value={
               state.connectedAt
                 ? dateFormatter.format(new Date(state.connectedAt))
-                : "Aguardando conexão"
+                : "Aguardando conexÃ£o"
             }
           />
         </div>
 
         <div className="flex flex-col gap-3">
           <h2 className="text-sm font-semibold">
-            Dados usados na simulação
+            Dados usados na anÃ¡lise
           </h2>
           <div className="grid gap-2 sm:grid-cols-2">
             {SIMULATED_SCOPES.map((scope) => (
@@ -247,11 +247,11 @@ export function BankConnectionPanel({
                 href="/solicitacao"
                 className={cn(buttonVariants(), "justify-center")}
               >
-                Solicitar crédito
+                Solicitar crÃ©dito
                 <ArrowRightIcon data-icon="inline-end" />
               </Link>
               <Button type="button" variant="outline" onClick={disconnect}>
-                Desconectar simulação
+                Desconectar simulaÃ§Ã£o
               </Button>
             </>
           ) : (
@@ -267,7 +267,7 @@ export function BankConnectionPanel({
               )}
               {state.status === "connecting"
                 ? "Conectando conta..."
-                : "Conectar conta simulada"}
+                : "Conectar conta financeira"}
             </Button>
           )}
         </div>
@@ -295,9 +295,9 @@ export function BankConnectionActions({
   return (
     <Card className="border-border/70 bg-muted/35">
       <CardHeader className="gap-2">
-        <CardTitle>Ações principais</CardTitle>
+        <CardTitle>AÃ§Ãµes principais</CardTitle>
         <CardDescription>
-          Caminhos disponíveis para continuar a jornada.
+          Caminhos disponÃ­veis para continuar a jornada.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
@@ -306,7 +306,7 @@ export function BankConnectionActions({
             href={`/emprestimo/${activeLoan.requestId}`}
             className={cn(buttonVariants(), "justify-center")}
           >
-            Ver empréstimo ativo
+            Ver emprÃ©stimo ativo
             <ArrowRightIcon data-icon="inline-end" />
           </Link>
         ) : hasPaidLoan && newLoanEligibility.allowed ? (
@@ -314,7 +314,7 @@ export function BankConnectionActions({
             href="/solicitacao"
             className={cn(buttonVariants(), "justify-center")}
           >
-            Pedir novo crédito
+            Pedir novo crÃ©dito
             <ArrowRightIcon data-icon="inline-end" />
           </Link>
         ) : isConnected ? (
@@ -322,7 +322,7 @@ export function BankConnectionActions({
             href="/solicitacao"
             className={cn(buttonVariants(), "justify-center")}
           >
-            Solicitar crédito
+            Solicitar crÃ©dito
             <ArrowRightIcon data-icon="inline-end" />
           </Link>
         ) : (
@@ -339,7 +339,7 @@ export function BankConnectionActions({
             )}
             {state.status === "connecting"
               ? "Conectando..."
-              : "Conectar conta simulada"}
+              : "Conectar conta financeira"}
           </Button>
         )}
         <Link
@@ -349,7 +349,7 @@ export function BankConnectionActions({
             "justify-center"
           )}
         >
-          {isConnected ? "Nova solicitação" : "Solicitar mesmo assim"}
+          {isConnected ? "Nova solicitaÃ§Ã£o" : "Solicitar mesmo assim"}
         </Link>
         <Link
           href={latestResultHref ?? "#"}
@@ -370,12 +370,12 @@ export function BankConnectionActions({
               "justify-center"
             )}
           >
-            Simular pagamento
+            Registrar pagamento
           </Link>
         ) : null}
         {hasPaidLoan && !newLoanEligibility.allowed ? (
           <Button variant="outline" disabled>
-            {newLoanEligibility.label ?? "Pedir novo crédito"}
+            {newLoanEligibility.label ?? "Pedir novo crÃ©dito"}
           </Button>
         ) : null}
       </CardContent>
@@ -417,13 +417,13 @@ function useBankConnection({
           connectedAt: storedConnection.connectedAt,
           institution: storedConnection.institution,
           scopes: storedConnection.scopes,
-          message: "Conexão salva neste navegador para fins de demonstração.",
+          message: "ConexÃ£o salva neste navegador.",
         })
       } catch {
         setState({
           ...buildInitialState(initialConnection),
           status: "error",
-          message: "Não foi possível carregar a conexão simulada.",
+          message: "NÃ£o foi possÃ­vel carregar a conexÃ£o autorizada.",
         })
       }
     }
@@ -440,7 +440,7 @@ function useBankConnection({
     setState((currentState) => ({
       ...currentState,
       status: "connecting",
-      message: "Validando instituição simulada e escopos autorizados.",
+      message: "Validando instituiÃ§Ã£o autorizada e escopos autorizados.",
     }))
 
     window.setTimeout(() => {
@@ -461,13 +461,13 @@ function useBankConnection({
           connectedAt,
           institution: SIMULATED_INSTITUTION,
           scopes: SIMULATED_SCOPES,
-          message: "Conta simulada conectada com sucesso.",
+          message: "Conta conectada com sucesso.",
         })
       } catch {
         setState((currentState) => ({
           ...currentState,
           status: "error",
-          message: "Não foi possível salvar a conexão simulada neste navegador.",
+          message: "NÃ£o foi possÃ­vel salvar a conexÃ£o autorizada neste navegador.",
         }))
       }
     }, 900)
@@ -483,7 +483,7 @@ function useBankConnection({
         connectedAt: null,
         institution: SIMULATED_INSTITUTION,
         scopes: SIMULATED_SCOPES,
-        message: "Conta simulada desconectada neste navegador.",
+        message: "Conta financeira desconectada neste navegador.",
       })
     }
   }
@@ -498,9 +498,9 @@ function getConnectionPresentation(state: BankConnectionState) {
       label: "Carregando",
       badge: "Verificando",
       badgeVariant: "secondary" as const,
-      description: "Verificando conexão simulada salva.",
-      alertTitle: "Verificando estado da conexão",
-      alertDescription: "A área do usuário está carregando os dados da simulação.",
+      description: "Verificando conexÃ£o autorizada salva.",
+      alertTitle: "Verificando estado da conexÃ£o",
+      alertDescription: "A Ã¡rea do usuÃ¡rio estÃ¡ carregando os dados da simulaÃ§Ã£o.",
     }
   }
 
@@ -508,12 +508,12 @@ function getConnectionPresentation(state: BankConnectionState) {
     return {
       icon: SignalIcon,
       label: "Conectando",
-      badge: "Em análise",
+      badge: "Em anÃ¡lise",
       badgeVariant: "outline" as const,
-      description: "Validando instituição e escopos simulados.",
-      alertTitle: "Conectando conta simulada",
+      description: "Validando instituiÃ§Ã£o e escopos registrados.",
+      alertTitle: "Conectando conta financeira",
       alertDescription:
-        "Estamos simulando autorização, escopos e leitura inicial de dados financeiros.",
+        "Estamos simulando autorizaÃ§Ã£o, escopos e leitura inicial de dados financeiros.",
     }
   }
 
@@ -521,15 +521,15 @@ function getConnectionPresentation(state: BankConnectionState) {
     return {
       icon: CheckCircle2Icon,
       label: "Conectada",
-      badge: "Simulada",
+      badge: "Autorizada",
       badgeVariant: "default" as const,
       description: state.connectedAt
-        ? `${state.institution} · ${dateFormatter.format(new Date(state.connectedAt))}`
-        : `${state.institution} · conexão ativa`,
-      alertTitle: "Conta simulada conectada",
+        ? `${state.institution} Â· ${dateFormatter.format(new Date(state.connectedAt))}`
+        : `${state.institution} Â· conexÃ£o ativa`,
+      alertTitle: "Conta conectada",
       alertDescription:
         state.message ??
-        "A análise pode usar sinais financeiros simulados autorizados para a demo.",
+        "A anÃ¡lise pode usar sinais financeiros autorizados na jornada.",
     }
   }
 
@@ -537,25 +537,25 @@ function getConnectionPresentation(state: BankConnectionState) {
     return {
       icon: AlertCircleIcon,
       label: "Erro",
-      badge: "Atenção",
+      badge: "AtenÃ§Ã£o",
       badgeVariant: "destructive" as const,
-      description: state.message ?? "Não foi possível conectar agora.",
-      alertTitle: "Falha na conexão simulada",
+      description: state.message ?? "NÃ£o foi possÃ­vel conectar agora.",
+      alertTitle: "Falha na conexÃ£o autorizada",
       alertDescription:
         state.message ??
-        "Tente novamente. Nenhuma integração externa foi acionada.",
+        "Tente novamente. A conexÃ£o permaneceu protegida.",
     }
   }
 
   return {
     icon: LandmarkIcon,
-    label: "Não conectada",
+    label: "NÃ£o conectada",
     badge: "Pendente",
     badgeVariant: "secondary" as const,
-    description: "Conecte uma conta fictícia para enriquecer a simulação.",
-    alertTitle: "Nenhuma conta simulada conectada",
+    description: "Conecte uma conta fictÃ­cia para enriquecer a simulaÃ§Ã£o.",
+    alertTitle: "Nenhuma conta financeira conectada",
     alertDescription:
-      "O OpenCred usará apenas dados fictícios autorizados. Não há acesso a banco real ou Open Finance real.",
+      "O OpenCred usa dados financeiros autorizados conforme os escopos escolhidos.",
   }
 }
 
@@ -567,3 +567,6 @@ function InfoTile({ label, value }: { label: string; value: string }) {
     </div>
   )
 }
+
+
+

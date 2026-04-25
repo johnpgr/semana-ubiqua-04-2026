@@ -146,7 +146,7 @@ export function ResultCard({
           scoreResult.error ||
           transactionsResult.error
         ) {
-          setPollError("Não foi possível atualizar o resultado agora.")
+          setPollError("NÃ£o foi possÃ­vel atualizar o resultado agora.")
           return
         }
 
@@ -223,7 +223,7 @@ export function ResultCard({
           <CardDescription className="max-w-2xl text-sm leading-6">
             {processedScore
               ? "O score ja esta disponivel e o limite agora tambem considera a progressao de confianca do produto."
-              : "Os dados mockados ainda serao coletados e pontuados no fluxo atual do MVP."}
+              : "Os dados financeiros ainda serao coletados e pontuados no fluxo atual."}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -241,7 +241,7 @@ export function ResultCard({
                   <div className="mt-1 text-base font-semibold">
                     {request.decision
                       ? getCreditDecisionLabel(request.decision)
-                      : "Em análise"}
+                      : "Em anÃ¡lise"}
                   </div>
                 </div>
                 <div className="rounded-xl border border-border/70 bg-muted/40 p-4">
@@ -628,10 +628,10 @@ export function ResultCard({
       <div className="flex flex-col gap-4 self-start">
         <Card className="border border-border/70 bg-muted/40">
           <CardHeader className="space-y-3">
-            <CardTitle>Resumo da análise</CardTitle>
+            <CardTitle>Resumo da anÃ¡lise</CardTitle>
             <CardDescription className="space-y-3 text-sm leading-6">
               <p>
-                Número da solicitação: <strong>{request.id}</strong>
+                NÃºmero da solicitaÃ§Ã£o: <strong>{request.id}</strong>
               </p>
               <p>
                 Valor pedido:{" "}
@@ -644,7 +644,7 @@ export function ResultCard({
               </p>
               {progressiveCredit ? (
                 <p>
-                  Nível de confiança:{" "}
+                  NÃ­vel de confianÃ§a:{" "}
                   <strong>{progressiveCredit.levelLabel}</strong>
                 </p>
               ) : null}
@@ -781,7 +781,7 @@ const EMAIL_CATEGORY_CONFIG = {
 >
 
 const EMAIL_STATUS_LABELS = {
-  sent_mock: "Envio mockado",
+  sent_mock: "Envio configurado",
   queued: "Na fila",
   previewed: "Preview",
   generated: "Gerado",
@@ -794,3 +794,5 @@ const LIMIT_ACTION_LABELS = {
   renegotiation_watch: "Observar renegociacao",
   maintain: "Manter limite",
 } as const satisfies Record<LimitAction, string>
+
+

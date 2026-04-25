@@ -43,7 +43,7 @@ const INITIAL_STATE: RunAnalysisState = {
 
 const analysisSteps = [
   {
-    title: "Coleta de dados bancários simulados",
+    title: "Coleta de dados bancÃ¡rios autorizados",
     description: "Entradas recorrentes, saldo e comportamento autorizado.",
     Icon: LandmarkIcon,
   },
@@ -54,27 +54,27 @@ const analysisSteps = [
   },
   {
     title: "Sinais de fraude",
-    description: "Consistência cadastral e alertas de risco.",
+    description: "ConsistÃªncia cadastral e alertas de risco.",
     Icon: ShieldCheckIcon,
   },
   {
-    title: "Crédito progressivo",
-    description: "Primeiro limite conservador e evolução futura.",
+    title: "CrÃ©dito progressivo",
+    description: "Primeiro limite conservador e evoluÃ§Ã£o futura.",
     Icon: BanknoteIcon,
   },
   {
     title: "Indicadores de parceiros",
-    description: "Sinais externos simulados para enriquecer a decisão.",
+    description: "Sinais externos externos para enriquecer a decisÃ£o.",
     Icon: LockKeyholeIcon,
   },
   {
-    title: "Explicação da decisão",
-    description: "Motivos compreensíveis para o resultado final.",
+    title: "ExplicaÃ§Ã£o da decisÃ£o",
+    description: "Motivos compreensÃ­veis para o resultado final.",
     Icon: FileTextIcon,
   },
   {
-    title: "Comunicação oficial",
-    description: "Resumo pronto para registro e envio ao usuário.",
+    title: "ComunicaÃ§Ã£o oficial",
+    description: "Resumo pronto para registro e envio ao usuÃ¡rio.",
     Icon: MailCheckIcon,
   },
 ]
@@ -102,9 +102,9 @@ export function AnalysisStageCard({
   const hasError = Boolean(state.formError)
   const progressValue = isPending ? 88 : hasError ? 35 : 18
   const statusLabel = isPending
-    ? "Análise em andamento"
+    ? "AnÃ¡lise em andamento"
     : hasError
-      ? "Ação necessária"
+      ? "AÃ§Ã£o necessÃ¡ria"
       : "Pronto para analisar"
 
   return (
@@ -119,11 +119,11 @@ export function AnalysisStageCard({
           </div>
           <div className="flex flex-col gap-2">
             <CardTitle className="text-2xl">
-              Estamos preparando sua análise
+              Estamos preparando sua anÃ¡lise
             </CardTitle>
             <CardDescription className="max-w-2xl leading-6">
-              O OpenCred usa os dados autorizados para simular uma decisão de
-              crédito clara, progressiva e explicável antes de mostrar o
+              O OpenCred usa os dados autorizados para preparar uma decisÃ£o de
+              crÃ©dito clara, progressiva e explicÃ¡vel antes de mostrar o
               resultado.
             </CardDescription>
           </div>
@@ -133,14 +133,14 @@ export function AnalysisStageCard({
           {hasError ? (
             <Alert variant="destructive">
               <TriangleAlertIcon />
-              <AlertTitle>Não foi possível concluir a análise</AlertTitle>
+              <AlertTitle>NÃ£o foi possÃ­vel concluir a anÃ¡lise</AlertTitle>
               <AlertDescription>{state.formError}</AlertDescription>
             </Alert>
           ) : null}
 
           <Progress value={progressValue}>
             <ProgressLabel>
-              {isPending ? "Processando decisão" : "Sequência de análise"}
+              {isPending ? "Processando decisÃ£o" : "SequÃªncia de anÃ¡lise"}
             </ProgressLabel>
             <span className="ml-auto text-sm text-muted-foreground tabular-nums">
               {progressValue}%
@@ -213,7 +213,7 @@ export function AnalysisStageCard({
               ) : (
                 <>
                   <ArrowRightIcon />
-                  Processar análise
+                  Processar anÃ¡lise
                 </>
               )}
             </Button>
@@ -234,7 +234,7 @@ export function AnalysisStageCard({
             })}
             href="/solicitacao"
           >
-            Voltar para solicitação
+            Voltar para solicitaÃ§Ã£o
           </Link>
         </CardFooter>
       </Card>
@@ -248,7 +248,7 @@ export function AnalysisStageCard({
               <strong>
                 {new Date(consentGrantedAt).toLocaleString("pt-BR")}
               </strong>
-              . A análise usa somente dados simulados e autorizados.
+              . A anÃ¡lise usa somente dados financeiros e autorizados.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3 text-sm">
@@ -258,26 +258,29 @@ export function AnalysisStageCard({
             </div>
             <Separator />
             <div className="flex items-center justify-between gap-3">
-              <span className="text-muted-foreground">Conexão bancária</span>
-              <Badge variant="outline">Simulada</Badge>
+              <span className="text-muted-foreground">ConexÃ£o bancÃ¡ria</span>
+              <Badge variant="outline">Autorizada</Badge>
             </div>
             <Separator />
             <div className="flex items-center justify-between gap-3">
               <span className="text-muted-foreground">Resultado</span>
-              <Badge variant="secondary">Após análise</Badge>
+              <Badge variant="secondary">ApÃ³s anÃ¡lise</Badge>
             </div>
           </CardContent>
         </Card>
 
         <Alert>
           <LockKeyholeIcon />
-          <AlertTitle>Sem integração externa real</AlertTitle>
+          <AlertTitle>IntegraÃ§Ã£o protegida</AlertTitle>
           <AlertDescription>
-            Esta etapa só organiza a demonstração visual do processo. A decisão
-            continua sendo executada pelos módulos internos já existentes.
+            Esta etapa organiza a leitura visual do processo. A decisÃ£o
+            continua sendo executada pelos mÃ³dulos internos jÃ¡ existentes.
           </AlertDescription>
         </Alert>
       </div>
     </div>
   )
 }
+
+
+

@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
+import { MOCK_PROFILE_LABELS } from "@/validation/auth"
 
 import { AdminCharts } from "./admin-charts"
 import type { AdminRequestRow, CycleStage } from "./page"
@@ -176,7 +177,7 @@ const DECISION_VARIANT: Record<string, BadgeVariant> = {
 const DECISION_LABEL: Record<string, string> = {
   approved: "Aprovado",
   approved_reduced: "Aprovado reduzido",
-  further_review: "Revisão manual",
+  further_review: "RevisÃ£o manual",
   denied: "Negado",
 }
 
@@ -199,7 +200,7 @@ const CYCLE_STAGE_LABEL: Record<string, string> = {
 }
 
 const REALTIME_BADGE: Record<RealtimeState, { label: string; variant: BadgeVariant }> = {
-  connecting: { label: "Realtime conectando…", variant: "secondary" },
+  connecting: { label: "Realtime conectandoâ€¦", variant: "secondary" },
   active: { label: "Realtime ativo", variant: "default" },
   error: { label: "Realtime com falha", variant: "destructive" },
 }
@@ -230,6 +231,18 @@ function describeRow(row: AdminRequestRow) {
   }
 }
 
+function formatProfileLabel(profile: string | null | undefined) {
+  if (!profile) {
+    return "â€”"
+  }
+
+  if (profile in MOCK_PROFILE_LABELS) {
+    return MOCK_PROFILE_LABELS[profile as keyof typeof MOCK_PROFILE_LABELS]
+  }
+
+  return profile
+}
+
 function buildActivityEntry(kind: ActivityKind, row?: AdminRequestRow, requestId?: string): ActivityEntry {
   const createdAt = new Date().toISOString()
 
@@ -238,8 +251,8 @@ function buildActivityEntry(kind: ActivityKind, row?: AdminRequestRow, requestId
       id: `${kind}-${requestId ?? createdAt}-${createdAt}`,
       kind,
       requestId: requestId ?? "",
-      title: "Solicitação removida",
-      description: "A solicitação saiu da lista do admin.",
+      title: "SolicitaÃ§Ã£o removida",
+      description: "A solicitaÃ§Ã£o saiu da lista do admin.",
       createdAt,
     }
   }
@@ -251,7 +264,7 @@ function buildActivityEntry(kind: ActivityKind, row?: AdminRequestRow, requestId
       id: `${kind}-${row.id}-${createdAt}`,
       kind,
       requestId: row.id,
-      title: `Nova solicitação de ${details.profileName}`,
+      title: `Nova solicitaÃ§Ã£o de ${details.profileName}`,
       description: `${details.requestedAmount} entrou no painel com status ${details.status.toLowerCase()}.`,
       createdAt,
     }
@@ -261,7 +274,7 @@ function buildActivityEntry(kind: ActivityKind, row?: AdminRequestRow, requestId
     id: `${kind}-${row.id}-${createdAt}`,
     kind,
     requestId: row.id,
-    title: `Solicitação atualizada: ${details.profileName}`,
+    title: `SolicitaÃ§Ã£o atualizada: ${details.profileName}`,
     description: `Status atual: ${details.status.toLowerCase()}. Valor solicitado: ${details.requestedAmount}.`,
     createdAt,
   }
@@ -380,7 +393,7 @@ export function AdminDashboard({
             const id = payload.old.id as string
             setRequests((prev) => prev.filter((request) => request.id !== id))
             registerActivity(buildActivityEntry("delete", undefined, id))
-            toast.info("Solicitação removida do painel")
+            toast.info("SolicitaÃ§Ã£o removida do painel")
             return
           }
 
@@ -395,14 +408,14 @@ export function AdminDashboard({
             setRequests((prev) => [row, ...prev.filter((request) => request.id !== id)])
             registerActivity(buildActivityEntry("insert", row))
             highlightRequest(id, "insert")
-            toast.success("Nova solicitação recebida")
+            toast.success("Nova solicitaÃ§Ã£o recebida")
             return
           }
 
           setRequests((prev) => prev.map((request) => (request.id === id ? row : request)))
           registerActivity(buildActivityEntry("update", row))
           highlightRequest(id, "update")
-          toast.info("Solicitação atualizada")
+          toast.info("SolicitaÃ§Ã£o atualizada")
         }
       )
       .subscribe((status) => {
@@ -445,13 +458,13 @@ export function AdminDashboard({
 
         <Select value={`decision:${decisionFilter}`} onValueChange={dispatchView}>
           <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="Decisão" />
+            <SelectValue placeholder="DecisÃ£o" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="decision:all">Todas as decisões</SelectItem>
+            <SelectItem value="decision:all">Todas as decisÃµes</SelectItem>
             <SelectItem value="decision:approved">Aprovado</SelectItem>
             <SelectItem value="decision:approved_reduced">Aprovado reduzido</SelectItem>
-            <SelectItem value="decision:further_review">Revisão manual</SelectItem>
+            <SelectItem value="decision:further_review">RevisÃ£o manual</SelectItem>
             <SelectItem value="decision:denied">Negado</SelectItem>
           </SelectContent>
         </Select>
@@ -475,7 +488,7 @@ export function AdminDashboard({
             {realtimeBadge.label}
           </Badge>
           <span className="text-sm text-muted-foreground">
-            {filtered.length} solicitação{filtered.length !== 1 ? "ões" : ""}
+            {filtered.length} solicitaÃ§Ã£o{filtered.length !== 1 ? "Ãµes" : ""}
           </span>
         </div>
       </div>
@@ -485,8 +498,8 @@ export function AdminDashboard({
           <Activity aria-hidden="true" />
           <AlertTitle>Realtime interrompido no admin</AlertTitle>
           <AlertDescription>
-            O painel continua exibindo os dados já carregados, mas novas mudanças
-            podem demorar a aparecer até a conexão voltar.
+            O painel continua exibindo os dados jÃ¡ carregados, mas novas mudanÃ§as
+            podem demorar a aparecer atÃ© a conexÃ£o voltar.
           </AlertDescription>
         </Alert>
       ) : null}
@@ -502,7 +515,7 @@ export function AdminDashboard({
                   <TableHead>CPF / Nome</TableHead>
                   <TableHead>Perfil</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Decisão</TableHead>
+                  <TableHead>DecisÃ£o</TableHead>
                   <TableHead>Etapa do ciclo</TableHead>
                   <TableHead className="text-right">Valor solicitado</TableHead>
                   <TableHead className="text-right">Valor aprovado</TableHead>
@@ -533,7 +546,7 @@ export function AdminDashboard({
                         >
                           <div className="flex items-center gap-2">
                             <span className="truncate font-medium">
-                              {row.profile?.name ?? "—"}
+                              {row.profile?.name ?? "â€”"}
                             </span>
                             {highlightKind ? (
                               <Badge variant={ACTIVITY_BADGE[highlightKind].variant}>
@@ -542,13 +555,13 @@ export function AdminDashboard({
                             ) : null}
                           </div>
                           <div className="truncate text-xs text-muted-foreground">
-                            {row.profile?.cpf ?? "—"}
+                            {row.profile?.cpf ?? "â€”"}
                           </div>
                         </Link>
                       </TableCell>
                       <TableCell>
                         <span className="text-xs text-muted-foreground">
-                          {row.profile?.mock_profile ?? "—"}
+                          {formatProfileLabel(row.profile?.mock_profile)}
                         </span>
                       </TableCell>
                       <TableCell>
@@ -564,7 +577,7 @@ export function AdminDashboard({
                               : "secondary"
                           }
                         >
-                          {row.decision ? (DECISION_LABEL[row.decision] ?? row.decision) : "—"}
+                          {row.decision ? (DECISION_LABEL[row.decision] ?? row.decision) : "â€”"}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -578,9 +591,9 @@ export function AdminDashboard({
                       <TableCell className="text-right">
                         {row.approved_amount != null
                           ? currencyFormatter.format(row.approved_amount)
-                          : "—"}
+                          : "â€”"}
                       </TableCell>
-                      <TableCell>{row.score ? row.score.value : "—"}</TableCell>
+                      <TableCell>{row.score ? row.score.value : "â€”"}</TableCell>
                       <TableCell>
                         {dateFormatter.format(new Date(row.created_at))}
                       </TableCell>
@@ -591,8 +604,8 @@ export function AdminDashboard({
                   <TableRow>
                     <TableCell colSpan={9} className="p-6">
                       <DashboardEmptyState
-                        title="Nenhuma solicitação neste filtro"
-                        description="Ajuste os filtros ou aguarde novas análises entrarem no painel."
+                        title="Nenhuma solicitaÃ§Ã£o neste filtro"
+                        description="Ajuste os filtros ou aguarde novas anÃ¡lises entrarem no painel."
                       />
                     </TableCell>
                   </TableRow>
@@ -649,7 +662,7 @@ export function AdminDashboard({
                             : "secondary"
                         }
                       >
-                        {row.decision ? (DECISION_LABEL[row.decision] ?? row.decision) : "Sem decisão"}
+                        {row.decision ? (DECISION_LABEL[row.decision] ?? row.decision) : "Sem decisÃ£o"}
                       </Badge>
                       <Badge variant={CYCLE_STAGE_VARIANT[cycleStage] ?? "secondary"}>
                         {CYCLE_STAGE_LABEL[cycleStage] ?? cycleStage}
@@ -668,12 +681,12 @@ export function AdminDashboard({
                         <dd className="break-words font-medium">
                           {row.approved_amount != null
                             ? currencyFormatter.format(row.approved_amount)
-                            : "—"}
+                            : "â€”"}
                         </dd>
                       </div>
                       <div className="min-w-0">
                         <dt className="text-muted-foreground">Score</dt>
-                        <dd>{row.score?.value ?? "—"}</dd>
+                        <dd>{row.score?.value ?? "â€”"}</dd>
                       </div>
                       <div className="min-w-0">
                         <dt className="text-muted-foreground">Criado em</dt>
@@ -687,8 +700,8 @@ export function AdminDashboard({
 
             {paged.length === 0 ? (
               <DashboardEmptyState
-                title="Nenhuma solicitação neste filtro"
-                description="Ajuste os filtros ou aguarde novas análises entrarem no painel."
+                title="Nenhuma solicitaÃ§Ã£o neste filtro"
+                description="Ajuste os filtros ou aguarde novas anÃ¡lises entrarem no painel."
               />
             ) : null}
           </div>
@@ -735,14 +748,14 @@ export function AdminDashboard({
           <CardHeader className="space-y-2">
             <CardTitle className="text-base">Atividade recente</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Destaques persistentes para mostrar inserts e updates ao vivo durante a demo.
+              Destaques persistentes para mostrar atualizaÃ§Ãµes ao vivo.
             </p>
           </CardHeader>
           <CardContent>
             {recentActivity.length === 0 ? (
               <DashboardEmptyState
-                title="Sem atualizações ao vivo ainda"
-                description="Novas solicitações e mudanças de status vão aparecer aqui em tempo real."
+                title="Sem atualizaÃ§Ãµes ao vivo ainda"
+                description="Novas solicitaÃ§Ãµes e mudanÃ§as de status vÃ£o aparecer aqui em tempo real."
               />
             ) : (
               <div className="space-y-3">
@@ -768,7 +781,7 @@ export function AdminDashboard({
                         href={`/admin/solicitacoes/${activity.requestId}`}
                         className="mt-2 inline-flex text-sm text-primary hover:underline"
                       >
-                        Abrir solicitação
+                        Abrir solicitaÃ§Ã£o
                       </Link>
                     ) : null}
                   </div>
@@ -781,3 +794,5 @@ export function AdminDashboard({
     </div>
   )
 }
+
+

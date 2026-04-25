@@ -90,14 +90,13 @@ export function SimulatedDisbursementCard({
       <CardHeader className="gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={disbursement ? "default" : "secondary"}>
-            {disbursement ? "Crédito liberado" : "Oferta disponível"}
+            {disbursement ? "CrÃ©dito liberado" : "Oferta disponÃ­vel"}
           </Badge>
-          <Badge variant="outline">Simulado</Badge>
+          <Badge variant="outline">Ativo</Badge>
         </div>
-        <CardTitle>Recebimento de crédito</CardTitle>
+        <CardTitle>Recebimento de crÃ©dito</CardTitle>
         <CardDescription>
-          Aceite a oferta para simular a liberação em uma conta bancária
-          fictícia.
+          Aceite a oferta para receber o crÃ©dito na conta financeira.
         </CardDescription>
       </CardHeader>
 
@@ -105,7 +104,7 @@ export function SimulatedDisbursementCard({
         {state.formError ? (
           <Alert variant="destructive">
             <TriangleAlertIcon />
-            <AlertTitle>Liberação não concluída</AlertTitle>
+            <AlertTitle>LiberaÃ§Ã£o nÃ£o concluÃ­da</AlertTitle>
             <AlertDescription>{state.formError}</AlertDescription>
           </Alert>
         ) : null}
@@ -113,10 +112,10 @@ export function SimulatedDisbursementCard({
         {disbursement ? (
           <Alert>
             <CheckCircle2Icon />
-            <AlertTitle>Crédito simulado liberado</AlertTitle>
+            <AlertTitle>CrÃ©dito liberado</AlertTitle>
             <AlertDescription>
-              O valor foi marcado como recebido e agora aparece como empréstimo
-              ativo na sua área do usuário.
+              O valor foi marcado como recebido e agora aparece como emprÃ©stimo
+              ativo na sua Ã¡rea do usuÃ¡rio.
             </AlertDescription>
           </Alert>
         ) : (
@@ -124,8 +123,7 @@ export function SimulatedDisbursementCard({
             <BanknoteIcon />
             <AlertTitle>Oferta pronta para recebimento</AlertTitle>
             <AlertDescription>
-              Esta ação não movimenta dinheiro real, Pix ou conta bancária
-              externa.
+              Esta aÃ§Ã£o registra o recebimento do crÃ©dito no OpenCred.
             </AlertDescription>
           </Alert>
         )}
@@ -143,14 +141,14 @@ export function SimulatedDisbursementCard({
           <Separator />
           <InfoRow
             label="Destino"
-            value={disbursement?.destination ?? "Banco Horizonte Simulado"}
+            value={disbursement?.destination ?? "Banco Horizonte"}
           />
           {disbursement ? (
             <>
               <Separator />
               <InfoRow
                 label="Status"
-                value="Empréstimo ativo simulado"
+                value="EmprÃ©stimo ativo"
               />
               <Separator />
               <InfoRow
@@ -167,7 +165,7 @@ export function SimulatedDisbursementCard({
           <>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <LandmarkIcon data-icon="inline-start" />
-              Acompanhe o ciclo em Minha conta ou abra o empréstimo ativo.
+              Acompanhe o ciclo em Minha conta ou abra o emprÃ©stimo ativo.
             </div>
             <Link
               className={cn(
@@ -176,7 +174,7 @@ export function SimulatedDisbursementCard({
               )}
               href={`/emprestimo/${requestId}`}
             >
-              Abrir empréstimo ativo
+              Abrir emprÃ©stimo ativo
             </Link>
           </>
         ) : (
@@ -188,7 +186,7 @@ export function SimulatedDisbursementCard({
               ) : (
                 <BanknoteIcon data-icon="inline-start" />
               )}
-              {isPending ? "Liberando..." : "Receber crédito simulado"}
+              {isPending ? "Liberando..." : "Receber crÃ©dito"}
             </Button>
           </form>
         )}
@@ -205,3 +203,6 @@ function InfoRow({ label, value }: { label: string; value: string }) {
     </div>
   )
 }
+
+
+

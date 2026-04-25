@@ -88,15 +88,15 @@ export function LoanCard({ loan }: LoanCardProps) {
             <Badge variant={STATUS_BADGE_VARIANT[displayStatus]}>
               {STATUS_LABEL[displayStatus]}
             </Badge>
-            <Badge variant="outline">Simulado</Badge>
+            <Badge variant="outline">Ativo</Badge>
           </div>
           <CardTitle className="text-2xl">
-            {isPaid ? "Ciclo concluído" : "Empréstimo ativo simulado"}
+            {isPaid ? "Ciclo concluÃ­do" : "EmprÃ©stimo ativo"}
           </CardTitle>
           <CardDescription className="max-w-2xl text-sm leading-6">
             {isPaid
-              ? "O pagamento simulado foi registrado. Sua confiança evoluiu para o próximo ciclo."
-              : "Acompanhe o valor, vencimento e monitoramento de risco desta simulação."}
+              ? "O pagamento foi registrado. Sua confianÃ§a evoluiu para o prÃ³ximo ciclo."
+              : "Acompanhe o valor, vencimento e monitoramento de risco desta simulaÃ§Ã£o."}
           </CardDescription>
         </CardHeader>
 
@@ -104,7 +104,7 @@ export function LoanCard({ loan }: LoanCardProps) {
           {state.formError ? (
             <Alert variant="destructive">
               <TriangleAlertIcon />
-              <AlertTitle>Pagamento não concluído</AlertTitle>
+              <AlertTitle>Pagamento nÃ£o concluÃ­do</AlertTitle>
               <AlertDescription>{state.formError}</AlertDescription>
             </Alert>
           ) : null}
@@ -112,20 +112,18 @@ export function LoanCard({ loan }: LoanCardProps) {
           {isPaid ? (
             <Alert>
               <CheckCircle2Icon />
-              <AlertTitle>Ciclo concluído — confiança evoluída</AlertTitle>
+              <AlertTitle>Ciclo concluÃ­do â€” confianÃ§a evoluÃ­da</AlertTitle>
               <AlertDescription>
-                O pagamento simulado não movimentou dinheiro real, boleto, Pix
-                ou cartão. Seu histórico foi atualizado.
+                O pagamento foi registrado e seu histÃ³rico foi atualizado.
               </AlertDescription>
             </Alert>
           ) : (
             <Alert>
               <WalletIcon />
-              <AlertTitle>Crédito em uso simulado</AlertTitle>
+              <AlertTitle>CrÃ©dito em uso</AlertTitle>
               <AlertDescription>
-                Esta simulação não movimenta dinheiro real, boleto, Pix ou
-                cartão. Use o botão abaixo para simular o pagamento quando
-                quiser.
+                Acompanhe o contrato e use o botÃ£o abaixo para registrar o
+                pagamento quando quiser.
               </AlertDescription>
             </Alert>
           )}
@@ -141,7 +139,7 @@ export function LoanCard({ loan }: LoanCardProps) {
             </div>
             <div className="rounded-xl border border-border/70 bg-muted/40 p-4">
               <div className="text-sm text-muted-foreground">
-                {isPaid ? "Pago em" : "Vencimento simulado"}
+                {isPaid ? "Pago em" : "Vencimento"}
               </div>
               <div className="mt-1 text-2xl font-semibold">
                 {isPaid && effectivePaidAt
@@ -157,13 +155,13 @@ export function LoanCard({ loan }: LoanCardProps) {
                 <TrendingUpIcon className="size-4 text-muted-foreground" />
                 <span className="text-sm font-medium">
                   {loan.status === "overdue"
-                    ? `Vencido há ${daysOverdue} dia${daysOverdue > 1 ? "s" : ""}`
-                    : `${daysUntilDue} dia${daysUntilDue !== 1 ? "s" : ""} até o vencimento`}
+                    ? `Vencido hÃ¡ ${daysOverdue} dia${daysOverdue > 1 ? "s" : ""}`
+                    : `${daysUntilDue} dia${daysUntilDue !== 1 ? "s" : ""} atÃ© o vencimento`}
                 </span>
               </div>
               <p className="mt-1 text-sm text-muted-foreground">
-                O vencimento foi calculado como data de liberação + 30 dias
-                (regra simples de MVP).
+                O vencimento foi calculado como data de liberaÃ§Ã£o + 30 dias
+                (regra operacional).
               </p>
             </div>
           ) : null}
@@ -180,20 +178,20 @@ export function LoanCard({ loan }: LoanCardProps) {
             />
             <Separator />
             <InfoRow
-              label="Vencimento simulado"
+              label="Vencimento"
               value={fullDateFormatter.format(new Date(loan.dueAt))}
             />
             {isPaid && effectivePaidAt ? (
               <>
                 <Separator />
                 <InfoRow
-                  label="Pagamento simulado"
+                  label="Pagamento"
                   value={fullDateFormatter.format(new Date(effectivePaidAt))}
                 />
                 <Separator />
                 <InfoRow
                   label="Em dia"
-                  value={effectiveOnTime ? "Sim" : "Não"}
+                  value={effectiveOnTime ? "Sim" : "NÃ£o"}
                 />
               </>
             ) : null}
@@ -213,7 +211,7 @@ export function LoanCard({ loan }: LoanCardProps) {
                   "justify-center"
                 )}
               >
-                Ver resultado da análise
+                Ver resultado da anÃ¡lise
                 <ArrowRightIcon data-icon="inline-end" />
               </Link>
             </div>
@@ -223,7 +221,7 @@ export function LoanCard({ loan }: LoanCardProps) {
                 href="/solicitacao"
                 className={cn(buttonVariants(), "justify-center")}
               >
-                Pedir novo crédito
+                Pedir novo crÃ©dito
                 <ArrowRightIcon data-icon="inline-end" />
               </Link>
               <Link
@@ -233,7 +231,7 @@ export function LoanCard({ loan }: LoanCardProps) {
                   "justify-center"
                 )}
               >
-                Ver resultado da análise
+                Ver resultado da anÃ¡lise
                 <ArrowRightIcon data-icon="inline-end" />
               </Link>
             </div>
@@ -246,29 +244,29 @@ export function LoanCard({ loan }: LoanCardProps) {
 
         <Card className="border-border/70 bg-muted/35">
           <CardHeader className="gap-2">
-            <CardTitle>Próximo passo</CardTitle>
+            <CardTitle>PrÃ³ximo passo</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-3 text-sm leading-6">
             {isPaid ? (
               <>
                 <JourneyPoint
                   icon={CheckCircle2Icon}
-                  text="Ciclo concluído. Sua confiança foi atualizada e você pode solicitar novo crédito."
+                  text="Ciclo concluÃ­do. Sua confianÃ§a foi atualizada e vocÃª pode solicitar novo crÃ©dito."
                 />
                 <JourneyPoint
                   icon={TrendingUpIcon}
-                  text="Ciclos pagos em dia ampliam limite potencial nas próximas análises."
+                  text="Ciclos pagos em dia ampliam limite potencial nas prÃ³ximas anÃ¡lises."
                 />
               </>
             ) : (
               <>
                 <JourneyPoint
                   icon={WalletIcon}
-                  text="Simule o pagamento quando quiser. Não há cobrança real."
+                  text="Registre o pagamento quando quiser. O acompanhamento permanece registrado no OpenCred."
                 />
                 <JourneyPoint
                   icon={ShieldCheckIcon}
-                  text="O monitoramento de risco continua como leitura, não como cobrança."
+                  text="O monitoramento de risco continua como leitura, nÃ£o como cobranÃ§a."
                 />
               </>
             )}
@@ -280,14 +278,14 @@ export function LoanCard({ loan }: LoanCardProps) {
 }
 
 function MonitoringStrip({ loan }: { loan: Loan }) {
-  // For MVP, monitoring is shown as a read-only strip based on loan state
+  // For the product, monitoring is shown as a read-only strip based on loan state
   const riskLevel = loan.status === "overdue" ? "high" : loan.status === "paid" ? "low" : "moderate"
   const summary =
     loan.status === "paid"
-      ? "Monitoramento enxerga ciclo concluído com comportamento positivo."
+      ? "Monitoramento enxerga ciclo concluÃ­do com comportamento positivo."
       : loan.status === "overdue"
-        ? "Monitoramento aponta atraso simulado e recomenda atenção antes de nova concessão."
-        : "Monitoramento mantém a relação em observação, sem liberar crescimento automático por enquanto."
+        ? "Monitoramento aponta atraso identificado e recomenda atenÃ§Ã£o antes de nova concessÃ£o."
+        : "Monitoramento mantÃ©m a relaÃ§Ã£o em observaÃ§Ã£o, sem liberar crescimento automÃ¡tico por enquanto."
 
   return (
     <Card className="border-border/70 bg-background/85">
@@ -300,7 +298,7 @@ function MonitoringStrip({ loan }: { loan: Loan }) {
         </div>
         <CardTitle>Monitoramento inicial de risco</CardTitle>
         <CardDescription className="text-sm leading-6">
-          Leitura projetada no momento da concessão. Não é cobrança real.
+          Leitura projetada no momento da concessÃ£o. Ã‰ uma leitura inicial de acompanhamento.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
@@ -310,9 +308,9 @@ function MonitoringStrip({ loan }: { loan: Loan }) {
             <div className="text-muted-foreground">Elegibilidade</div>
             <div className="mt-1 font-medium">
               {loan.status === "paid"
-                ? "Elegível para evolução"
+                ? "ElegÃ­vel para evoluÃ§Ã£o"
                 : loan.status === "overdue"
-                  ? "Revisão recomendada"
+                  ? "RevisÃ£o recomendada"
                   : "Congelada temporariamente"}
             </div>
           </div>
@@ -322,7 +320,7 @@ function MonitoringStrip({ loan }: { loan: Loan }) {
               {loan.status === "paid"
                 ? "Manter e evoluir"
                 : loan.status === "overdue"
-                  ? "Reduzir exposição"
+                  ? "Reduzir exposiÃ§Ã£o"
                   : "Congelar crescimento"}
             </div>
           </div>
@@ -376,8 +374,11 @@ const RISK_BADGE_VARIANT: Record<string, "default" | "secondary" | "outline" | "
 }
 
 const MONITORING_RISK_LABELS: Record<string, string> = {
-  critical: "Risco crítico",
+  critical: "Risco crÃ­tico",
   high: "Risco alto",
   moderate: "Risco moderado",
   low: "Risco baixo",
 }
+
+
+

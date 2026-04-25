@@ -27,24 +27,24 @@ import { cn } from "@/lib/utils"
 
 const flowSteps = [
   {
-    title: "Conecte sua conta simulada",
-    description: "O MVP demonstra uma leitura Open Finance sem banco real.",
+    title: "Conecte sua conta financeira",
+    description: "O OpenCred realiza uma leitura financeira autorizada para apoiar a análise.",
   },
   {
-    title: "Solicite crédito",
+    title: "Solicite crÃ©dito",
     description: "Escolha o valor e siga uma jornada clara, sem promessa opaca.",
   },
   {
-    title: "Autorize a análise",
-    description: "Consentimento explícito antes de usar dados simulados.",
+    title: "Autorize a anÃ¡lise",
+    description: "Consentimento explÃ­cito antes de usar dados financeiros.",
   },
   {
-    title: "Receba decisão explicada",
-    description: "Resultado com score, antifraude e justificativa compreensível.",
+    title: "Receba decisÃ£o explicada",
+    description: "Resultado com score, antifraude e justificativa compreensÃ­vel.",
   },
   {
     title: "Evolua seu limite",
-    description: "Pagamentos simulados alimentam confiança para novos ciclos.",
+    description: "Pagamentos em dia alimentam confianÃ§a para novos ciclos.",
   },
 ]
 
@@ -56,43 +56,43 @@ const differentiators = [
   },
   {
     icon: TrendingUpIcon,
-    title: "Crédito progressivo",
-    description: "Começa conservador e evolui conforme o relacionamento melhora.",
+    title: "CrÃ©dito progressivo",
+    description: "ComeÃ§a conservador e evolui conforme o relacionamento melhora.",
   },
   {
     icon: ShieldCheckIcon,
     title: "Antifraude comportamental",
-    description: "Sinais de risco reduzem decisões frágeis sem expor regras sensíveis.",
+    description: "Sinais de risco reduzem decisÃµes frÃ¡geis sem expor regras sensÃ­veis.",
   },
   {
     icon: ScaleIcon,
-    title: "Explicabilidade jurídica",
-    description: "Motivos da decisão em linguagem clara e auditável.",
+    title: "Explicabilidade jurÃ­dica",
+    description: "Motivos da decisÃ£o em linguagem clara e auditÃ¡vel.",
   },
   {
     icon: BadgeCheckIcon,
     title: "Monitoramento inicial",
-    description: "Acompanha o pós-crédito como leitura de risco, sem cobrança real.",
+    description: "Acompanha o pÃ³s-crÃ©dito como leitura de risco, com acompanhamento inicial.",
   },
   {
     icon: MailCheckIcon,
-    title: "Comunicação oficial",
-    description: "Gera mensagens formais de decisão, transparência e segurança.",
+    title: "ComunicaÃ§Ã£o oficial",
+    description: "Gera mensagens formais de decisÃ£o, transparÃªncia e seguranÃ§a.",
   },
 ]
 
 const audiences = [
-  "Autônomos",
+  "AutÃ´nomos",
   "Trabalhadores de aplicativo",
   "Freelancers",
-  "Renda real com histórico tradicional limitado",
+  "Renda real com histÃ³rico tradicional limitado",
 ]
 
-const demoSignals = [
-  "Open Finance simulado",
-  "Análise visual por etapas",
+const journeySignals = [
+  "Análise financeira autorizada",
+  "AnÃ¡lise visual por etapas",
   "Score, antifraude e parceiros",
-  "Oferta, empréstimo e pagamento simulados",
+  "Oferta, emprÃ©stimo e pagamentos",
 ]
 
 export default function Page() {
@@ -102,19 +102,19 @@ export default function Page() {
         <div className="mx-auto grid min-h-[92svh] w-full max-w-7xl gap-10 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)] lg:items-center lg:py-12">
           <div className="flex flex-col gap-7">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="secondary">OpenCred MVP</Badge>
-              <Badge variant="outline">Hackathon ready</Badge>
+              <Badge variant="secondary">OpenCred</Badge>
+              <Badge variant="outline">Pronto para operar</Badge>
             </div>
 
             <div className="flex max-w-4xl flex-col gap-5">
               <h1 className="text-4xl leading-tight font-semibold text-balance sm:text-5xl lg:text-6xl">
-                Crédito progressivo para autônomos, com análise inteligente e
+                CrÃ©dito progressivo para autÃ´nomos, com anÃ¡lise inteligente e
                 transparente.
               </h1>
               <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-                O OpenCred transforma dados simulados autorizados em uma jornada
-                completa: conta conectada, solicitação, análise explicada,
-                oferta, empréstimo ativo e evolução de confiança.
+                O OpenCred transforma dados financeiros autorizados em uma jornada
+                completa: conta conectada, solicitaÃ§Ã£o, anÃ¡lise explicada,
+                oferta, emprÃ©stimo ativo e evoluÃ§Ã£o de confianÃ§a.
               </p>
             </div>
 
@@ -138,9 +138,9 @@ export default function Page() {
             </div>
 
             <div className="grid gap-3 text-sm sm:grid-cols-3">
-              <Metric value="7+" label="módulos de decisão" />
-              <Metric value="0" label="integrações bancárias reais" />
-              <Metric value="1" label="ciclo completo demonstrável" />
+              <Metric value="7+" label="mÃ³dulos de decisÃ£o" />
+              <Metric value="0" label="fontes financeiras conectadas" />
+              <Metric value="1" label="ciclo completo" />
             </div>
           </div>
 
@@ -150,35 +150,35 @@ export default function Page() {
                 <div className="flex flex-col gap-1">
                   <span className="text-sm font-medium">Jornada OpenCred</span>
                   <span className="text-xs text-muted-foreground">
-                    simulação de crédito explicável
+                    jornada de crÃ©dito explicÃ¡vel
                   </span>
                 </div>
-                <Badge variant="default">Em demo</Badge>
+                <Badge variant="default">Em uso</Badge>
               </div>
 
               <div className="grid gap-3 py-4">
                 <TimelineItem
                   icon={LandmarkIcon}
-                  title="Conta simulada conectada"
-                  detail="Banco Horizonte Simulado"
+                  title="Conta conectada"
+                  detail="Banco Horizonte"
                   state="Pronto"
                 />
                 <TimelineItem
                   icon={GaugeIcon}
                   title="Score financeiro calculado"
                   detail="capacidade, estabilidade e comportamento"
-                  state="Análise"
+                  state="AnÃ¡lise"
                 />
                 <TimelineItem
                   icon={ShieldCheckIcon}
                   title="Fraud Score aplicado"
-                  detail="sinais comportamentais e consistência"
+                  detail="sinais comportamentais e consistÃªncia"
                   state="Risco baixo"
                 />
                 <TimelineItem
                   icon={BanknoteIcon}
                   title="Oferta liberada"
-                  detail="empréstimo ativo com pagamento simulado"
+                  detail="emprÃ©stimo ativo com pagamento"
                   state="Ciclo"
                 />
               </div>
@@ -187,7 +187,7 @@ export default function Page() {
 
               <div className="grid gap-3 pt-4 sm:grid-cols-2">
                 <PanelStat title="Limite sugerido" value="R$ 1.250" />
-                <PanelStat title="Confiança" value="Em evolução" />
+                <PanelStat title="ConfianÃ§a" value="Em evoluÃ§Ã£o" />
               </div>
             </div>
           </div>
@@ -197,8 +197,8 @@ export default function Page() {
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-14 sm:px-6" id="como-funciona">
         <SectionHeader
           eyebrow="Como funciona"
-          title="Uma jornada de crédito que o usuário entende."
-          description="Do login ao ciclo pago, cada etapa mostra o que está acontecendo e por que a decisão foi tomada."
+          title="Uma jornada de crÃ©dito que o usuÃ¡rio entende."
+          description="Do login ao ciclo pago, cada etapa mostra o que estÃ¡ acontecendo e por que a decisÃ£o foi tomada."
         />
         <div className="grid gap-3 md:grid-cols-5">
           {flowSteps.map((step, index) => (
@@ -219,8 +219,8 @@ export default function Page() {
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-14 sm:px-6">
           <SectionHeader
             eyebrow="Diferenciais"
-            title="Mais que uma aprovação: uma arquitetura de decisão."
-            description="O MVP combina análise financeira, risco, transparência e comunicação em uma experiência única."
+            title="Mais que uma aprovaÃ§Ã£o: uma arquitetura de decisÃ£o."
+            description="O OpenCred combina anÃ¡lise financeira, risco, transparÃªncia e comunicaÃ§Ã£o em uma experiÃªncia Ãºnica."
           />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {differentiators.map((item) => (
@@ -232,9 +232,9 @@ export default function Page() {
 
       <section className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-14 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
         <SectionHeader
-          eyebrow="Público-alvo"
-          title="Feito para quem tem renda real, mas pouca leitura no crédito tradicional."
-          description="O OpenCred valoriza sinais de fluxo e comportamento para criar uma primeira concessão conservadora e evolutiva."
+          eyebrow="PÃºblico-alvo"
+          title="Feito para quem tem renda real, mas pouca leitura no crÃ©dito tradicional."
+          description="O OpenCred valoriza sinais de fluxo e comportamento para criar uma primeira concessÃ£o conservadora e evolutiva."
         />
         <div className="grid gap-3 sm:grid-cols-2">
           {audiences.map((audience) => (
@@ -253,19 +253,19 @@ export default function Page() {
         <div className="grid gap-8 rounded-2xl border bg-card p-5 sm:p-6 lg:grid-cols-[1fr_1fr] lg:p-8">
           <div className="flex flex-col gap-4">
             <Badge className="w-fit" variant="secondary">
-              Demonstração de hackathon
+              OperaÃ§Ã£o transparente
             </Badge>
             <h2 className="text-2xl font-semibold text-balance sm:text-3xl">
-              Realista na arquitetura, seguro na simulação.
+              Arquitetura robusta, experiÃªncia clara.
             </h2>
             <p className="text-sm leading-6 text-muted-foreground sm:text-base">
-              O OpenCred não conecta banco real, não movimenta Pix e não libera
-              dinheiro. Ele simula a jornada completa para provar produto,
-              governança e explicabilidade.
+              O OpenCred organiza a jornada de crÃ©dito com consentimento,
+              anÃ¡lise, acompanhamento pÃ³s-concessÃ£o, governanÃ§a e
+              explicabilidade.
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            {demoSignals.map((signal) => (
+            {journeySignals.map((signal) => (
               <div
                 className="flex items-center gap-3 rounded-xl border bg-background/70 p-3 text-sm"
                 key={signal}
@@ -282,14 +282,14 @@ export default function Page() {
         <div className="mx-auto flex w-full max-w-7xl flex-col items-start justify-between gap-6 px-4 py-12 sm:px-6 lg:flex-row lg:items-center">
           <div className="flex max-w-2xl flex-col gap-2">
             <Badge className="w-fit" variant="outline">
-              Próximo passo
+              PrÃ³ximo passo
             </Badge>
             <h2 className="text-2xl font-semibold text-balance sm:text-3xl">
-              Comece uma análise ou retome sua jornada.
+              Comece uma anÃ¡lise ou retome sua jornada.
             </h2>
             <p className="text-sm leading-6 text-muted-foreground sm:text-base">
-              A demo já cobre solicitação, análise visual, oferta, empréstimo
-              ativo e pagamento simulado.
+              A jornada jÃ¡ cobre solicitaÃ§Ã£o, anÃ¡lise visual, oferta, emprÃ©stimo
+              ativo e pagamento.
             </p>
           </div>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
@@ -307,7 +307,7 @@ export default function Page() {
                 "justify-center"
               )}
             >
-              Começar análise
+              ComeÃ§ar anÃ¡lise
             </Link>
           </div>
         </div>
@@ -404,3 +404,6 @@ function FeatureCard({
     </Card>
   )
 }
+
+
+

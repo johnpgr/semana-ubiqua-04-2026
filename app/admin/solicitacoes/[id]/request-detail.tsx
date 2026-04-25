@@ -45,6 +45,7 @@ import { buildDecisionExplainability } from "@/lib/explainability"
 import { calculateFraudScore } from "@/lib/fraudScore"
 import { getMockPartnerIndicatorProfile } from "@/lib/partnerIndicators"
 import { evaluatePostCreditMonitoring } from "@/lib/postCreditMonitoring"
+import { MOCK_PROFILE_LABELS } from "@/validation/auth"
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -87,7 +88,7 @@ const DECISION_VARIANT: Record<string, BadgeVariant> = {
 const DECISION_LABEL: Record<string, string> = {
   approved: "Aprovado",
   approved_reduced: "Aprovado reduzido",
-  further_review: "Revisão manual",
+  further_review: "RevisÃ£o manual",
   denied: "Negado",
 }
 
@@ -228,6 +229,18 @@ function KeyValueRow({
   )
 }
 
+function formatProfileLabel(profile: string | null | undefined) {
+  if (!profile) {
+    return "â€”"
+  }
+
+  if (profile in MOCK_PROFILE_LABELS) {
+    return MOCK_PROFILE_LABELS[profile as keyof typeof MOCK_PROFILE_LABELS]
+  }
+
+  return profile
+}
+
 export function RequestDetail({
   request,
   progression,
@@ -291,10 +304,10 @@ export function RequestDetail({
 
       <div className="space-y-1">
         <h1 className="text-2xl font-heading font-medium break-words">
-          Solicitação {request.id.slice(0, 8)}
+          SolicitaÃ§Ã£o {request.id.slice(0, 8)}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Visão consolidada da análise para a demo do admin.
+          VisÃ£o consolidada da anÃ¡lise para operaÃ§Ã£o.
         </p>
       </div>
 
@@ -303,7 +316,7 @@ export function RequestDetail({
           <TabsList className="inline-flex min-w-max">
             <TabsTrigger value="resumo">Resumo</TabsTrigger>
             <TabsTrigger value="consentimento">Consentimento</TabsTrigger>
-            <TabsTrigger value="transacoes">Transações</TabsTrigger>
+            <TabsTrigger value="transacoes">TransaÃ§Ãµes</TabsTrigger>
             <TabsTrigger value="score">Score</TabsTrigger>
             <TabsTrigger value="comunicacoes">Comunicacoes</TabsTrigger>
             <TabsTrigger value="auditoria">Auditoria</TabsTrigger>
@@ -318,17 +331,17 @@ export function RequestDetail({
                 <CardTitle>Perfil</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
-                <KeyValueRow label="Nome">{request.profile?.name ?? "—"}</KeyValueRow>
-                <KeyValueRow label="CPF">{request.profile?.cpf ?? "—"}</KeyValueRow>
-                <KeyValueRow label="Perfil mock">
-                  {request.profile?.mock_profile ?? "—"}
+                <KeyValueRow label="Nome">{request.profile?.name ?? "â€”"}</KeyValueRow>
+                <KeyValueRow label="CPF">{request.profile?.cpf ?? "â€”"}</KeyValueRow>
+                <KeyValueRow label="Perfil financeiro">
+                  {formatProfileLabel(request.profile?.mock_profile)}
                 </KeyValueRow>
               </CardContent>
             </Card>
 
             <Card className="rounded-2xl">
               <CardHeader>
-                <CardTitle>Solicitação</CardTitle>
+                <CardTitle>SolicitaÃ§Ã£o</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <KeyValueRow label="Status">
@@ -336,7 +349,7 @@ export function RequestDetail({
                     {STATUS_LABEL[request.status] ?? request.status}
                   </Badge>
                 </KeyValueRow>
-                <KeyValueRow label="Decisão">
+                <KeyValueRow label="DecisÃ£o">
                   <Badge
                     variant={
                       request.decision
@@ -346,7 +359,7 @@ export function RequestDetail({
                   >
                     {request.decision
                       ? (DECISION_LABEL[request.decision] ?? request.decision)
-                      : "—"}
+                      : "â€”"}
                   </Badge>
                 </KeyValueRow>
                 {effectiveProgression ? (
@@ -384,7 +397,7 @@ export function RequestDetail({
                 <KeyValueRow label="Valor aprovado">
                   {request.approved_amount != null
                     ? currencyFormatter.format(request.approved_amount)
-                    : "—"}
+                    : "â€”"}
                 </KeyValueRow>
               </CardContent>
             </Card>
@@ -700,7 +713,7 @@ export function RequestDetail({
               <KeyValueRow label="Decidido em">
                 {request.decided_at
                   ? dateTimeFormatter.format(new Date(request.decided_at))
-                  : "—"}
+                  : "â€”"}
               </KeyValueRow>
             </CardContent>
           </Card>
@@ -709,13 +722,13 @@ export function RequestDetail({
         <TabsContent value="consentimento" className="space-y-4 pt-4">
           {consentsError ? (
             <SectionError
-              title="Consentimentos indisponíveis"
-              description="Não foi possível buscar os consentimentos desta solicitação."
+              title="Consentimentos indisponÃ­veis"
+              description="NÃ£o foi possÃ­vel buscar os consentimentos desta solicitaÃ§Ã£o."
             />
           ) : consents.length === 0 ? (
             <SectionEmpty
               title="Nenhum consentimento registrado"
-              description="Esta solicitação ainda não recebeu escopos aprovados pelo usuário."
+              description="Esta solicitaÃ§Ã£o ainda nÃ£o recebeu escopos aprovados pelo usuÃ¡rio."
             />
           ) : (
             consents.map((consent, index) => (
@@ -736,7 +749,7 @@ export function RequestDetail({
                   </KeyValueRow>
                   <KeyValueRow label="User-Agent">
                     <span className="block max-w-full break-words">
-                      {consent.user_agent ?? "—"}
+                      {consent.user_agent ?? "â€”"}
                     </span>
                   </KeyValueRow>
                 </CardContent>
@@ -748,13 +761,13 @@ export function RequestDetail({
         <TabsContent value="transacoes" className="space-y-4 pt-4">
           {transactionsError ? (
             <SectionError
-              title="Transações indisponíveis"
-              description="A leitura do histórico financeiro falhou nesta consulta."
+              title="TransaÃ§Ãµes indisponÃ­veis"
+              description="A leitura do histÃ³rico financeiro falhou nesta consulta."
             />
           ) : transactions.length === 0 ? (
             <SectionEmpty
-              title="Nenhuma transação encontrada"
-              description="As transações ainda não foram geradas ou não ficaram disponíveis para esta análise."
+              title="Nenhuma transaÃ§Ã£o encontrada"
+              description="As transaÃ§Ãµes ainda nÃ£o foram geradas ou nÃ£o ficaram disponÃ­veis para esta anÃ¡lise."
             />
           ) : (
             <>
@@ -771,7 +784,7 @@ export function RequestDetail({
                         <YAxis tick={chartTick} />
                         <Tooltip formatter={flowTooltipFormatter} />
                         <Bar dataKey="credit" fill="#22c55e" name="Entradas" />
-                        <Bar dataKey="debit" fill="#ef4444" name="Saídas" />
+                        <Bar dataKey="debit" fill="#ef4444" name="SaÃ­das" />
                       </BarChart>
                     </ResponsiveContainer>
                   </CardContent>
@@ -791,14 +804,14 @@ export function RequestDetail({
                             transaction.kind === "credit" ? "default" : "destructive"
                           }
                         >
-                          {transaction.kind === "credit" ? "Entrada" : "Saída"}
+                          {transaction.kind === "credit" ? "Entrada" : "SaÃ­da"}
                         </Badge>
                         <span className="text-muted-foreground">
                           {dateFormatter.format(new Date(transaction.occurred_at))}
                         </span>
                       </div>
                       <KeyValueRow label="Categoria">{transaction.category}</KeyValueRow>
-                      <KeyValueRow label="Descrição">
+                      <KeyValueRow label="DescriÃ§Ã£o">
                         <span className="break-words">{transaction.description}</span>
                       </KeyValueRow>
                       <KeyValueRow label="Valor">
@@ -816,7 +829,7 @@ export function RequestDetail({
                       <TableHead>Data</TableHead>
                       <TableHead>Tipo</TableHead>
                       <TableHead>Categoria</TableHead>
-                      <TableHead>Descrição</TableHead>
+                      <TableHead>DescriÃ§Ã£o</TableHead>
                       <TableHead className="text-right">Valor</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -836,7 +849,7 @@ export function RequestDetail({
                                 : "destructive"
                             }
                           >
-                            {transaction.kind === "credit" ? "Entrada" : "Saída"}
+                            {transaction.kind === "credit" ? "Entrada" : "SaÃ­da"}
                           </Badge>
                         </TableCell>
                         <TableCell>{transaction.category}</TableCell>
@@ -858,13 +871,13 @@ export function RequestDetail({
         <TabsContent value="score" className="space-y-4 pt-4">
           {scoreError ? (
             <SectionError
-              title="Score indisponível"
-              description="O motor de score não devolveu um resultado acessível nesta consulta."
+              title="Score indisponÃ­vel"
+              description="O motor de score nÃ£o devolveu um resultado acessÃ­vel nesta consulta."
             />
           ) : !score ? (
             <SectionEmpty
-              title="Score ainda não calculado"
-              description="A solicitação segue sem breakdown persistido para exibição."
+              title="Score ainda nÃ£o calculado"
+              description="A solicitaÃ§Ã£o segue sem breakdown persistido para exibiÃ§Ã£o."
             />
           ) : (
             <>
@@ -881,7 +894,7 @@ export function RequestDetail({
                       {currencyFormatter.format(score.suggested_limit)}
                     </span>
                   </KeyValueRow>
-                  <KeyValueRow label="Decisão">
+                  <KeyValueRow label="DecisÃ£o">
                     <Badge
                       variant={
                         request.decision
@@ -891,7 +904,7 @@ export function RequestDetail({
                     >
                       {request.decision
                         ? (DECISION_LABEL[request.decision] ?? request.decision)
-                        : "—"}
+                        : "â€”"}
                     </Badge>
                   </KeyValueRow>
                   {fraudScore ? (
@@ -921,7 +934,7 @@ export function RequestDetail({
 
               <Card className="rounded-2xl">
                 <CardHeader>
-                  <CardTitle>Dimensões</CardTitle>
+                  <CardTitle>DimensÃµes</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {dimensions.map((dimension) => (
@@ -941,7 +954,7 @@ export function RequestDetail({
               {score.reasons.length > 0 ? (
                 <Card className="rounded-2xl">
                   <CardHeader>
-                    <CardTitle>Razões</CardTitle>
+                    <CardTitle>RazÃµes</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ul className="list-disc space-y-1 pl-4 text-sm">
@@ -971,7 +984,7 @@ export function RequestDetail({
                     </KeyValueRow>
                     <KeyValueRow label="Fatores principais">
                       <span className="block break-words">
-                        {explainability.primaryFactors.map((factor) => factor.label).join(", ") || "—"}
+                        {explainability.primaryFactors.map((factor) => factor.label).join(", ") || "â€”"}
                       </span>
                     </KeyValueRow>
                   </CardContent>
@@ -1127,13 +1140,13 @@ export function RequestDetail({
         <TabsContent value="auditoria" className="space-y-4 pt-4">
           {auditLogsError ? (
             <SectionError
-              title="Auditoria indisponível"
-              description="Os registros de auditoria não puderam ser carregados agora."
+              title="Auditoria indisponÃ­vel"
+              description="Os registros de auditoria nÃ£o puderam ser carregados agora."
             />
           ) : auditLogs.length === 0 ? (
             <SectionEmpty
               title="Nenhum registro de auditoria"
-              description="Ainda não houve eventos persistidos para esta solicitação."
+              description="Ainda nÃ£o houve eventos persistidos para esta solicitaÃ§Ã£o."
             />
           ) : (
             <>
@@ -1151,8 +1164,8 @@ export function RequestDetail({
                         <KeyValueRow label="Data">
                           {dateTimeFormatter.format(new Date(log.created_at))}
                         </KeyValueRow>
-                        <KeyValueRow label="Ação">{label}</KeyValueRow>
-                        <KeyValueRow label="Ator">{log.actor ?? "—"}</KeyValueRow>
+                        <KeyValueRow label="AÃ§Ã£o">{label}</KeyValueRow>
+                        <KeyValueRow label="Ator">{log.actor ?? "â€”"}</KeyValueRow>
                         {typeof metadata?.approvedAmount === "number" ? (
                           <KeyValueRow label="Valor">
                             {currencyFormatter.format(metadata.approvedAmount)}
@@ -1160,7 +1173,7 @@ export function RequestDetail({
                         ) : null}
                         {typeof metadata?.onTime === "boolean" ? (
                           <KeyValueRow label="Em dia">
-                            {metadata.onTime ? "Sim" : "Não"}
+                            {metadata.onTime ? "Sim" : "NÃ£o"}
                           </KeyValueRow>
                         ) : null}
                       </CardContent>
@@ -1174,7 +1187,7 @@ export function RequestDetail({
                   <TableHeader>
                     <TableRow>
                       <TableHead>Data</TableHead>
-                      <TableHead>Ação</TableHead>
+                      <TableHead>AÃ§Ã£o</TableHead>
                       <TableHead>Ator</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -1187,7 +1200,7 @@ export function RequestDetail({
                             {dateTimeFormatter.format(new Date(log.created_at))}
                           </TableCell>
                           <TableCell>{label}</TableCell>
-                          <TableCell>{log.actor ?? "—"}</TableCell>
+                          <TableCell>{log.actor ?? "â€”"}</TableCell>
                         </TableRow>
                       )
                     })}
@@ -1297,7 +1310,7 @@ const EMAIL_CATEGORY_CONFIG = {
 } as const satisfies Record<EmailCategory, { badgeVariant: BadgeVariant; label: string }>
 
 const EMAIL_STATUS_LABELS = {
-  sent_mock: "Envio mockado",
+  sent_mock: "Envio configurado",
   queued: "Na fila",
   previewed: "Preview",
   generated: "Gerado",
@@ -1309,7 +1322,7 @@ const DELIVERY_STATUS_CONFIG = {
   sent: { badgeVariant: "default", label: "Enviado" },
   failed: { badgeVariant: "destructive", label: "Falha" },
   skipped: { badgeVariant: "outline", label: "Ignorado" },
-  dry_run: { badgeVariant: "secondary", label: "Simulado" },
+  dry_run: { badgeVariant: "secondary", label: "Ativo" },
 } as const satisfies Record<DeliveryStatus, { badgeVariant: BadgeVariant; label: string }>
 
 const DELIVERY_ACTION_TO_STATUS: Record<string, DeliveryStatus> = {
@@ -1386,8 +1399,10 @@ const LIMIT_ACTION_LABELS = {
 } as const satisfies Record<LimitAction, string>
 
 const AUDIT_ACTION_LABELS: Record<string, string> = {
-  credit_disbursement_simulated: "Liberação simulada",
-  loan_repayment_simulated: "Pagamento simulado",
-  credit_cycle_closed: "Ciclo concluído",
-  email_communication_generated: "Comunicação gerada",
+  credit_disbursement_simulated: "LiberaÃ§Ã£o autorizada",
+  loan_repayment_simulated: "Pagamento",
+  credit_cycle_closed: "Ciclo concluÃ­do",
+  email_communication_generated: "ComunicaÃ§Ã£o gerada",
 }
+
+
