@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation"
 
 import { requireCurrentProfile } from "@/lib/auth/profile"
+import { OPEN_FINANCE_FALLBACK_DESTINATION } from "@/lib/open-finance-connection"
 import type { Database } from "@/lib/supabase/database.types"
 import { createClient } from "@/lib/supabase/server"
 import { createServiceClient } from "@/lib/supabase/service"
@@ -38,7 +39,6 @@ type ResultDisbursement = {
 }
 
 const DISBURSEMENT_ACTION = "credit_disbursement_simulated"
-const SIMULATED_DESTINATION = "Banco Horizonte"
 
 export default async function ResultadoPage({ params }: ResultadoPageProps) {
   const { id } = await params
@@ -123,6 +123,7 @@ export default async function ResultadoPage({ params }: ResultadoPageProps) {
       requestHistory={(requestHistory ?? []) as RequestHistoryRow[]}
       initialMockProfile={profile.mock_profile}
       initialDisbursement={mapDisbursement(disbursement, request.approved_amount)}
+      userId={profile.id}
     />
   )
 }
@@ -147,7 +148,7 @@ function mapDisbursement(
   const destination =
     typeof metadata?.destination === "string"
       ? metadata.destination
-      : SIMULATED_DESTINATION
+      : OPEN_FINANCE_FALLBACK_DESTINATION
 
   return {
     approvedAmount,

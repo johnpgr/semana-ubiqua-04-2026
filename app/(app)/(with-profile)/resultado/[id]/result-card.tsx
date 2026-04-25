@@ -82,6 +82,7 @@ type ResultCardProps = {
   requestHistory: RequestHistoryRow[]
   initialMockProfile: string | null
   initialDisbursement: DisbursementSnapshot | null
+  userId: string
 }
 
 export function ResultCard({
@@ -92,6 +93,7 @@ export function ResultCard({
   requestHistory,
   initialMockProfile,
   initialDisbursement,
+  userId,
 }: ResultCardProps) {
   const [request, setRequest] = useState(initialRequest)
   const [score, setScore] = useState(initialScore)
@@ -682,6 +684,7 @@ export function ResultCard({
             initialDisbursement={initialDisbursement}
             requestId={request.id}
             requestedAmount={request.requested_amount}
+            userId={userId}
           />
         ) : null}
       </div>

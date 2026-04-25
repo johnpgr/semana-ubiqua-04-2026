@@ -160,7 +160,7 @@ export default function Page() {
                 <TimelineItem
                   icon={LandmarkIcon}
                   title="Conta conectada"
-                  detail="Banco Horizonte"
+                  detail="Instituição financeira"
                   state="Pronto"
                 />
                 <TimelineItem

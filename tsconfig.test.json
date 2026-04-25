@@ -17,6 +17,7 @@
     "tests/**/*.ts",
     "validation/cpf.ts",
     "lib/assistant/**/*.ts",
+    "lib/open-finance-connection.ts",
     "lib/mockData/**/*.ts",
     "lib/scoreEngine/**/*.ts"
   ],

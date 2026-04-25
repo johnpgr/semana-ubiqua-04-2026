@@ -5,6 +5,10 @@ import { z } from "zod"
 
 import { requireCurrentProfile } from "@/lib/auth/profile"
 import type { FormActionState } from "@/lib/form-action"
+import {
+  OPEN_FINANCE_FALLBACK_DESTINATION,
+  sanitizeInstitutionName,
+} from "@/lib/open-finance-connection"
 import type { Json, TablesInsert } from "@/lib/supabase/database.types"
 import { createClient } from "@/lib/supabase/server"
 import { createServiceClient } from "@/lib/supabase/service"
@@ -25,10 +29,12 @@ type AuditLogInsert = TablesInsert<"audit_logs">
 
 const RequestPayload = z.object({
   request_id: z.uuid("Solicitação inválida."),
+  destination: z.string().trim().max(120).optional(),
+  institution_name: z.string().trim().max(60).optional(),
+  account_last4: z.string().regex(/^\d{4}$/).optional(),
 })
 
 const DISBURSEMENT_ACTION = "credit_disbursement_simulated"
-const SIMULATED_DESTINATION = "Banco Horizonte"
 
 export async function simulateCreditDisbursement(
   _prevState: SimulateDisbursementState,
@@ -36,6 +42,9 @@ export async function simulateCreditDisbursement(
 ): Promise<SimulateDisbursementState> {
   const parsed = RequestPayload.safeParse({
     request_id: formData.get("request_id"),
+    destination: formData.get("destination") || undefined,
+    institution_name: formData.get("institution_name") || undefined,
+    account_last4: formData.get("account_last4") || undefined,
   })
 
   if (!parsed.success) {
@@ -91,7 +100,7 @@ export async function simulateCreditDisbursement(
   const service = createServiceClient()
   const { data: existingDisbursement, error: existingError } = await service
     .from("audit_logs")
-    .select("created_at")
+    .select("created_at, metadata")
     .eq("entity_type", "credit_request")
     .eq("entity_id", request.id)
     .eq("action", DISBURSEMENT_ACTION)
@@ -107,6 +116,19 @@ export async function simulateCreditDisbursement(
   }
 
   const disbursedAt = existingDisbursement?.created_at ?? new Date().toISOString()
+  const existingMetadata = getMetadata(existingDisbursement?.metadata ?? null)
+  const destination =
+    typeof existingMetadata?.destination === "string"
+      ? existingMetadata.destination
+      : getDestination(parsed.data.destination)
+  const institutionName =
+    typeof existingMetadata?.institutionName === "string"
+      ? existingMetadata.institutionName
+      : sanitizeInstitutionName(parsed.data.institution_name ?? "")
+  const accountLast4 =
+    typeof existingMetadata?.accountLast4 === "string"
+      ? existingMetadata.accountLast4
+      : parsed.data.account_last4
 
   if (!existingDisbursement) {
     const auditRow: AuditLogInsert = {
@@ -119,7 +141,9 @@ export async function simulateCreditDisbursement(
         requestId: request.id,
         userId: request.user_id,
         approvedAmount: request.approved_amount,
-        destination: SIMULATED_DESTINATION,
+        destination,
+        institutionName: institutionName || null,
+        accountLast4: accountLast4 ?? null,
         status: "active",
         timestamp: disbursedAt,
         source: "user_action",
@@ -147,11 +171,23 @@ export async function simulateCreditDisbursement(
     ok: true,
     data: {
       approvedAmount: request.approved_amount,
-      destination: SIMULATED_DESTINATION,
+      destination,
       disbursedAt,
       status: "active",
     },
   }
+}
+
+function getDestination(value: string | undefined) {
+  const destination = sanitizeInstitutionName(value ?? "")
+
+  return destination || OPEN_FINANCE_FALLBACK_DESTINATION
+}
+
+function getMetadata(metadata: Json | null) {
+  return metadata && typeof metadata === "object" && !Array.isArray(metadata)
+    ? metadata
+    : null
 }
 
 async function cleanupDuplicateDisbursements(
@@ -190,4 +226,3 @@ async function cleanupDuplicateDisbursements(
     })
   }
 }
-

@@ -18,6 +18,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import {
+  getOpenFinanceStorageKey,
+  normalizeOpenFinanceConnection,
+  OPEN_FINANCE_CONNECTION_CHANGE_EVENT,
+  OPEN_FINANCE_FALLBACK_INSTITUTION,
+} from "@/lib/open-finance-connection"
 import { cn } from "@/lib/utils"
 
 type SimulatedBankStatusProps = {
@@ -33,12 +39,7 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   hour: "2-digit",
   minute: "2-digit",
 })
-const CONNECTION_CHANGE_EVENT = "opencred:bank-connection-change"
 const STORAGE_ERROR = "__storage_error__"
-
-function getStorageKey(userId: string) {
-  return `opencred:simulated-bank-connection:${userId}`
-}
 
 export function SimulatedBankStatus({
   userId,
@@ -50,40 +51,41 @@ export function SimulatedBankStatus({
     () => getStoredConnectionSnapshot(userId),
     () => null
   )
-  const { connectedAt, status } = resolveConnectionState({
+  const connection = resolveConnectionState({
     initialConnected,
     initialConnectedAt,
     storedSnapshot,
   })
 
-  if (status === "error") {
+  if (connection.status === "error") {
     return (
       <StatusCard
         badge="Atenção"
-        description="Não foi possível ler a conexão salva neste navegador. Você ainda pode continuar para consentimento."
+        description="Não foi possível ler a autorização salva neste navegador. Você ainda pode continuar para consentimento."
         icon={AlertCircleIcon}
-        title="Conexão indisponível"
+        title="Open Finance indisponível"
       />
     )
   }
 
-  if (status === "connected") {
+  if (connection.status === "connected") {
     return (
       <StatusCard
-        badge="Conectada"
+        badge="Conectado"
         description={
-          connectedAt
-            ? `Banco Horizonte conectado em ${dateFormatter.format(
-                new Date(connectedAt)
+          connection.connectedAt
+            ? `${formatConnectionLabel(connection)} · autorizado em ${dateFormatter.format(
+                new Date(connection.connectedAt)
               )}.`
-            : "Banco Horizonte conectado."
+            : `${formatConnectionLabel(connection)}.`
         }
         icon={CheckCircle2Icon}
-        title="Conta financeira pronta"
+        title="Open Finance conectado"
       >
         <p className="text-sm leading-6 text-muted-foreground">
-          Sua conta financeira será usada como contexto visual para entradas
-          recorrentes, estabilidade e comportamento financeiro autorizado.
+          Seus dados financeiros autorizados serão usados para melhorar a
+          análise, incluindo entradas, saídas, saldo médio e recorrência de
+          renda.
         </p>
       </StatusCard>
     )
@@ -92,15 +94,15 @@ export function SimulatedBankStatus({
   return (
     <StatusCard
       badge="Pendente"
-      description="Conectar a conta financeira antes do pedido ajuda a deixar a análise mais clara."
+      description="Autorizar Open Finance antes do pedido ajuda a deixar a análise mais completa."
       icon={LandmarkIcon}
-      title="Conta financeira não conectada"
+      title="Open Finance não conectado"
     >
       <Link
         href="/minha-conta"
         className={cn(buttonVariants({ variant: "outline" }), "justify-center")}
       >
-        Ir para minha conta
+        Conectar em Minha conta
       </Link>
     </StatusCard>
   )
@@ -108,17 +110,17 @@ export function SimulatedBankStatus({
 
 function subscribeToConnectionChanges(onStoreChange: () => void) {
   window.addEventListener("storage", onStoreChange)
-  window.addEventListener(CONNECTION_CHANGE_EVENT, onStoreChange)
+  window.addEventListener(OPEN_FINANCE_CONNECTION_CHANGE_EVENT, onStoreChange)
 
   return () => {
     window.removeEventListener("storage", onStoreChange)
-    window.removeEventListener(CONNECTION_CHANGE_EVENT, onStoreChange)
+    window.removeEventListener(OPEN_FINANCE_CONNECTION_CHANGE_EVENT, onStoreChange)
   }
 }
 
 function getStoredConnectionSnapshot(userId: string) {
   try {
-    return window.localStorage.getItem(getStorageKey(userId))
+    return window.localStorage.getItem(getOpenFinanceStorageKey(userId))
   } catch {
     return STORAGE_ERROR
   }
@@ -137,29 +139,31 @@ function resolveConnectionState({
     return {
       status: "error" as const,
       connectedAt: initialConnectedAt,
+      institutionName: OPEN_FINANCE_FALLBACK_INSTITUTION,
+      accountLast4: "0000",
     }
   }
 
   if (storedSnapshot) {
     try {
-      const storedConnection = JSON.parse(storedSnapshot) as {
-        status?: string
-        connectedAt?: string
-      }
+      const storedConnection = normalizeOpenFinanceConnection(
+        JSON.parse(storedSnapshot)
+      )
 
-      if (
-        storedConnection.status === "connected" &&
-        storedConnection.connectedAt
-      ) {
+      if (storedConnection) {
         return {
           status: "connected" as const,
           connectedAt: storedConnection.connectedAt,
+          institutionName: storedConnection.institutionName,
+          accountLast4: storedConnection.accountLast4,
         }
       }
     } catch {
       return {
         status: "error" as const,
         connectedAt: initialConnectedAt,
+        institutionName: OPEN_FINANCE_FALLBACK_INSTITUTION,
+        accountLast4: "0000",
       }
     }
   }
@@ -167,7 +171,23 @@ function resolveConnectionState({
   return {
     status: initialConnected ? ("connected" as const) : ("disconnected" as const),
     connectedAt: initialConnectedAt,
+    institutionName: OPEN_FINANCE_FALLBACK_INSTITUTION,
+    accountLast4: "0000",
   }
+}
+
+function formatConnectionLabel({
+  accountLast4,
+  institutionName,
+}: {
+  accountLast4: string
+  institutionName: string
+}) {
+  if (accountLast4 === "0000") {
+    return institutionName
+  }
+
+  return `${institutionName} · Conta •••• ${accountLast4}`
 }
 
 function StatusCard({
@@ -199,6 +219,3 @@ function StatusCard({
     </Card>
   )
 }
-
-
-

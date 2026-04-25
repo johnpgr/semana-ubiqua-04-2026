@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useActionState } from "react"
+import { useActionState, useSyncExternalStore } from "react"
 import {
   BanknoteIcon,
   CheckCircle2Icon,
@@ -26,6 +26,12 @@ import {
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Spinner } from "@/components/ui/spinner"
+import {
+  buildOpenFinanceDestination,
+  getOpenFinanceStorageKey,
+  normalizeOpenFinanceConnection,
+  OPEN_FINANCE_CONNECTION_CHANGE_EVENT,
+} from "@/lib/open-finance-connection"
 import { cn } from "@/lib/utils"
 
 import {
@@ -48,6 +54,7 @@ type SimulatedDisbursementCardProps = {
   initialDisbursement: DisbursementSnapshot | null
   requestId: string
   requestedAmount: number
+  userId: string
 }
 
 const INITIAL_STATE: SimulateDisbursementState = {
@@ -66,6 +73,7 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   hour: "2-digit",
   minute: "2-digit",
 })
+const STORAGE_ERROR = "__storage_error__"
 
 export function SimulatedDisbursementCard({
   approvedAmount,
@@ -73,6 +81,7 @@ export function SimulatedDisbursementCard({
   initialDisbursement,
   requestId,
   requestedAmount,
+  userId,
 }: SimulatedDisbursementCardProps) {
   const [state, formAction, isPending] = useActionState(
     simulateCreditDisbursement,
@@ -80,6 +89,15 @@ export function SimulatedDisbursementCard({
   )
   const isEligible = decision === "approved" || decision === "approved_reduced"
   const disbursement = state.ok ? state.data : initialDisbursement
+  const storedSnapshot = useSyncExternalStore(
+    subscribeToConnectionChanges,
+    () => getStoredConnectionSnapshot(userId),
+    () => null
+  )
+  const openFinanceConnection = getOpenFinanceConnection(storedSnapshot)
+  const destination =
+    disbursement?.destination ??
+    buildOpenFinanceDestination(openFinanceConnection)
 
   if (!isEligible || !approvedAmount) {
     return null
@@ -141,7 +159,7 @@ export function SimulatedDisbursementCard({
           <Separator />
           <InfoRow
             label="Destino"
-            value={disbursement?.destination ?? "Banco Horizonte"}
+            value={destination}
           />
           {disbursement ? (
             <>
@@ -180,6 +198,17 @@ export function SimulatedDisbursementCard({
         ) : (
           <form action={formAction} className="w-full sm:w-auto">
             <input name="request_id" type="hidden" value={requestId} />
+            <input name="destination" type="hidden" value={destination} />
+            <input
+              name="institution_name"
+              type="hidden"
+              value={openFinanceConnection?.institutionName ?? ""}
+            />
+            <input
+              name="account_last4"
+              type="hidden"
+              value={openFinanceConnection?.accountLast4 ?? ""}
+            />
             <Button className="w-full sm:w-auto" disabled={isPending} type="submit">
               {isPending ? (
                 <Spinner data-icon="inline-start" />
@@ -193,6 +222,36 @@ export function SimulatedDisbursementCard({
       </CardFooter>
     </Card>
   )
+}
+
+function subscribeToConnectionChanges(onStoreChange: () => void) {
+  window.addEventListener("storage", onStoreChange)
+  window.addEventListener(OPEN_FINANCE_CONNECTION_CHANGE_EVENT, onStoreChange)
+
+  return () => {
+    window.removeEventListener("storage", onStoreChange)
+    window.removeEventListener(OPEN_FINANCE_CONNECTION_CHANGE_EVENT, onStoreChange)
+  }
+}
+
+function getStoredConnectionSnapshot(userId: string) {
+  try {
+    return window.localStorage.getItem(getOpenFinanceStorageKey(userId))
+  } catch {
+    return STORAGE_ERROR
+  }
+}
+
+function getOpenFinanceConnection(storedSnapshot: string | null) {
+  if (!storedSnapshot || storedSnapshot === STORAGE_ERROR) {
+    return null
+  }
+
+  try {
+    return normalizeOpenFinanceConnection(JSON.parse(storedSnapshot))
+  } catch {
+    return null
+  }
 }
 
 function InfoRow({ label, value }: { label: string; value: string }) {

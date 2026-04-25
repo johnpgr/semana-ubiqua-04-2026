@@ -9,6 +9,7 @@ import { partnerIndicatorTests } from "./unit/partner-indicators.test"
 import { postCreditMonitoringTests } from "./unit/post-credit-monitoring.test"
 import { scoreEngineTests } from "./unit/score-engine.test"
 import { openCredAiTests } from "./unit/opencred-ai.test"
+import { openFinanceConnectionTests } from "./unit/open-finance-connection.test"
 
 type NamedTest = {
   name: string
@@ -27,6 +28,7 @@ const tests: NamedTest[] = [
   ...partnerIndicatorTests,
   ...postCreditMonitoringTests,
   ...openCredAiTests,
+  ...openFinanceConnectionTests,
 ]
 
 let failed = 0

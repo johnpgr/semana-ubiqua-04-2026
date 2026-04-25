@@ -161,7 +161,7 @@ export default async function SolicitacaoPage() {
             <CardContent className="flex flex-col gap-3 text-sm leading-6">
               <JourneyPoint
                 icon={LandmarkIcon}
-                text="A conta financeira ajuda a contextualizar entradas recorrentes, estabilidade e comportamento financeiro."
+                text="O Open Finance ajuda a contextualizar entradas recorrentes, estabilidade e comportamento financeiro autorizado."
               />
               <JourneyPoint
                 icon={ShieldCheckIcon}

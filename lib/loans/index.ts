@@ -1,5 +1,6 @@
 import "server-only"
 
+import { OPEN_FINANCE_FALLBACK_DESTINATION } from "@/lib/open-finance-connection"
 import type { Database } from "@/lib/supabase/database.types"
 import { createServiceClient } from "@/lib/supabase/service"
 
@@ -19,7 +20,6 @@ export type Loan = {
 const DISBURSEMENT_ACTION = "credit_disbursement_simulated"
 const REPAYMENT_ACTION = "loan_payment_registered"
 const LEGACY_REPAYMENT_ACTION = "loan_repayment_simulated"
-const SIMULATED_DESTINATION = "Banco Horizonte"
 const DUE_DAYS = 30
 
 export async function loadLoanForRequest(
@@ -145,7 +145,7 @@ function buildLoan({
   const destination =
     typeof metadata?.destination === "string"
       ? metadata.destination
-      : SIMULATED_DESTINATION
+      : OPEN_FINANCE_FALLBACK_DESTINATION
 
   const amount =
     typeof metadata?.approvedAmount === "number"
