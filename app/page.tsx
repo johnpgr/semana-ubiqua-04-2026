@@ -100,18 +100,18 @@ export default function Page() {
     <main className="min-h-svh bg-background text-foreground">
       <section className="border-b bg-[linear-gradient(180deg,color-mix(in_oklab,var(--muted)_70%,var(--background)),var(--background))]">
         <div className="mx-auto grid min-h-[92svh] w-full max-w-7xl gap-10 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)] lg:items-center lg:py-12">
-          <div className="flex flex-col gap-7">
+          <div className="flex flex-col gap-5">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary">OpenCred</Badge>
               <Badge variant="outline">Pronto para operar</Badge>
             </div>
 
-            <div className="flex max-w-4xl flex-col gap-5">
-              <h1 className="text-4xl leading-tight font-semibold text-balance sm:text-5xl lg:text-6xl">
+            <div className="flex max-w-4xl flex-col gap-4">
+              <h1 className="text-4xl leading-tighter font-semibold text-balance sm:text-5xl lg:text-6xl">
                 Crédito progressivo para autônomos, com análise inteligente e
                 transparente.
               </h1>
-              <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
+              <p className="max-w-2xl text-base text-muted-foreground sm:text-lg">
                 O OpenCred transforma dados financeiros autorizados em uma jornada
                 completa: conta conectada, solicitação, análise explicada,
                 oferta, empréstimo ativo e evolução de confiança.
@@ -338,7 +338,7 @@ function TimelineItem({
 }) {
   return (
     <div className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border bg-background/70 p-3">
-      <div className="flex size-8 items-center justify-center rounded-lg bg-muted">
+      <div className="flex size-8 items-center justify-center rounded-lg">
         <Icon data-icon="inline-start" />
       </div>
       <div className="min-w-0">
@@ -395,7 +395,7 @@ function FeatureCard({
   return (
     <Card className="border-border/70 bg-background/85">
       <CardHeader className="gap-3">
-        <div className="flex size-9 items-center justify-center rounded-lg bg-muted">
+        <div className="flex size-9 items-center justify-center rounded-lg">
           <Icon data-icon="inline-start" />
         </div>
         <CardTitle className="text-base">{title}</CardTitle>

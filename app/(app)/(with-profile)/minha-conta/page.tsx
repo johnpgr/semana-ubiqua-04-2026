@@ -241,7 +241,7 @@ export default async function MinhaContaPage() {
         userId={profile.id}
       />
 
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
+      <section className="flex flex-col gap-6">
         <Card className="border-border/70 bg-background/85">
           <CardHeader className="gap-2">
             <CardTitle>Último resultado de análise</CardTitle>
@@ -321,7 +321,7 @@ export default async function MinhaContaPage() {
           </CardContent>
         </Card>
 
-        <div className="grid gap-6">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
           <Card className="border-border/70 bg-background/85">
             <CardHeader className="gap-2">
               <CardTitle>Nível de confiança</CardTitle>

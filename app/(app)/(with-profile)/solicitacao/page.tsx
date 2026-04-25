@@ -131,7 +131,7 @@ export default async function SolicitacaoPage() {
         </section>
       ) : null}
 
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.85fr)]">
+      <section className="flex flex-col gap-6">
         <Card className="border border-border/70 bg-background/85">
           <CardHeader className="gap-2">
             <CardTitle>Valor desejado</CardTitle>
@@ -143,7 +143,7 @@ export default async function SolicitacaoPage() {
           <CreditRequestForm />
         </Card>
 
-        <div className="grid gap-6">
+        <div className="flex flex-col gap-6">
           <SimulatedBankStatus
             initialConnected={Boolean(latestConsent)}
             initialConnectedAt={latestConsent?.granted_at ?? null}
@@ -235,4 +235,3 @@ function InfoCard({
     </Card>
   )
 }
-
