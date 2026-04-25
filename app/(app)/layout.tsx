@@ -33,11 +33,23 @@ export default async function AppLayout({ children }: AppLayoutProps) {
               {user.email}
             </p>
           </div>
-          <form action={signOut}>
-            <Button type="submit" variant="outline" className="w-full sm:w-auto">
-              Sair
-            </Button>
-          </form>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Link
+              href="/minha-conta"
+              className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              Minha conta
+            </Link>
+            <form action={signOut}>
+              <Button
+                type="submit"
+                variant="outline"
+                className="w-full sm:w-auto"
+              >
+                Sair
+              </Button>
+            </form>
+          </div>
         </div>
       </header>
       <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-10">

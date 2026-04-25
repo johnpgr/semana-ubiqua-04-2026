@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation"
 import { requireCurrentProfile } from "@/lib/auth/profile"
 import type { Database } from "@/lib/supabase/database.types"
 import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
 
 import { ResultCard } from "./result-card"
 
@@ -28,6 +29,16 @@ type ResultTransactionRow = Pick<
   Database["public"]["Tables"]["transactions"]["Row"],
   "amount" | "category" | "description" | "kind" | "occurred_at"
 >
+
+type ResultDisbursement = {
+  approvedAmount: number
+  destination: string
+  disbursedAt: string
+  status: "active"
+}
+
+const DISBURSEMENT_ACTION = "credit_disbursement_simulated"
+const SIMULATED_DESTINATION = "Banco Horizonte Simulado"
 
 export default async function ResultadoPage({ params }: ResultadoPageProps) {
   const { id } = await params
@@ -55,6 +66,10 @@ export default async function ResultadoPage({ params }: ResultadoPageProps) {
     redirect(`/consentimento/${request.id}`)
   }
 
+  if (request.status === "collecting_data" || request.status === "scoring") {
+    redirect(`/analise/${request.id}`)
+  }
+
   const { data: consent } = await supabase
     .from("consents")
     .select("scopes, granted_at, user_agent, ip_address")
@@ -63,8 +78,13 @@ export default async function ResultadoPage({ params }: ResultadoPageProps) {
     .limit(1)
     .maybeSingle()
 
-  const [{ data: score }, { data: requestHistory }, { data: transactions }] =
-    await Promise.all([
+  const service = createServiceClient()
+  const [
+    { data: score },
+    { data: requestHistory },
+    { data: transactions },
+    { data: disbursement },
+  ] = await Promise.all([
     supabase
       .from("scores")
       .select("value, reasons, suggested_limit")
@@ -83,6 +103,15 @@ export default async function ResultadoPage({ params }: ResultadoPageProps) {
       .eq("request_id", request.id)
       .order("occurred_at", { ascending: false })
       .limit(200),
+    service
+      .from("audit_logs")
+      .select("created_at, metadata")
+      .eq("entity_type", "credit_request")
+      .eq("entity_id", request.id)
+      .eq("action", DISBURSEMENT_ACTION)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ])
 
   return (
@@ -93,6 +122,37 @@ export default async function ResultadoPage({ params }: ResultadoPageProps) {
       initialTransactions={(transactions ?? []) as ResultTransactionRow[]}
       requestHistory={(requestHistory ?? []) as RequestHistoryRow[]}
       initialMockProfile={profile.mock_profile}
+      initialDisbursement={mapDisbursement(disbursement, request.approved_amount)}
     />
   )
+}
+
+function mapDisbursement(
+  row:
+    | {
+        created_at: string
+        metadata: Database["public"]["Tables"]["audit_logs"]["Row"]["metadata"]
+      }
+    | null,
+  approvedAmount: number | null
+): ResultDisbursement | null {
+  if (!row || !approvedAmount) {
+    return null
+  }
+
+  const metadata =
+    row.metadata && typeof row.metadata === "object" && !Array.isArray(row.metadata)
+      ? row.metadata
+      : null
+  const destination =
+    typeof metadata?.destination === "string"
+      ? metadata.destination
+      : SIMULATED_DESTINATION
+
+  return {
+    approvedAmount,
+    destination,
+    disbursedAt: row.created_at,
+    status: "active",
+  }
 }

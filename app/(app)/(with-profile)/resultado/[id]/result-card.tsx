@@ -31,6 +31,8 @@ import { createClient } from "@/lib/supabase/client"
 import type { Database } from "@/lib/supabase/database.types"
 import { ConsentScopeLabels } from "@/validation/consent"
 
+import { SimulatedDisbursementCard } from "./simulated-disbursement-card"
+
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
   currency: "BRL",
@@ -65,6 +67,13 @@ type RequestHistoryRow = {
   decided_at: string | null
 }
 
+type DisbursementSnapshot = {
+  approvedAmount: number
+  destination: string
+  disbursedAt: string
+  status: "active"
+}
+
 type ResultCardProps = {
   initialRequest: CreditRequestRow
   initialConsent: ConsentRow | null
@@ -72,6 +81,7 @@ type ResultCardProps = {
   initialTransactions: TransactionRow[]
   requestHistory: RequestHistoryRow[]
   initialMockProfile: string | null
+  initialDisbursement: DisbursementSnapshot | null
 }
 
 export function ResultCard({
@@ -81,6 +91,7 @@ export function ResultCard({
   initialTransactions,
   requestHistory,
   initialMockProfile,
+  initialDisbursement,
 }: ResultCardProps) {
   const [request, setRequest] = useState(initialRequest)
   const [score, setScore] = useState(initialScore)
@@ -614,52 +625,66 @@ export function ResultCard({
         </CardContent>
       </Card>
 
-      <Card className="self-start border border-border/70 bg-muted/40">
-        <CardHeader className="space-y-3">
-          <CardTitle>Resumo da analise</CardTitle>
-          <CardDescription className="space-y-3 text-sm leading-6">
-            <p>
-              Numero da solicitacao: <strong>{request.id}</strong>
-            </p>
-            <p>
-              Valor pedido:{" "}
-              <strong>
-                {currencyFormatter.format(request.requested_amount)}
-              </strong>
-            </p>
-            <p>
-              Status: <strong>{getRequestStatusLabel(request.status)}</strong>
-            </p>
-            {progressiveCredit ? (
+      <div className="flex flex-col gap-4 self-start">
+        <Card className="border border-border/70 bg-muted/40">
+          <CardHeader className="space-y-3">
+            <CardTitle>Resumo da análise</CardTitle>
+            <CardDescription className="space-y-3 text-sm leading-6">
               <p>
-                Nivel de confianca:{" "}
-                <strong>{progressiveCredit.levelLabel}</strong>
+                Número da solicitação: <strong>{request.id}</strong>
               </p>
-            ) : null}
-            {fraudScore ? (
               <p>
-                Fraude:{" "}
+                Valor pedido:{" "}
                 <strong>
-                  {
-                    FRAUD_RISK_LABELS[
-                      partnerFraud?.riskLevel ?? fraudScore.riskLevel
-                    ]
-                  }
+                  {currencyFormatter.format(request.requested_amount)}
                 </strong>
               </p>
-            ) : null}
-            {monitoring ? (
               <p>
-                Monitoramento:{" "}
-                <strong>{MONITORING_RISK_LABELS[monitoring.riskLevel]}</strong>
+                Status: <strong>{getRequestStatusLabel(request.status)}</strong>
               </p>
-            ) : null}
-            <p>
-              Consentimento: <strong>{consentScopeSummary}</strong>
-            </p>
-          </CardDescription>
-        </CardHeader>
-      </Card>
+              {progressiveCredit ? (
+                <p>
+                  Nível de confiança:{" "}
+                  <strong>{progressiveCredit.levelLabel}</strong>
+                </p>
+              ) : null}
+              {fraudScore ? (
+                <p>
+                  Fraude:{" "}
+                  <strong>
+                    {
+                      FRAUD_RISK_LABELS[
+                        partnerFraud?.riskLevel ?? fraudScore.riskLevel
+                      ]
+                    }
+                  </strong>
+                </p>
+              ) : null}
+              {monitoring ? (
+                <p>
+                  Monitoramento:{" "}
+                  <strong>
+                    {MONITORING_RISK_LABELS[monitoring.riskLevel]}
+                  </strong>
+                </p>
+              ) : null}
+              <p>
+                Consentimento: <strong>{consentScopeSummary}</strong>
+              </p>
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        {processedScore ? (
+          <SimulatedDisbursementCard
+            approvedAmount={request.approved_amount}
+            decision={request.decision}
+            initialDisbursement={initialDisbursement}
+            requestId={request.id}
+            requestedAmount={request.requested_amount}
+          />
+        ) : null}
+      </div>
     </div>
   )
 }

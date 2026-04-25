@@ -8,13 +8,13 @@ Nenhuma task abaixo deve quebrar os motores já implementados. O planejamento se
 
 ## 1. Visão geral do fluxo novo
 
-- [ ] Criar uma área do usuário como ponto de partida após login.
-- [ ] Exibir se o perfil está completo e se existe conta bancária simulada conectada.
-- [ ] Permitir iniciar ou retomar solicitação de crédito a partir dessa área.
-- [ ] Tornar a conexão bancária simulada uma etapa visível antes ou durante o consentimento.
-- [ ] Mostrar uma etapa de análise com progresso claro e linguagem compreensível.
-- [ ] Transformar o resultado em oferta quando houver aprovação ou aprovação reduzida.
-- [ ] Permitir recebimento de crédito simulado depois do aceite da oferta.
+- [x] Criar uma área do usuário como ponto de partida após login.
+- [x] Exibir se o perfil está completo e se existe conta bancária simulada conectada.
+- [x] Permitir iniciar ou retomar solicitação de crédito a partir dessa área.
+- [x] Tornar a conexão bancária simulada uma etapa visível antes ou durante o consentimento.
+- [x] Mostrar uma etapa de análise com progresso claro e linguagem compreensível.
+- [x] Transformar o resultado em oferta quando houver aprovação ou aprovação reduzida.
+- [x] Permitir recebimento de crédito simulado depois do aceite da oferta.
 - [ ] Exibir empréstimo ativo com vencimento e ação de pagamento simulado.
 - [ ] Mostrar que o pagamento melhora confiança, limite potencial e relacionamento.
 - [ ] Permitir nova solicitação após o ciclo concluído.
@@ -25,23 +25,23 @@ Planejar e implementar uma rota como `/minha-conta`, `/conta` ou equivalente, us
 
 ### Escopo
 
-- [ ] Exibir dados básicos do usuário: nome, CPF mascarado e perfil mockado.
-- [ ] Exibir status do perfil: completo, pendente ou inconsistente.
-- [ ] Exibir conta simulada: conectada ou não conectada.
-- [ ] Exibir limite atual ou estimado com label de confiança.
-- [ ] Exibir nível de confiança atual ou progresso simplificado.
-- [ ] Exibir último resultado de análise, quando existir.
-- [ ] Exibir empréstimo ativo, quando existir.
-- [ ] Exibir histórico resumido das últimas solicitações.
-- [ ] Incluir ações principais: conectar conta, solicitar crédito, ver resultado, pagar empréstimo, pedir novo crédito.
+- [x] Exibir dados básicos do usuário: nome, CPF mascarado e perfil mockado.
+- [x] Exibir status do perfil: completo, pendente ou inconsistente.
+- [x] Exibir conta simulada: conectada ou não conectada.
+- [x] Exibir limite atual ou estimado com label de confiança.
+- [x] Exibir nível de confiança atual ou progresso simplificado.
+- [x] Exibir último resultado de análise, quando existir.
+- [x] Exibir empréstimo ativo, quando existir.
+- [x] Exibir histórico resumido das últimas solicitações.
+- [x] Incluir ações principais: conectar conta, solicitar crédito, ver resultado, pagar empréstimo, pedir novo crédito.
 
 ### Critérios de aceite
 
-- [ ] A UI deve carregar para usuário autenticado com perfil criado.
-- [ ] Usuário sem perfil deve continuar sendo direcionado para cadastro.
-- [ ] A tela deve funcionar mesmo sem solicitações anteriores.
-- [ ] O histórico deve mostrar estado vazio claro quando não houver dados.
-- [ ] A task não deve alterar score, fraud score ou regras de decisão.
+- [x] A UI deve carregar para usuário autenticado com perfil criado.
+- [x] Usuário sem perfil deve continuar sendo direcionado para cadastro.
+- [x] A tela deve funcionar mesmo sem solicitações anteriores.
+- [x] O histórico deve mostrar estado vazio claro quando não houver dados.
+- [x] A task não deve alterar score, fraud score ou regras de decisão.
 
 ## 3. Task B - Conexão bancária simulada
 
@@ -49,21 +49,21 @@ Planejar uma experiência mockada de conexão bancária/Open Finance simulado.
 
 ### Escopo
 
-- [ ] Criar card ou tela de conexão bancária simulada.
-- [ ] Explicar quais dados serão usados: entradas, saídas, recorrência, estabilidade e sinais de risco.
-- [ ] Incluir botão "Conectar conta simulada".
-- [ ] Mostrar estado desconectado antes da ação.
-- [ ] Mostrar estado conectado depois da ação.
-- [ ] Integrar visualmente a conexão com consentimento e análise.
-- [ ] Permitir entender que a conexão é simulada e segura para demo.
+- [x] Criar card ou tela de conexão bancária simulada.
+- [x] Explicar quais dados serão usados: entradas, saídas, recorrência, estabilidade e sinais de risco.
+- [x] Incluir botão "Conectar conta simulada".
+- [x] Mostrar estado desconectado antes da ação.
+- [x] Mostrar estado conectado depois da ação.
+- [x] Integrar visualmente a conexão com consentimento e análise.
+- [x] Permitir entender que a conexão é simulada e segura para demo.
 
 ### Critérios de aceite
 
-- [ ] A conexão deve ter estado visual persistido ou simulado de forma consistente.
-- [ ] Usuário deve conseguir avançar para solicitação após conectar ou confirmar a conexão.
-- [ ] O texto deve deixar claro que não há conexão bancária real.
-- [ ] A task não deve integrar Open Finance real.
-- [ ] A task não deve criar dependência de APIs externas.
+- [x] A conexão deve ter estado visual persistido ou simulado de forma consistente.
+- [x] Usuário deve conseguir avançar para solicitação após conectar ou confirmar a conexão.
+- [x] O texto deve deixar claro que não há conexão bancária real.
+- [x] A task não deve integrar Open Finance real.
+- [x] A task não deve criar dependência de APIs externas.
 
 ## 4. Task C - Jornada de solicitação melhorada
 
@@ -71,20 +71,20 @@ Melhorar o fluxo de solicitação para explicar melhor o valor pedido e o compor
 
 ### Escopo
 
-- [ ] Manter campo de valor desejado.
-- [ ] Exibir explicação curta sobre primeira concessão conservadora.
-- [ ] Mostrar dependência de conta conectada ou consentimento pendente.
-- [ ] Mostrar CTA claro para continuar análise.
-- [ ] Orientar o usuário quando ainda faltar conexão simulada.
-- [ ] Reaproveitar o fluxo atual de `credit_requests` sempre que possível.
+- [x] Manter campo de valor desejado.
+- [x] Exibir explicação curta sobre primeira concessão conservadora.
+- [x] Mostrar dependência de conta conectada ou consentimento pendente.
+- [x] Mostrar CTA claro para continuar análise.
+- [x] Orientar o usuário quando ainda faltar conexão simulada.
+- [x] Reaproveitar o fluxo atual de `credit_requests` sempre que possível.
 
 ### Critérios de aceite
 
-- [ ] A solicitação deve continuar criando uma `credit_request`.
-- [ ] O usuário deve entender por que o limite aprovado pode ser menor que o valor pedido.
-- [ ] O fluxo deve indicar claramente o próximo passo.
-- [ ] A task não deve mudar os pesos do score.
-- [ ] A task não deve remover o consentimento.
+- [x] A solicitação deve continuar criando uma `credit_request`.
+- [x] O usuário deve entender por que o limite aprovado pode ser menor que o valor pedido.
+- [x] O fluxo deve indicar claramente o próximo passo.
+- [x] A task não deve mudar os pesos do score.
+- [x] A task não deve remover o consentimento.
 
 ## 5. Task D - Etapa visual de análise
 
@@ -92,20 +92,22 @@ Planejar uma tela ou estado intermediário para tornar a análise mais tangível
 
 ### Escopo
 
-- [ ] Exibir passo "Coletando dados bancários simulados".
-- [ ] Exibir passo "Calculando score financeiro".
-- [ ] Exibir passo "Verificando sinais de fraude".
-- [ ] Exibir passo "Aplicando crédito progressivo".
-- [ ] Exibir passo "Gerando explicação da decisão".
-- [ ] Direcionar automaticamente ou por CTA para o resultado quando a análise terminar.
+- [x] Exibir passo "Coletando dados bancários simulados".
+- [x] Exibir passo "Calculando score financeiro".
+- [x] Exibir passo "Verificando sinais de fraude".
+- [x] Exibir passo "Aplicando crédito progressivo".
+- [x] Exibir passo "Consultando indicadores externos de parceiros".
+- [x] Exibir passo "Gerando explicação da decisão".
+- [x] Exibir passo "Preparando comunicação oficial".
+- [x] Direcionar automaticamente ou por CTA para o resultado quando a análise terminar.
 
 ### Critérios de aceite
 
-- [ ] A etapa deve ser visual e compreensível para público não técnico.
-- [ ] A análise deve refletir módulos já existentes sem expor detalhes sensíveis.
-- [ ] Deve haver estado de erro recuperável caso a análise falhe.
-- [ ] A task pode simular delay visual, mas não deve criar processamento assíncrono complexo.
-- [ ] A task não deve duplicar cálculo de score no cliente.
+- [x] A etapa deve ser visual e compreensível para público não técnico.
+- [x] A análise deve refletir módulos já existentes sem expor detalhes sensíveis.
+- [x] Deve haver estado de erro recuperável caso a análise falhe.
+- [x] A task pode simular delay visual, mas não deve criar processamento assíncrono complexo.
+- [x] A task não deve duplicar cálculo de score no cliente.
 
 ## 6. Task E - Recebimento de crédito simulado
 
@@ -113,20 +115,20 @@ Planejar fluxo para aceitar oferta e receber crédito simulado após aprovação
 
 ### Escopo
 
-- [ ] Transformar resultado aprovado em oferta clara.
-- [ ] Exibir valor aprovado, valor solicitado e condições simuladas.
-- [ ] Incluir botão "Receber crédito simulado".
-- [ ] Mostrar destino: conta bancária simulada conectada.
-- [ ] Exibir estado de crédito liberado após aceite.
-- [ ] Atualizar ou simular status para empréstimo ativo.
+- [x] Transformar resultado aprovado em oferta clara.
+- [x] Exibir valor aprovado, valor solicitado e condições simuladas.
+- [x] Incluir botão "Receber crédito simulado".
+- [x] Mostrar destino: conta bancária simulada conectada.
+- [x] Exibir estado de crédito liberado após aceite.
+- [x] Atualizar ou simular status para empréstimo ativo.
 
 ### Critérios de aceite
 
-- [ ] Usuário aprovado deve conseguir aceitar a oferta.
-- [ ] Usuário negado deve ver explicação e não deve ver botão de recebimento.
-- [ ] Usuário em revisão deve ver estado de análise/revisão, não recebimento.
-- [ ] A ação deve deixar claro que não há dinheiro real.
-- [ ] A task não deve implementar pagamentos reais, Pix real ou contratos jurídicos reais.
+- [x] Usuário aprovado deve conseguir aceitar a oferta.
+- [x] Usuário negado deve ver explicação e não deve ver botão de recebimento.
+- [x] Usuário em revisão deve ver estado de análise/revisão, não recebimento.
+- [x] A ação deve deixar claro que não há dinheiro real.
+- [x] A task não deve implementar pagamentos reais, Pix real ou contratos jurídicos reais.
 
 ## 7. Task F - Empréstimo ativo
 
@@ -236,11 +238,11 @@ Planejar reflexos administrativos do ciclo completo sem transformar o admin em p
 
 Ordem sugerida pensando em menor risco, maior impacto visual e reutilização do que já existe:
 
-- [ ] 1. Task A - Área do usuário como hub da jornada.
-- [ ] 2. Task B - Conexão bancária simulada com estado simples.
-- [ ] 3. Task C - Jornada de solicitação melhorada.
-- [ ] 4. Task D - Etapa visual de análise.
-- [ ] 5. Task E - Recebimento de crédito simulado.
+- [x] 1. Task A - Área do usuário como hub da jornada.
+- [x] 2. Task B - Conexão bancária simulada com estado simples.
+- [x] 3. Task C - Jornada de solicitação melhorada.
+- [x] 4. Task D - Etapa visual de análise.
+- [x] 5. Task E - Recebimento de crédito simulado.
 - [ ] 6. Task F - Empréstimo ativo.
 - [ ] 7. Task G - Pagamento simulado.
 - [ ] 8. Task H - Evolução de confiança e novo limite.

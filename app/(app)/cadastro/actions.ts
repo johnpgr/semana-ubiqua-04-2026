@@ -43,7 +43,7 @@ export async function createProfile(
 
   if (error?.code === "23505") {
     if (error.message.includes("profiles_pkey")) {
-      redirect("/solicitacao")
+      redirect("/minha-conta")
     }
 
     return {
@@ -62,5 +62,5 @@ export async function createProfile(
   }
 
   revalidatePath("/", "layout")
-  redirect("/solicitacao")
+  redirect("/minha-conta")
 }

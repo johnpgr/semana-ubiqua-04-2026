@@ -20,7 +20,7 @@ export default async function VerifyPage({ searchParams }: VerifyPageProps) {
 
   if (user) {
     const profile = await getCurrentProfile()
-    redirect(profile ? "/solicitacao" : "/cadastro")
+    redirect(profile ? "/minha-conta" : "/cadastro")
   }
 
   const { email } = await searchParams
