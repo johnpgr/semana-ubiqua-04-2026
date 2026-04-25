@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
+import { MOCK_PROFILE_LABELS } from "@/validation/auth"
 
 import { AdminCharts } from "./admin-charts"
 import type { AdminRequestRow, CycleStage } from "./page"
@@ -228,6 +229,18 @@ function describeRow(row: AdminRequestRow) {
     requestedAmount,
     status,
   }
+}
+
+function formatProfileLabel(profile: string | null | undefined) {
+  if (!profile) {
+    return "—"
+  }
+
+  if (profile in MOCK_PROFILE_LABELS) {
+    return MOCK_PROFILE_LABELS[profile as keyof typeof MOCK_PROFILE_LABELS]
+  }
+
+  return profile
 }
 
 function buildActivityEntry(kind: ActivityKind, row?: AdminRequestRow, requestId?: string): ActivityEntry {
@@ -548,7 +561,7 @@ export function AdminDashboard({
                       </TableCell>
                       <TableCell>
                         <span className="text-xs text-muted-foreground">
-                          {row.profile?.mock_profile ?? "—"}
+                          {formatProfileLabel(row.profile?.mock_profile)}
                         </span>
                       </TableCell>
                       <TableCell>
@@ -735,7 +748,7 @@ export function AdminDashboard({
           <CardHeader className="space-y-2">
             <CardTitle className="text-base">Atividade recente</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Destaques persistentes para mostrar inserts e updates ao vivo durante a demo.
+              Destaques persistentes para mostrar atualizações ao vivo.
             </p>
           </CardHeader>
           <CardContent>
@@ -781,3 +794,5 @@ export function AdminDashboard({
     </div>
   )
 }
+
+

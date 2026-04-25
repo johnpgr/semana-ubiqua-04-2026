@@ -151,7 +151,7 @@ export default async function MinhaContaPage() {
                 Olá, {profile.name.split(" ")[0] ?? profile.name}
               </h1>
               <p className="text-sm leading-6 text-muted-foreground sm:text-base">
-                Acompanhe seu perfil, conexão simulada, histórico de crédito e
+                Acompanhe seu perfil, conexão autorizada, histórico de crédito e
                 próximo passo da jornada OpenCred.
               </p>
             </div>
@@ -386,7 +386,7 @@ export default async function MinhaContaPage() {
             <CardHeader className="gap-2">
               <CardTitle>Empréstimo ativo</CardTitle>
               <CardDescription>
-                Acompanhe o empréstimo simulado liberado e a ação de pagamento.
+                Acompanhe o empréstimo liberado e a ação de pagamento.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -421,7 +421,7 @@ export default async function MinhaContaPage() {
                     </p>
                     {activeLoan.status !== "paid" ? (
                       <p>
-                        Vencimento simulado:{" "}
+                        Vencimento:{" "}
                         <strong>
                           {dateFormatter.format(new Date(activeLoan.dueAt))}
                         </strong>
@@ -456,7 +456,7 @@ export default async function MinhaContaPage() {
                     </EmptyMedia>
                     <EmptyTitle>Nenhum empréstimo ativo</EmptyTitle>
                     <EmptyDescription>
-                      Quando houver crédito simulado liberado, ele aparecerá
+                      Quando houver crédito liberado, ele aparecerá
                       nesta área com vencimento e ação de pagamento.
                     </EmptyDescription>
                   </EmptyHeader>
@@ -760,3 +760,5 @@ function MetricTile({ label, value }: { label: string; value: string }) {
     </div>
   )
 }
+
+

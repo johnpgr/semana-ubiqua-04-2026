@@ -139,7 +139,7 @@ export function CadastroForm() {
 
         <div className="space-y-2">
           <label className="text-sm font-medium" htmlFor="cpf">
-            CPF fictício
+            CPF
           </label>
           <Input
             id="cpf"
@@ -155,13 +155,13 @@ export function CadastroForm() {
             <p className="text-sm text-destructive">{cpfError}</p>
           ) : null}
           <p className="text-sm text-muted-foreground">
-            Use 11 dígitos numéricos. O MVP valida formato e unicidade.
+            Use 11 dígitos numéricos. O produto valida formato e unicidade.
           </p>
         </div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium" htmlFor="mock_profile">
-            Perfil de demonstração
+            Perfil financeiro
           </label>
           <NativeSelect
             id="mock_profile"
@@ -196,3 +196,4 @@ export function CadastroForm() {
     </form>
   )
 }
+

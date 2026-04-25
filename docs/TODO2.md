@@ -262,3 +262,24 @@ Ordem sugerida pensando em menor risco, maior impacto visual e reutilização do
 - [x] Alterações de schema devem ser pequenas, explícitas e só feitas quando a task realmente precisar.
 - [x] Motores existentes devem ser reaproveitados antes de criar nova lógica.
 - [x] O admin deve vir depois do fluxo do usuário, salvo ajuste pequeno que ajude a demo.
+
+## 14. Task K - OpenCred AI
+
+Assistente flutuante para orientar o usuario e apoiar a apresentacao do produto com respostas controladas dentro do projeto.
+
+### Escopo
+
+- [x] Criar botao flutuante "OpenCred AI" no canto inferior direito.
+- [x] Criar painel de conversa com status online, mensagem inicial, historico curto e bolhas.
+- [x] Criar base controlada de perguntas e respostas em `lib/assistant/knowledge.ts`.
+- [x] Sugerir perguntas por contexto de rota: home, minha conta, solicitacao, analise, resultado, emprestimo e admin.
+- [x] Incluir perguntas sobre score, limite, credito progressivo, conta conectada, seguranca, revisao e pagamento.
+- [x] Adicionar indicador de digitacao e transicao curta para resposta.
+
+### Criterios de aceite
+
+- [x] O assistente deve aparecer sem atrapalhar mobile a partir de 360px.
+- [x] O assistente deve funcionar sem IA real, webhook, n8n ou API externa.
+- [x] As respostas devem evitar detalhes sensiveis de antifraude.
+- [x] A UI nao deve usar linguagem de mock, hackathon ou integracao ficticia.
+- [x] A task nao deve alterar regras de score, fraude, credito progressivo, monitoramento ou migrations.

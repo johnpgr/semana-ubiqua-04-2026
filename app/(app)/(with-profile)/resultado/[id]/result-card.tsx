@@ -223,7 +223,7 @@ export function ResultCard({
           <CardDescription className="max-w-2xl text-sm leading-6">
             {processedScore
               ? "O score ja esta disponivel e o limite agora tambem considera a progressao de confianca do produto."
-              : "Os dados mockados ainda serao coletados e pontuados no fluxo atual do MVP."}
+              : "Os dados financeiros ainda serao coletados e pontuados no fluxo atual."}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -781,7 +781,7 @@ const EMAIL_CATEGORY_CONFIG = {
 >
 
 const EMAIL_STATUS_LABELS = {
-  sent_mock: "Envio mockado",
+  sent_mock: "Envio configurado",
   queued: "Na fila",
   previewed: "Preview",
   generated: "Gerado",
@@ -794,3 +794,5 @@ const LIMIT_ACTION_LABELS = {
   renegotiation_watch: "Observar renegociacao",
   maintain: "Manter limite",
 } as const satisfies Record<LimitAction, string>
+
+

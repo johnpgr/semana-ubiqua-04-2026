@@ -28,7 +28,7 @@ const RequestPayload = z.object({
 })
 
 const DISBURSEMENT_ACTION = "credit_disbursement_simulated"
-const SIMULATED_DESTINATION = "Banco Horizonte Simulado"
+const SIMULATED_DESTINATION = "Banco Horizonte"
 
 export async function simulateCreditDisbursement(
   _prevState: SimulateDisbursementState,
@@ -102,7 +102,7 @@ export async function simulateCreditDisbursement(
   if (existingError) {
     return {
       ok: false,
-      formError: "Não foi possível verificar a liberação simulada.",
+      formError: "Não foi possível verificar a liberação autorizada.",
     }
   }
 
@@ -133,7 +133,7 @@ export async function simulateCreditDisbursement(
     if (auditError) {
       return {
         ok: false,
-        formError: "Não foi possível registrar a liberação simulada.",
+        formError: "Não foi possível registrar a liberação autorizada.",
       }
     }
   }
@@ -190,3 +190,4 @@ async function cleanupDuplicateDisbursements(
     })
   }
 }
+

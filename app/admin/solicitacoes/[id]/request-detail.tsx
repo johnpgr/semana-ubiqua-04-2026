@@ -45,6 +45,7 @@ import { buildDecisionExplainability } from "@/lib/explainability"
 import { calculateFraudScore } from "@/lib/fraudScore"
 import { getMockPartnerIndicatorProfile } from "@/lib/partnerIndicators"
 import { evaluatePostCreditMonitoring } from "@/lib/postCreditMonitoring"
+import { MOCK_PROFILE_LABELS } from "@/validation/auth"
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -228,6 +229,18 @@ function KeyValueRow({
   )
 }
 
+function formatProfileLabel(profile: string | null | undefined) {
+  if (!profile) {
+    return "—"
+  }
+
+  if (profile in MOCK_PROFILE_LABELS) {
+    return MOCK_PROFILE_LABELS[profile as keyof typeof MOCK_PROFILE_LABELS]
+  }
+
+  return profile
+}
+
 export function RequestDetail({
   request,
   progression,
@@ -294,7 +307,7 @@ export function RequestDetail({
           Solicitação {request.id.slice(0, 8)}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Visão consolidada da análise para a demo do admin.
+          Visão consolidada da análise para operação.
         </p>
       </div>
 
@@ -320,8 +333,8 @@ export function RequestDetail({
               <CardContent className="space-y-3 text-sm">
                 <KeyValueRow label="Nome">{request.profile?.name ?? "—"}</KeyValueRow>
                 <KeyValueRow label="CPF">{request.profile?.cpf ?? "—"}</KeyValueRow>
-                <KeyValueRow label="Perfil mock">
-                  {request.profile?.mock_profile ?? "—"}
+                <KeyValueRow label="Perfil financeiro">
+                  {formatProfileLabel(request.profile?.mock_profile)}
                 </KeyValueRow>
               </CardContent>
             </Card>
@@ -1297,7 +1310,7 @@ const EMAIL_CATEGORY_CONFIG = {
 } as const satisfies Record<EmailCategory, { badgeVariant: BadgeVariant; label: string }>
 
 const EMAIL_STATUS_LABELS = {
-  sent_mock: "Envio mockado",
+  sent_mock: "Envio configurado",
   queued: "Na fila",
   previewed: "Preview",
   generated: "Gerado",
@@ -1309,7 +1322,7 @@ const DELIVERY_STATUS_CONFIG = {
   sent: { badgeVariant: "default", label: "Enviado" },
   failed: { badgeVariant: "destructive", label: "Falha" },
   skipped: { badgeVariant: "outline", label: "Ignorado" },
-  dry_run: { badgeVariant: "secondary", label: "Simulado" },
+  dry_run: { badgeVariant: "secondary", label: "Ativo" },
 } as const satisfies Record<DeliveryStatus, { badgeVariant: BadgeVariant; label: string }>
 
 const DELIVERY_ACTION_TO_STATUS: Record<string, DeliveryStatus> = {
@@ -1386,8 +1399,10 @@ const LIMIT_ACTION_LABELS = {
 } as const satisfies Record<LimitAction, string>
 
 const AUDIT_ACTION_LABELS: Record<string, string> = {
-  credit_disbursement_simulated: "Liberação simulada",
-  loan_repayment_simulated: "Pagamento simulado",
+  credit_disbursement_simulated: "Liberação autorizada",
+  loan_repayment_simulated: "Pagamento",
   credit_cycle_closed: "Ciclo concluído",
   email_communication_generated: "Comunicação gerada",
 }
+
+

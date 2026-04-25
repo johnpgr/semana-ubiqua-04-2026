@@ -20,7 +20,7 @@ export default function AdminError({
         <AlertDescription className="space-y-4">
           <p>
             Não foi possível buscar os dados mais recentes. Recarregue esta tela
-            para retomar a demo com o estado atual do sistema.
+            para retomar a jornada com o estado atual do sistema.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <Button type="button" onClick={reset}>
@@ -37,3 +37,4 @@ export default function AdminError({
     </div>
   )
 }
+

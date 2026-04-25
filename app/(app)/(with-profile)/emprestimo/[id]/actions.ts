@@ -120,7 +120,7 @@ export async function simulateLoanRepayment(
 
     return {
       ok: false,
-      formError: "Não foi possível verificar o pagamento simulado.",
+      formError: "Não foi possível verificar o pagamento.",
     }
   }
 
@@ -188,7 +188,7 @@ export async function simulateLoanRepayment(
 
     return {
       ok: false,
-      formError: "Não foi possível registrar o pagamento simulado.",
+      formError: "Não foi possível registrar o pagamento.",
     }
   }
 
@@ -290,3 +290,4 @@ async function cleanupDuplicateAuditAction(
     })
   }
 }
+

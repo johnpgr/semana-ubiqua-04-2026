@@ -92,12 +92,11 @@ export function SimulatedDisbursementCard({
           <Badge variant={disbursement ? "default" : "secondary"}>
             {disbursement ? "Crédito liberado" : "Oferta disponível"}
           </Badge>
-          <Badge variant="outline">Simulado</Badge>
+          <Badge variant="outline">Ativo</Badge>
         </div>
         <CardTitle>Recebimento de crédito</CardTitle>
         <CardDescription>
-          Aceite a oferta para simular a liberação em uma conta bancária
-          fictícia.
+          Aceite a oferta para receber o crédito na conta financeira.
         </CardDescription>
       </CardHeader>
 
@@ -113,7 +112,7 @@ export function SimulatedDisbursementCard({
         {disbursement ? (
           <Alert>
             <CheckCircle2Icon />
-            <AlertTitle>Crédito simulado liberado</AlertTitle>
+            <AlertTitle>Crédito liberado</AlertTitle>
             <AlertDescription>
               O valor foi marcado como recebido e agora aparece como empréstimo
               ativo na sua área do usuário.
@@ -124,8 +123,7 @@ export function SimulatedDisbursementCard({
             <BanknoteIcon />
             <AlertTitle>Oferta pronta para recebimento</AlertTitle>
             <AlertDescription>
-              Esta ação não movimenta dinheiro real, Pix ou conta bancária
-              externa.
+              Esta ação registra o recebimento do crédito no OpenCred.
             </AlertDescription>
           </Alert>
         )}
@@ -143,14 +141,14 @@ export function SimulatedDisbursementCard({
           <Separator />
           <InfoRow
             label="Destino"
-            value={disbursement?.destination ?? "Banco Horizonte Simulado"}
+            value={disbursement?.destination ?? "Banco Horizonte"}
           />
           {disbursement ? (
             <>
               <Separator />
               <InfoRow
                 label="Status"
-                value="Empréstimo ativo simulado"
+                value="Empréstimo ativo"
               />
               <Separator />
               <InfoRow
@@ -188,7 +186,7 @@ export function SimulatedDisbursementCard({
               ) : (
                 <BanknoteIcon data-icon="inline-start" />
               )}
-              {isPending ? "Liberando..." : "Receber crédito simulado"}
+              {isPending ? "Liberando..." : "Receber crédito"}
             </Button>
           </form>
         )}
@@ -205,3 +203,6 @@ function InfoRow({ label, value }: { label: string; value: string }) {
     </div>
   )
 }
+
+
+

@@ -68,7 +68,7 @@ export async function processCreditAnalysis(
   if (!parsedRequestId.success) {
     return {
       ok: false,
-      formError: "SolicitaÃ§Ã£o invÃ¡lida",
+      formError: "Solicitação inválida",
     }
   }
 
@@ -81,7 +81,7 @@ export async function processCreditAnalysis(
   if (userError || !user) {
     return {
       ok: false,
-      formError: "FaÃ§a login para processar a anÃ¡lise",
+      formError: "Faça login para processar a análise",
     }
   }
 
@@ -95,14 +95,14 @@ export async function processCreditAnalysis(
   if (requestError) {
     return {
       ok: false,
-      formError: "NÃ£o foi possÃ­vel carregar a solicitaÃ§Ã£o",
+      formError: "Não foi possível carregar a solicitação",
     }
   }
 
   if (!request) {
     return {
       ok: false,
-      formError: "SolicitaÃ§Ã£o nÃ£o encontrada",
+      formError: "Solicitação não encontrada",
     }
   }
 
@@ -136,21 +136,21 @@ export async function processCreditAnalysis(
   if (profileError || !profile) {
     return {
       ok: false,
-      formError: "NÃ£o foi possÃ­vel carregar o perfil do usuÃ¡rio",
+      formError: "Não foi possível carregar o perfil do usuário",
     }
   }
 
   if (consentError) {
     return {
       ok: false,
-      formError: "NÃ£o foi possÃ­vel verificar o consentimento",
+      formError: "Não foi possível verificar o consentimento",
     }
   }
 
   if (!consent) {
     return {
       ok: false,
-      formError: "A anÃ¡lise exige consentimento salvo",
+      formError: "A análise exige consentimento salvo",
     }
   }
 
@@ -171,14 +171,14 @@ export async function processCreditAnalysis(
     if (existingScoreError) {
       return {
         ok: false,
-        formError: "NÃ£o foi possÃ­vel recuperar o resultado da anÃ¡lise",
+        formError: "Não foi possível recuperar o resultado da análise",
       }
     }
 
     if (!existingScore) {
       return {
         ok: false,
-        formError: "Resultado da anÃ¡lise inconsistente. Tente novamente em instantes.",
+        formError: "Resultado da análise inconsistente. Tente novamente em instantes.",
       }
     }
 
@@ -210,7 +210,7 @@ export async function processCreditAnalysis(
   if (!mockProfile) {
     return {
       ok: false,
-      formError: "Perfil mockado invÃ¡lido para anÃ¡lise",
+      formError: "Perfil financeiro inválido para análise",
     }
   }
 
@@ -503,7 +503,7 @@ export async function processCreditAnalysis(
   if (scoringStatusError || !scoringRequest) {
     return {
       ok: false,
-      formError: "NÃ£o foi possÃ­vel iniciar a anÃ¡lise",
+      formError: "Não foi possível iniciar a análise",
     }
   }
 
@@ -518,7 +518,7 @@ export async function processCreditAnalysis(
 
     return {
       ok: false,
-      formError: "NÃ£o foi possÃ­vel preparar as transaÃ§Ãµes da anÃ¡lise",
+      formError: "Não foi possível preparar as transações da análise",
     }
   }
 
@@ -531,7 +531,7 @@ export async function processCreditAnalysis(
 
     return {
       ok: false,
-      formError: "NÃ£o foi possÃ­vel salvar as transaÃ§Ãµes da anÃ¡lise",
+      formError: "Não foi possível salvar as transações da análise",
     }
   }
 
@@ -544,7 +544,7 @@ export async function processCreditAnalysis(
 
     return {
       ok: false,
-      formError: "NÃ£o foi possÃ­vel salvar o score da anÃ¡lise",
+      formError: "Não foi possível salvar o score da análise",
     }
   }
 
@@ -563,7 +563,7 @@ export async function processCreditAnalysis(
 
     return {
       ok: false,
-      formError: "NÃ£o foi possÃ­vel finalizar a solicitaÃ§Ã£o",
+      formError: "Não foi possível finalizar a solicitação",
     }
   }
 

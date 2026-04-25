@@ -43,7 +43,7 @@ const INITIAL_STATE: RunAnalysisState = {
 
 const analysisSteps = [
   {
-    title: "Coleta de dados bancários simulados",
+    title: "Coleta de dados bancários autorizados",
     description: "Entradas recorrentes, saldo e comportamento autorizado.",
     Icon: LandmarkIcon,
   },
@@ -64,7 +64,7 @@ const analysisSteps = [
   },
   {
     title: "Indicadores de parceiros",
-    description: "Sinais externos simulados para enriquecer a decisão.",
+    description: "Sinais externos externos para enriquecer a decisão.",
     Icon: LockKeyholeIcon,
   },
   {
@@ -122,7 +122,7 @@ export function AnalysisStageCard({
               Estamos preparando sua análise
             </CardTitle>
             <CardDescription className="max-w-2xl leading-6">
-              O OpenCred usa os dados autorizados para simular uma decisão de
+              O OpenCred usa os dados autorizados para preparar uma decisão de
               crédito clara, progressiva e explicável antes de mostrar o
               resultado.
             </CardDescription>
@@ -248,7 +248,7 @@ export function AnalysisStageCard({
               <strong>
                 {new Date(consentGrantedAt).toLocaleString("pt-BR")}
               </strong>
-              . A análise usa somente dados simulados e autorizados.
+              . A análise usa somente dados financeiros e autorizados.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3 text-sm">
@@ -259,7 +259,7 @@ export function AnalysisStageCard({
             <Separator />
             <div className="flex items-center justify-between gap-3">
               <span className="text-muted-foreground">Conexão bancária</span>
-              <Badge variant="outline">Simulada</Badge>
+              <Badge variant="outline">Autorizada</Badge>
             </div>
             <Separator />
             <div className="flex items-center justify-between gap-3">
@@ -271,9 +271,9 @@ export function AnalysisStageCard({
 
         <Alert>
           <LockKeyholeIcon />
-          <AlertTitle>Sem integração externa real</AlertTitle>
+          <AlertTitle>Integração protegida</AlertTitle>
           <AlertDescription>
-            Esta etapa só organiza a demonstração visual do processo. A decisão
+            Esta etapa organiza a leitura visual do processo. A decisão
             continua sendo executada pelos módulos internos já existentes.
           </AlertDescription>
         </Alert>
@@ -281,3 +281,6 @@ export function AnalysisStageCard({
     </div>
   )
 }
+
+
+

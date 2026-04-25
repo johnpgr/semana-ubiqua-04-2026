@@ -18,7 +18,7 @@ export type Loan = {
 
 const DISBURSEMENT_ACTION = "credit_disbursement_simulated"
 const REPAYMENT_ACTION = "loan_repayment_simulated"
-const SIMULATED_DESTINATION = "Banco Horizonte Simulado"
+const SIMULATED_DESTINATION = "Banco Horizonte"
 const DUE_DAYS = 30
 
 export async function loadLoanForRequest(
@@ -170,3 +170,4 @@ function addDays(isoDate: string, days: number): string {
   date.setDate(date.getDate() + days)
   return date.toISOString()
 }
+

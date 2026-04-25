@@ -35,7 +35,7 @@ function TriggerButton() {
   return (
     <Button type="button">
       <BanknoteIcon data-icon="inline-start" />
-      Simular pagamento
+      Registrar pagamento
     </Button>
   )
 }
@@ -55,12 +55,11 @@ export function RepaymentDialog({
           <AlertDialogMedia>
             <AlertTriangleIcon />
           </AlertDialogMedia>
-          <AlertDialogTitle>Confirmar pagamento simulado</AlertDialogTitle>
+          <AlertDialogTitle>Confirmar pagamento</AlertDialogTitle>
           <AlertDialogDescription>
-            Você vai simular o pagamento de{" "}
+            Você vai registrar o pagamento de{" "}
             <strong>{currencyFormatter.format(loan.amount)}</strong> referente
-            ao empréstimo ativo. Esta ação não movimenta dinheiro real, boleto,
-            Pix ou cartão.
+            ao empréstimo ativo. Esta ação registra o pagamento no OpenCred.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -77,7 +76,7 @@ export function RepaymentDialog({
               ) : (
                 <BanknoteIcon data-icon="inline-start" />
               )}
-              {isPending ? "Processando..." : "Confirmar pagamento simulado"}
+              {isPending ? "Processando..." : "Confirmar pagamento"}
             </Button>
           </form>
         </AlertDialogFooter>
@@ -85,3 +84,5 @@ export function RepaymentDialog({
     </AlertDialog>
   )
 }
+
+

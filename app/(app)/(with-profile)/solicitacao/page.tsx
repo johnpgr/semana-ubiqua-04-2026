@@ -136,7 +136,7 @@ export default async function SolicitacaoPage() {
           <CardHeader className="gap-2">
             <CardTitle>Valor desejado</CardTitle>
             <CardDescription className="max-w-2xl text-sm leading-6">
-              Informe quanto você quer simular. O OpenCred pode aprovar um valor
+              Informe quanto você quer solicitar. O OpenCred pode aprovar um valor
               menor quando a primeira concessão precisar ser mais conservadora.
             </CardDescription>
           </CardHeader>
@@ -161,7 +161,7 @@ export default async function SolicitacaoPage() {
             <CardContent className="flex flex-col gap-3 text-sm leading-6">
               <JourneyPoint
                 icon={LandmarkIcon}
-                text="A conta simulada ajuda a contextualizar entradas recorrentes, estabilidade e comportamento financeiro."
+                text="A conta financeira ajuda a contextualizar entradas recorrentes, estabilidade e comportamento financeiro."
               />
               <JourneyPoint
                 icon={ShieldCheckIcon}
@@ -235,3 +235,4 @@ function InfoCard({
     </Card>
   )
 }
+
