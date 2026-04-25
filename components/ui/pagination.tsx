@@ -11,7 +11,6 @@ import {
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (
     <nav
-      role="navigation"
       aria-label="pagination"
       data-slot="pagination"
       className={cn("mx-auto flex w-full justify-center", className)}
@@ -40,7 +39,7 @@ function PaginationItem({ ...props }: React.ComponentProps<"li">) {
 type PaginationLinkProps = {
   isActive?: boolean
 } & Pick<React.ComponentProps<typeof Button>, "size"> &
-  React.ComponentProps<"a">
+  React.ComponentProps<typeof Button>
 
 function PaginationLink({
   className,
@@ -50,18 +49,13 @@ function PaginationLink({
 }: PaginationLinkProps) {
   return (
     <Button
+      data-slot="pagination-link"
+      data-active={isActive}
+      aria-current={isActive ? "page" : undefined}
       variant={isActive ? "outline" : "ghost"}
       size={size}
-      className={cn(className)}
-      nativeButton={false}
-      render={
-        <a
-          aria-current={isActive ? "page" : undefined}
-          data-slot="pagination-link"
-          data-active={isActive}
-          {...props}
-        />
-      }
+      className={className}
+      {...props}
     />
   )
 }

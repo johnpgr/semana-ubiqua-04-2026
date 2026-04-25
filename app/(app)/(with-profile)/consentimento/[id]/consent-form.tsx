@@ -1,0 +1,120 @@
+"use client"
+
+import { useActionState, useReducer } from "react"
+
+import { Button } from "@/components/ui/button"
+import { CardContent, CardFooter } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  CONSENT_CATEGORY_KEYS,
+  ConsentCategoryConfigs,
+  ConsentScopeDetails,
+} from "@/validation/consent"
+
+import { giveConsent, type GiveConsentState } from "./actions"
+
+const GIVE_CONSENT_INITIAL_STATE: GiveConsentState = {
+  ok: false,
+}
+
+type ConsentFormProps = {
+  requestId: string
+}
+
+type ConsentFormState = {
+  selectedScopes: string[]
+}
+
+function consentFormReducer(
+  state: ConsentFormState,
+  scope: string
+): ConsentFormState {
+  if (state.selectedScopes.includes(scope)) {
+    return {
+      selectedScopes: state.selectedScopes.filter(
+        (currentScope) => currentScope !== scope
+      ),
+    }
+  }
+
+  return {
+    selectedScopes: [...state.selectedScopes, scope],
+  }
+}
+
+export function ConsentForm({ requestId }: ConsentFormProps) {
+  const [state, formAction, isPending] = useActionState(
+    giveConsent,
+    GIVE_CONSENT_INITIAL_STATE
+  )
+  const [{ selectedScopes }, dispatch] = useReducer(consentFormReducer, {
+    selectedScopes: [],
+  })
+  const scopesError =
+    selectedScopes.length > 0 ? undefined : state.fieldErrors?.scopes?.[0]
+
+  return (
+    <form action={formAction}>
+      <input type="hidden" name="request_id" value={requestId} />
+      {selectedScopes.map((scope) => (
+        <input key={scope} type="hidden" name="scopes" value={scope} />
+      ))}
+      <CardContent className="space-y-6 pb-4">
+        {CONSENT_CATEGORY_KEYS.map((categoryKey) => {
+          const category = ConsentCategoryConfigs[categoryKey]
+
+          return (
+            <div key={categoryKey} className="space-y-3">
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                  {category.title}
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  {category.description}
+                </p>
+              </div>
+              <div className="space-y-3">
+                {category.scopes.map((scope) => {
+                  const detail = ConsentScopeDetails[scope]
+
+                  return (
+                    <div
+                      key={scope}
+                      className="flex items-start gap-3 rounded-xl border border-border/70 bg-background/60 p-4"
+                    >
+                      <Checkbox
+                        id={`scope-${scope}`}
+                        checked={selectedScopes.includes(scope)}
+                        onCheckedChange={() => dispatch(scope)}
+                        aria-invalid={scopesError ? true : undefined}
+                      />
+                      <label htmlFor={`scope-${scope}`} className="space-y-1">
+                        <span className="block cursor-pointer text-sm font-medium">
+                          {detail.label}
+                        </span>
+                        <span className="block text-sm text-muted-foreground">
+                          {detail.dataUsage}
+                        </span>
+                      </label>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })}
+        {scopesError ? (
+          <p className="text-sm text-destructive">{scopesError}</p>
+        ) : null}
+        {state.formError ? (
+          <p className="text-sm text-destructive">{state.formError}</p>
+        ) : null}
+      </CardContent>
+      <CardFooter className="justify-end">
+        <Button type="submit" size="lg" disabled={isPending}>
+          {isPending ? "Registrando..." : "Autorizar e continuar"}
+        </Button>
+      </CardFooter>
+    </form>
+  )
+}

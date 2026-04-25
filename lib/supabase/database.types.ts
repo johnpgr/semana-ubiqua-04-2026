@@ -30,7 +30,7 @@ export type Database = {
           created_at?: string
           entity_id: string
           entity_type: string
-          id?: number
+          id?: never
           metadata?: Json | null
         }
         Update: {
@@ -39,7 +39,7 @@ export type Database = {
           created_at?: string
           entity_id?: string
           entity_type?: string
-          id?: number
+          id?: never
           metadata?: Json | null
         }
         Relationships: []
@@ -52,6 +52,7 @@ export type Database = {
           request_id: string
           scopes: Database["public"]["Enums"]["consent_scope"][]
           user_agent: string | null
+          user_id: string
         }
         Insert: {
           granted_at?: string
@@ -60,6 +61,7 @@ export type Database = {
           request_id: string
           scopes: Database["public"]["Enums"]["consent_scope"][]
           user_agent?: string | null
+          user_id: string
         }
         Update: {
           granted_at?: string
@@ -68,6 +70,7 @@ export type Database = {
           request_id?: string
           scopes?: Database["public"]["Enums"]["consent_scope"][]
           user_agent?: string | null
+          user_id?: string
         }
         Relationships: [
           {
@@ -75,6 +78,13 @@ export type Database = {
             columns: ["request_id"]
             isOneToOne: false
             referencedRelation: "credit_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consents_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -128,6 +138,7 @@ export type Database = {
           request_id: string
           storage_path: string
           uploaded_at: string
+          user_id: string
         }
         Insert: {
           file_name: string
@@ -136,6 +147,7 @@ export type Database = {
           request_id: string
           storage_path: string
           uploaded_at?: string
+          user_id: string
         }
         Update: {
           file_name?: string
@@ -144,6 +156,7 @@ export type Database = {
           request_id?: string
           storage_path?: string
           uploaded_at?: string
+          user_id?: string
         }
         Relationships: [
           {
@@ -151,6 +164,13 @@ export type Database = {
             columns: ["request_id"]
             isOneToOne: false
             referencedRelation: "credit_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -191,6 +211,7 @@ export type Database = {
           request_id: string
           stability: number
           suggested_limit: number
+          user_id: string
           value: number
         }
         Insert: {
@@ -204,6 +225,7 @@ export type Database = {
           request_id: string
           stability: number
           suggested_limit: number
+          user_id: string
           value: number
         }
         Update: {
@@ -217,6 +239,7 @@ export type Database = {
           request_id?: string
           stability?: number
           suggested_limit?: number
+          user_id?: string
           value?: number
         }
         Relationships: [
@@ -225,6 +248,13 @@ export type Database = {
             columns: ["request_id"]
             isOneToOne: false
             referencedRelation: "credit_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scores_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -239,6 +269,7 @@ export type Database = {
           occurred_at: string
           request_id: string
           source: Database["public"]["Enums"]["transaction_source"]
+          user_id: string
         }
         Insert: {
           amount: number
@@ -249,6 +280,7 @@ export type Database = {
           occurred_at: string
           request_id: string
           source: Database["public"]["Enums"]["transaction_source"]
+          user_id: string
         }
         Update: {
           amount?: number
@@ -259,6 +291,7 @@ export type Database = {
           occurred_at?: string
           request_id?: string
           source?: Database["public"]["Enums"]["transaction_source"]
+          user_id?: string
         }
         Relationships: [
           {
@@ -266,6 +299,13 @@ export type Database = {
             columns: ["request_id"]
             isOneToOne: false
             referencedRelation: "credit_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -276,6 +316,7 @@ export type Database = {
     }
     Functions: {
       is_admin: { Args: never; Returns: boolean }
+      uuid_v7: { Args: never; Returns: string }
     }
     Enums: {
       consent_scope: "salary" | "investments" | "cards"
