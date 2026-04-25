@@ -25,7 +25,7 @@ export const CreditRequest = z.object({
       .number({
         error: "Informe o valor solicitado",
       })
-      .finite("Informe o valor solicitado")
+      .finite("Informe um valor válido")
       .positive("Informe um valor maior que zero")
   ),
 })

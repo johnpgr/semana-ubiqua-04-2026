@@ -15,9 +15,9 @@ Nenhuma task abaixo deve quebrar os motores já implementados. O planejamento se
 - [x] Mostrar uma etapa de análise com progresso claro e linguagem compreensível.
 - [x] Transformar o resultado em oferta quando houver aprovação ou aprovação reduzida.
 - [x] Permitir recebimento de crédito simulado depois do aceite da oferta.
-- [ ] Exibir empréstimo ativo com vencimento e ação de pagamento simulado.
-- [ ] Mostrar que o pagamento melhora confiança, limite potencial e relacionamento.
-- [ ] Permitir nova solicitação após o ciclo concluído.
+- [x] Exibir empréstimo ativo com vencimento e ação de pagamento simulado.
+- [x] Mostrar que o pagamento melhora confiança, limite potencial e relacionamento.
+- [x] Permitir nova solicitação após o ciclo concluído.
 
 ## 2. Task A - Área do usuário
 
@@ -136,20 +136,20 @@ Planejar visualização de empréstimo ativo após recebimento simulado.
 
 ### Escopo
 
-- [ ] Exibir valor liberado.
-- [ ] Exibir status do empréstimo: ativo, pago ou vencido simulado.
-- [ ] Exibir vencimento simulado.
-- [ ] Exibir ação para simular pagamento.
-- [ ] Mostrar vínculo com monitoramento inicial de risco.
-- [ ] Exibir empréstimo ativo também na área do usuário.
+- [x] Exibir valor liberado.
+- [x] Exibir status do empréstimo: ativo, pago ou vencido simulado.
+- [x] Exibir vencimento simulado.
+- [x] Exibir ação para simular pagamento.
+- [x] Mostrar vínculo com monitoramento inicial de risco.
+- [x] Exibir empréstimo ativo também na área do usuário.
 
 ### Critérios de aceite
 
-- [ ] Usuário com crédito liberado deve ver um empréstimo ativo.
-- [ ] Usuário sem crédito liberado não deve ver empréstimo ativo falso.
-- [ ] O vencimento pode ser calculado de forma simples para MVP.
-- [ ] O monitoramento deve aparecer como leitura de risco, não como cobrança real.
-- [ ] A task não deve criar cobrança real ou integração financeira.
+- [x] Usuário com crédito liberado deve ver um empréstimo ativo.
+- [x] Usuário sem crédito liberado não deve ver empréstimo ativo falso.
+- [x] O vencimento pode ser calculado de forma simples para MVP.
+- [x] O monitoramento deve aparecer como leitura de risco, não como cobrança real.
+- [x] A task não deve criar cobrança real ou integração financeira.
 
 ## 8. Task G - Pagamento simulado
 
@@ -157,20 +157,20 @@ Planejar ação de pagamento simulado para fechar o primeiro ciclo.
 
 ### Escopo
 
-- [ ] Incluir botão "Simular pagamento".
-- [ ] Exibir confirmação antes de concluir, se necessário.
-- [ ] Mostrar estado de pagamento concluído.
-- [ ] Mostrar impacto visual positivo na confiança.
-- [ ] Preparar CTA para nova solicitação.
-- [ ] Registrar ou simular data de pagamento para histórico.
+- [x] Incluir botão "Simular pagamento".
+- [x] Exibir confirmação antes de concluir, se necessário.
+- [x] Mostrar estado de pagamento concluído.
+- [x] Mostrar impacto visual positivo na confiança.
+- [x] Preparar CTA para nova solicitação.
+- [x] Registrar ou simular data de pagamento para histórico.
 
 ### Critérios de aceite
 
-- [ ] Pagamento só deve aparecer para empréstimo ativo.
-- [ ] Depois do pagamento, o empréstimo não deve continuar como ativo.
-- [ ] A UI deve mostrar que o ciclo foi concluído.
-- [ ] A melhoria de confiança deve ser explicada de forma simples.
-- [ ] A task não deve processar boleto, cartão, Pix ou qualquer pagamento real.
+- [x] Pagamento só deve aparecer para empréstimo ativo.
+- [x] Depois do pagamento, o empréstimo não deve continuar como ativo.
+- [x] A UI deve mostrar que o ciclo foi concluído.
+- [x] A melhoria de confiança deve ser explicada de forma simples.
+- [x] A task não deve processar boleto, cartão, Pix ou qualquer pagamento real.
 
 ## 9. Task H - Evolução de confiança e novo limite
 
@@ -178,20 +178,20 @@ Planejar como o pagamento simulado deve melhorar o relacionamento do usuário.
 
 ### Escopo
 
-- [ ] Exibir nível anterior de confiança.
-- [ ] Exibir novo nível, progresso ou badge após pagamento.
-- [ ] Exibir novo limite potencial ou faixa estimada.
-- [ ] Explicar o conceito de crédito progressivo.
-- [ ] Conectar visualmente pagamento em dia com melhoria de limite.
-- [ ] Manter linguagem conservadora: potencial, estimado ou sujeito a nova análise.
+- [x] Exibir nível anterior de confiança.
+- [x] Exibir novo nível, progresso ou badge após pagamento.
+- [x] Exibir novo limite potencial ou faixa estimada.
+- [x] Explicar o conceito de crédito progressivo.
+- [x] Conectar visualmente pagamento em dia com melhoria de limite.
+- [x] Manter linguagem conservadora: potencial, estimado ou sujeito a nova análise.
 
 ### Critérios de aceite
 
-- [ ] Usuário deve entender por que o relacionamento melhorou.
-- [ ] A UI não deve prometer aprovação automática futura.
-- [ ] O limite potencial deve respeitar a lógica de crédito progressivo existente.
-- [ ] A task não deve alterar a tese de risco sem revisão.
-- [ ] A task não deve esconder fatores de fraude ou monitoramento quando relevantes.
+- [x] Usuário deve entender por que o relacionamento melhorou.
+- [x] A UI não deve prometer aprovação automática futura.
+- [x] O limite potencial deve respeitar a lógica de crédito progressivo existente.
+- [x] A task não deve alterar a tese de risco sem revisão.
+- [x] A task não deve esconder fatores de fraude ou monitoramento quando relevantes.
 
 ## 10. Task I - Nova solicitação após pagamento
 
@@ -199,19 +199,19 @@ Planejar fluxo para pedir novo crédito depois de concluir o pagamento simulado.
 
 ### Escopo
 
-- [ ] Incluir CTA "Pedir novo crédito" após pagamento concluído.
-- [ ] Exibir mensagem de relacionamento melhorado.
-- [ ] Pré-contextualizar que a nova solicitação considera histórico anterior.
-- [ ] Integrar com crédito progressivo já existente.
-- [ ] Permitir comparar solicitação anterior e nova oportunidade.
+- [x] Incluir CTA "Pedir novo crédito" após pagamento concluído.
+- [x] Exibir mensagem de relacionamento melhorado.
+- [x] Pré-contextualizar que a nova solicitação considera histórico anterior.
+- [x] Integrar com crédito progressivo já existente.
+- [x] Permitir comparar solicitação anterior e nova oportunidade.
 
 ### Critérios de aceite
 
-- [ ] CTA deve aparecer apenas quando o ciclo anterior permitir nova solicitação.
-- [ ] Nova solicitação deve seguir consentimento/análise conforme necessário.
-- [ ] Usuário deve perceber continuidade entre ciclos.
-- [ ] A task não deve permitir múltiplas solicitações conflitantes sem estado claro.
-- [ ] A task não deve ignorar risco de fraude ou monitoramento anterior.
+- [x] CTA deve aparecer apenas quando o ciclo anterior permitir nova solicitação.
+- [x] Nova solicitação deve seguir consentimento/análise conforme necessário.
+- [x] Usuário deve perceber continuidade entre ciclos.
+- [x] A task não deve permitir múltiplas solicitações conflitantes sem estado claro.
+- [x] A task não deve ignorar risco de fraude ou monitoramento anterior.
 
 ## 11. Task J - Ajustes no admin, se viável
 
@@ -219,20 +219,20 @@ Planejar reflexos administrativos do ciclo completo sem transformar o admin em p
 
 ### Escopo
 
-- [ ] Mostrar crédito liberado simulado.
-- [ ] Mostrar empréstimo ativo.
-- [ ] Mostrar pagamento simulado.
-- [ ] Mostrar ciclo concluído.
-- [ ] Mostrar evolução de confiança.
-- [ ] Permitir filtrar ou identificar solicitações por etapa do ciclo.
+- [x] Mostrar crédito liberado simulado.
+- [x] Mostrar empréstimo ativo.
+- [x] Mostrar pagamento simulado.
+- [x] Mostrar ciclo concluído.
+- [x] Mostrar evolução de confiança.
+- [x] Permitir filtrar ou identificar solicitações por etapa do ciclo.
 
 ### Critérios de aceite
 
-- [ ] Admin deve enxergar o estado do ciclo sem abrir várias telas.
-- [ ] Detalhe da solicitação deve mostrar histórico relevante.
-- [ ] Estados novos devem ser legíveis para operação e demo.
-- [ ] A task deve ser adiada se ameaçar atrasar o fluxo principal do usuário.
-- [ ] A task não deve substituir a área do usuário como foco da demo.
+- [x] Admin deve enxergar o estado do ciclo sem abrir várias telas.
+- [x] Detalhe da solicitação deve mostrar histórico relevante.
+- [x] Estados novos devem ser legíveis para operação e demo.
+- [x] A task deve ser adiada se ameaçar atrasar o fluxo principal do usuário.
+- [x] A task não deve substituir a área do usuário como foco da demo.
 
 ## 12. Ordem recomendada de implementação
 
@@ -243,22 +243,22 @@ Ordem sugerida pensando em menor risco, maior impacto visual e reutilização do
 - [x] 3. Task C - Jornada de solicitação melhorada.
 - [x] 4. Task D - Etapa visual de análise.
 - [x] 5. Task E - Recebimento de crédito simulado.
-- [ ] 6. Task F - Empréstimo ativo.
-- [ ] 7. Task G - Pagamento simulado.
-- [ ] 8. Task H - Evolução de confiança e novo limite.
-- [ ] 9. Task I - Nova solicitação após pagamento.
-- [ ] 10. Task J - Ajustes no admin, se houver tempo.
+- [x] 6. Task F - Empréstimo ativo.
+- [x] 7. Task G - Pagamento simulado.
+- [x] 8. Task H - Evolução de confiança e novo limite.
+- [x] 9. Task I - Nova solicitação após pagamento.
+- [x] 10. Task J - Ajustes no admin, se houver tempo.
 
 ## 13. Critérios gerais de aceite
 
-- [ ] O fluxo completo deve ser demonstrável com um usuário comum.
-- [ ] A área do usuário deve deixar claro qual é o próximo passo.
-- [ ] Estados vazios, pendentes, concluídos e de erro devem ter texto claro.
-- [ ] Nenhuma etapa deve prometer crédito real, pagamento real ou conexão bancária real.
-- [ ] O usuário deve entender a diferença entre valor solicitado, valor aprovado e limite potencial.
-- [ ] O ciclo deve mostrar antes e depois: confiança, limite e histórico.
-- [ ] Cada task deve ser validável manualmente no navegador.
-- [ ] Testes automatizados podem ser planejados depois por fluxo, mas não fazem parte deste TODO2 inicial.
-- [ ] Alterações de schema devem ser pequenas, explícitas e só feitas quando a task realmente precisar.
-- [ ] Motores existentes devem ser reaproveitados antes de criar nova lógica.
-- [ ] O admin deve vir depois do fluxo do usuário, salvo ajuste pequeno que ajude a demo.
+- [x] O fluxo completo deve ser demonstrável com um usuário comum.
+- [x] A área do usuário deve deixar claro qual é o próximo passo.
+- [x] Estados vazios, pendentes, concluídos e de erro devem ter texto claro.
+- [x] Nenhuma etapa deve prometer crédito real, pagamento real ou conexão bancária real.
+- [x] O usuário deve entender a diferença entre valor solicitado, valor aprovado e limite potencial.
+- [x] O ciclo deve mostrar antes e depois: confiança, limite e histórico.
+- [x] Cada task deve ser validável manualmente no navegador.
+- [x] Testes automatizados podem ser planejados depois por fluxo, mas não fazem parte deste TODO2 inicial.
+- [x] Alterações de schema devem ser pequenas, explícitas e só feitas quando a task realmente precisar.
+- [x] Motores existentes devem ser reaproveitados antes de criar nova lógica.
+- [x] O admin deve vir depois do fluxo do usuário, salvo ajuste pequeno que ajude a demo.

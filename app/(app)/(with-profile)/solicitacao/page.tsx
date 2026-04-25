@@ -17,16 +17,31 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { loadActiveLoanForUser } from "@/lib/loans"
 import { requireCurrentProfile } from "@/lib/auth/profile"
 import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
 import { cn } from "@/lib/utils"
 
 import { CreditRequestForm } from "./credit-request-form"
 import { SimulatedBankStatus } from "./simulated-bank-status"
 
+const currencyFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+})
+
+const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+})
+
 export default async function SolicitacaoPage() {
   const profile = await requireCurrentProfile()
   const supabase = await createClient()
+  const service = createServiceClient()
+
   const { data: latestConsent } = await supabase
     .from("consents")
     .select("granted_at")
@@ -34,6 +49,20 @@ export default async function SolicitacaoPage() {
     .order("granted_at", { ascending: false })
     .limit(1)
     .maybeSingle()
+
+  const { data: userRequests } = await supabase
+    .from("credit_requests")
+    .select("id, requested_amount, approved_amount, decision, created_at, decided_at")
+    .eq("user_id", profile.id)
+    .order("created_at", { ascending: false })
+    .limit(50)
+
+  const requestIds = (userRequests ?? []).map((r) => r.id)
+  const lastLoan = await loadActiveLoanForUser(service, requestIds)
+  const previousRequest =
+    lastLoan?.status === "paid"
+      ? (userRequests ?? []).find((r) => r.id === lastLoan.requestId)
+      : null
 
   return (
     <div className="flex flex-col gap-6">
@@ -63,6 +92,44 @@ export default async function SolicitacaoPage() {
           </Link>
         </div>
       </section>
+
+      {previousRequest && lastLoan ? (
+        <section>
+          <Card className="border border-border/70 bg-muted/35">
+            <CardHeader className="gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="default">Ciclo anterior concluído</Badge>
+              </div>
+              <CardTitle>Continuidade do ciclo</CardTitle>
+              <CardDescription>
+                Seu histórico anterior será considerado nesta nova análise.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3 text-sm leading-6">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-border/70 bg-background/70 p-3">
+                  <div className="text-muted-foreground">Pedido anterior</div>
+                  <div className="mt-1 font-semibold">
+                    {currencyFormatter.format(previousRequest.approved_amount ?? previousRequest.requested_amount)} liberado
+                  </div>
+                  <div className="mt-1 text-muted-foreground">
+                    Pago em {lastLoan.repaidAt ? dateFormatter.format(new Date(lastLoan.repaidAt)) : "—"}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-border/70 bg-background/70 p-3">
+                  <div className="text-muted-foreground">Nova oportunidade</div>
+                  <div className="mt-1 font-semibold">
+                    Limite potencial pode crescer
+                  </div>
+                  <div className="mt-1 text-muted-foreground">
+                    Ciclos pagos em dia ampliam confiança progressiva.
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      ) : null}
 
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.85fr)]">
         <Card className="border border-border/70 bg-background/85">

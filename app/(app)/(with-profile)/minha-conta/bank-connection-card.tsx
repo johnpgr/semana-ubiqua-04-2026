@@ -280,13 +280,17 @@ export function BankConnectionActions({
   userId,
   initialConnection,
   latestResultHref,
-  hasActiveLoan,
+  activeLoan,
+  newLoanEligibility,
 }: BankConnectionProps & {
   latestResultHref: string | null
-  hasActiveLoan: boolean
+  activeLoan: import("@/lib/loans").Loan | null
+  newLoanEligibility: import("@/lib/loans/canRequestNewLoan").NewLoanEligibility
 }) {
   const { state, connect } = useBankConnection({ userId, initialConnection })
   const isConnected = state.status === "connected"
+  const hasActiveLoan = activeLoan?.status === "active"
+  const hasPaidLoan = activeLoan?.status === "paid"
 
   return (
     <Card className="border-border/70 bg-muted/35">
@@ -297,7 +301,23 @@ export function BankConnectionActions({
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
-        {isConnected ? (
+        {hasActiveLoan ? (
+          <Link
+            href={`/emprestimo/${activeLoan.requestId}`}
+            className={cn(buttonVariants(), "justify-center")}
+          >
+            Ver empréstimo ativo
+            <ArrowRightIcon data-icon="inline-end" />
+          </Link>
+        ) : hasPaidLoan && newLoanEligibility.allowed ? (
+          <Link
+            href="/solicitacao"
+            className={cn(buttonVariants(), "justify-center")}
+          >
+            Pedir novo crédito
+            <ArrowRightIcon data-icon="inline-end" />
+          </Link>
+        ) : isConnected ? (
           <Link
             href="/solicitacao"
             className={cn(buttonVariants(), "justify-center")}
@@ -343,13 +363,21 @@ export function BankConnectionActions({
           Ver resultado mais recente
         </Link>
         {hasActiveLoan ? (
+          <Link
+            href={`/emprestimo/${activeLoan.requestId}`}
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "justify-center"
+            )}
+          >
+            Simular pagamento
+          </Link>
+        ) : null}
+        {hasPaidLoan && !newLoanEligibility.allowed ? (
           <Button variant="outline" disabled>
-            Pagar empréstimo
+            {newLoanEligibility.label ?? "Pedir novo crédito"}
           </Button>
         ) : null}
-        <Button variant="outline" disabled>
-          Pedir novo crédito
-        </Button>
       </CardContent>
     </Card>
   )

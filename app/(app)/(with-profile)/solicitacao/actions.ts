@@ -4,7 +4,9 @@ import { redirect } from "next/navigation"
 
 import { requireCurrentProfile } from "@/lib/auth/profile"
 import { getFieldErrors, type FormActionState } from "@/lib/form-action"
+import { canRequestNewLoan } from "@/lib/loans/canRequestNewLoan"
 import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
 import { CreditRequest } from "@/validation/credit-request"
 
 export type CreateCreditRequestState = FormActionState<"requested_amount">
@@ -25,8 +27,27 @@ export async function createCreditRequest(
   }
 
   const profile = await requireCurrentProfile()
-
   const supabase = await createClient()
+
+  // Eligibility guard
+  const { data: userRequests } = await supabase
+    .from("credit_requests")
+    .select("id")
+    .eq("user_id", profile.id)
+    .order("created_at", { ascending: false })
+    .limit(50)
+
+  const requestIds = (userRequests ?? []).map((r) => r.id)
+  const service = createServiceClient()
+  const eligibility = await canRequestNewLoan(service, profile.id, requestIds)
+
+  if (!eligibility.allowed) {
+    return {
+      ok: false,
+      formError: eligibility.label,
+    }
+  }
+
   const { data, error } = await supabase
     .from("credit_requests")
     .insert({

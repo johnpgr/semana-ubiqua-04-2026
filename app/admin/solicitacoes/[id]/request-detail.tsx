@@ -1138,17 +1138,35 @@ export function RequestDetail({
           ) : (
             <>
               <div className="space-y-3 md:hidden">
-                {auditLogs.map((log) => (
-                  <Card key={`${log.created_at}-${log.action}`} className="rounded-2xl">
-                    <CardContent className="space-y-3 p-4 text-sm">
-                      <KeyValueRow label="Data">
-                        {dateTimeFormatter.format(new Date(log.created_at))}
-                      </KeyValueRow>
-                      <KeyValueRow label="Ação">{log.action}</KeyValueRow>
-                      <KeyValueRow label="Ator">{log.actor ?? "—"}</KeyValueRow>
-                    </CardContent>
-                  </Card>
-                ))}
+                {auditLogs.map((log) => {
+                  const metadata =
+                    log.metadata && typeof log.metadata === "object" && !Array.isArray(log.metadata)
+                      ? (log.metadata as Record<string, unknown>)
+                      : null
+                  const label = AUDIT_ACTION_LABELS[log.action] ?? log.action
+
+                  return (
+                    <Card key={`${log.created_at}-${log.action}`} className="rounded-2xl">
+                      <CardContent className="space-y-3 p-4 text-sm">
+                        <KeyValueRow label="Data">
+                          {dateTimeFormatter.format(new Date(log.created_at))}
+                        </KeyValueRow>
+                        <KeyValueRow label="Ação">{label}</KeyValueRow>
+                        <KeyValueRow label="Ator">{log.actor ?? "—"}</KeyValueRow>
+                        {typeof metadata?.approvedAmount === "number" ? (
+                          <KeyValueRow label="Valor">
+                            {currencyFormatter.format(metadata.approvedAmount)}
+                          </KeyValueRow>
+                        ) : null}
+                        {typeof metadata?.onTime === "boolean" ? (
+                          <KeyValueRow label="Em dia">
+                            {metadata.onTime ? "Sim" : "Não"}
+                          </KeyValueRow>
+                        ) : null}
+                      </CardContent>
+                    </Card>
+                  )
+                })}
               </div>
 
               <div className="hidden rounded-2xl border bg-card md:block">
@@ -1161,15 +1179,18 @@ export function RequestDetail({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {auditLogs.map((log) => (
-                      <TableRow key={`${log.created_at}-${log.action}`}>
-                        <TableCell>
-                          {dateTimeFormatter.format(new Date(log.created_at))}
-                        </TableCell>
-                        <TableCell>{log.action}</TableCell>
-                        <TableCell>{log.actor ?? "—"}</TableCell>
-                      </TableRow>
-                    ))}
+                    {auditLogs.map((log) => {
+                      const label = AUDIT_ACTION_LABELS[log.action] ?? log.action
+                      return (
+                        <TableRow key={`${log.created_at}-${log.action}`}>
+                          <TableCell>
+                            {dateTimeFormatter.format(new Date(log.created_at))}
+                          </TableCell>
+                          <TableCell>{label}</TableCell>
+                          <TableCell>{log.actor ?? "—"}</TableCell>
+                        </TableRow>
+                      )
+                    })}
                   </TableBody>
                 </Table>
               </div>
@@ -1363,3 +1384,10 @@ const LIMIT_ACTION_LABELS = {
   renegotiation_watch: "Observar renegociacao",
   maintain: "Manter limite",
 } as const satisfies Record<LimitAction, string>
+
+const AUDIT_ACTION_LABELS: Record<string, string> = {
+  credit_disbursement_simulated: "Liberação simulada",
+  loan_repayment_simulated: "Pagamento simulado",
+  credit_cycle_closed: "Ciclo concluído",
+  email_communication_generated: "Comunicação gerada",
+}

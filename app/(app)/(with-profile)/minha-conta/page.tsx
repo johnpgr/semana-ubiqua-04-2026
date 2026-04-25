@@ -44,6 +44,9 @@ import {
   getRequestStatusLabel,
 } from "@/lib/credit-requests"
 import { evaluateProgressiveCreditState } from "@/lib/creditProgression"
+import { loadActiveLoanForUser } from "@/lib/loans"
+import { buildPaymentSignals } from "@/lib/loans/buildPaymentSignals"
+import { canRequestNewLoan } from "@/lib/loans/canRequestNewLoan"
 import type { Database } from "@/lib/supabase/database.types"
 import { createClient } from "@/lib/supabase/server"
 import { createServiceClient } from "@/lib/supabase/service"
@@ -88,29 +91,12 @@ type ConsentRow = Pick<
   "request_id" | "granted_at"
 >
 
-type DisbursementRow = Pick<
-  Database["public"]["Tables"]["audit_logs"]["Row"],
-  "entity_id" | "created_at" | "metadata"
->
-
 type DashboardData = {
   requests: RequestRow[]
   scores: ScoreRow[]
   consents: ConsentRow[]
-  disbursements: DisbursementRow[]
   hasLoadIssue: boolean
 }
-
-type ActiveLoan = {
-  requestId: string
-  amount: number
-  destination: string
-  disbursedAt: string
-  status: "active"
-}
-
-const DISBURSEMENT_ACTION = "credit_disbursement_simulated"
-const SIMULATED_DESTINATION = "Banco Horizonte Simulado"
 
 export default async function MinhaContaPage() {
   const [user, profile] = await Promise.all([
@@ -118,7 +104,8 @@ export default async function MinhaContaPage() {
     requireCurrentProfile(),
   ])
   const supabase = await createClient()
-  const { requests, scores, consents, disbursements, hasLoadIssue } =
+  const service = createServiceClient()
+  const { requests, scores, consents, hasLoadIssue } =
     await loadDashboardData(supabase, profile.id)
 
   const scoreByRequestId = new Map(
@@ -136,14 +123,19 @@ export default async function MinhaContaPage() {
         }
       : null
   const initialBankConnection = buildInitialBankConnection(consents)
+
+  const requestIds = requests.map((r) => r.id)
+  const [paymentSignals, activeLoan, newLoanEligibility] = await Promise.all([
+    buildPaymentSignals(service, requestIds),
+    loadActiveLoanForUser(service, requestIds),
+    canRequestNewLoan(service, profile.id, requestIds),
+  ])
+
   const confidence = buildConfidenceState({
     latestRequest,
     latestScore,
     requests,
-  })
-  const activeLoan = buildActiveLoan({
-    disbursements,
-    requests,
+    paymentSignals,
   })
 
   return (
@@ -164,13 +156,31 @@ export default async function MinhaContaPage() {
               </p>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row">
-              <Link
-                href="/solicitacao"
-                className={cn(buttonVariants(), "justify-center")}
-              >
-                Solicitar crédito
-                <ArrowRightIcon data-icon="inline-end" />
-              </Link>
+              {activeLoan && activeLoan.status === "active" ? (
+                <Link
+                  href={`/emprestimo/${activeLoan.requestId}`}
+                  className={cn(buttonVariants(), "justify-center")}
+                >
+                  Ver empréstimo ativo
+                  <ArrowRightIcon data-icon="inline-end" />
+                </Link>
+              ) : activeLoan && activeLoan.status === "paid" && newLoanEligibility.allowed ? (
+                <Link
+                  href="/solicitacao"
+                  className={cn(buttonVariants(), "justify-center")}
+                >
+                  Pedir novo crédito
+                  <ArrowRightIcon data-icon="inline-end" />
+                </Link>
+              ) : (
+                <Link
+                  href="/solicitacao"
+                  className={cn(buttonVariants(), "justify-center")}
+                >
+                  Solicitar crédito
+                  <ArrowRightIcon data-icon="inline-end" />
+                </Link>
+              )}
               <BankConnectionButton
                 initialConnection={initialBankConnection}
                 userId={profile.id}
@@ -321,15 +331,54 @@ export default async function MinhaContaPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
-              <Progress value={confidence.progress}>
-                <ProgressLabel>{confidence.label}</ProgressLabel>
-                <span className="ml-auto text-sm text-muted-foreground tabular-nums">
-                  {confidence.progress}%
-                </span>
-              </Progress>
-              <p className="text-sm leading-6 text-muted-foreground">
-                {confidence.summary}
-              </p>
+              {confidence.changed && confidence.before ? (
+                <div className="flex flex-col gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Antes</span>
+                      <span className="font-medium">{confidence.before.label}</span>
+                    </div>
+                    <Progress value={confidence.before.progress}>
+                      <ProgressLabel className="sr-only">{confidence.before.label}</ProgressLabel>
+                    </Progress>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Depois</span>
+                      <span className="font-medium">{confidence.after.label}</span>
+                    </div>
+                    <Progress value={confidence.after.progress}>
+                      <ProgressLabel className="sr-only">{confidence.after.label}</ProgressLabel>
+                    </Progress>
+                  </div>
+                  <Badge variant="default" className="w-fit">
+                    Confiança evoluiu — {confidence.before.label} → {confidence.after.label}
+                  </Badge>
+                  <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
+                    <div className="text-sm text-muted-foreground">Limite potencial estimado</div>
+                    <div className="mt-1 text-lg font-semibold">
+                      {currencyFormatter.format(confidence.appliedCap)}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <Progress value={confidence.progress}>
+                    <ProgressLabel>{confidence.label}</ProgressLabel>
+                    <span className="ml-auto text-sm text-muted-foreground tabular-nums">
+                      {confidence.progress}%
+                    </span>
+                  </Progress>
+                  <p className="text-sm leading-6 text-muted-foreground">
+                    {confidence.summary}
+                  </p>
+                </>
+              )}
+              {confidence.futureSignals.length > 0 ? (
+                <p className="text-sm leading-6 text-muted-foreground">
+                  <strong>Próximo passo:</strong> {confidence.futureSignals[0]}
+                </p>
+              ) : null}
             </CardContent>
           </Card>
 
@@ -337,8 +386,7 @@ export default async function MinhaContaPage() {
             <CardHeader className="gap-2">
               <CardTitle>Empréstimo ativo</CardTitle>
               <CardDescription>
-                Esta etapa será ligada ao recebimento e pagamento simulados nas
-                próximas tarefas.
+                Acompanhe o empréstimo simulado liberado e a ação de pagamento.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -349,7 +397,16 @@ export default async function MinhaContaPage() {
                       label="Valor liberado"
                       value={currencyFormatter.format(activeLoan.amount)}
                     />
-                    <MetricTile label="Status" value="Ativo simulado" />
+                    <MetricTile
+                      label="Status"
+                      value={
+                        activeLoan.status === "paid"
+                          ? "Pago"
+                          : activeLoan.status === "overdue"
+                            ? "Vencido"
+                            : "Ativo"
+                      }
+                    />
                   </div>
                   <Separator />
                   <div className="flex flex-col gap-2 text-sm leading-6">
@@ -362,15 +419,32 @@ export default async function MinhaContaPage() {
                         {dateFormatter.format(new Date(activeLoan.disbursedAt))}
                       </strong>
                     </p>
+                    {activeLoan.status !== "paid" ? (
+                      <p>
+                        Vencimento simulado:{" "}
+                        <strong>
+                          {dateFormatter.format(new Date(activeLoan.dueAt))}
+                        </strong>
+                      </p>
+                    ) : activeLoan.repaidAt ? (
+                      <p>
+                        Pago em:{" "}
+                        <strong>
+                          {dateFormatter.format(new Date(activeLoan.repaidAt))}
+                        </strong>
+                      </p>
+                    ) : null}
                   </div>
                   <Link
-                    href={`/resultado/${activeLoan.requestId}`}
+                    href={`/emprestimo/${activeLoan.requestId}`}
                     className={cn(
                       buttonVariants({ variant: "outline" }),
                       "justify-center"
                     )}
                   >
-                    Ver oferta recebida
+                    {activeLoan.status === "paid"
+                      ? "Ver ciclo concluído"
+                      : "Ver empréstimo ativo"}
                     <ArrowRightIcon data-icon="inline-end" />
                   </Link>
                 </div>
@@ -478,7 +552,8 @@ export default async function MinhaContaPage() {
           latestResultHref={
             latestAnalysis ? `/resultado/${latestAnalysis.request.id}` : null
           }
-          hasActiveLoan={Boolean(activeLoan)}
+          activeLoan={activeLoan}
+          newLoanEligibility={newLoanEligibility}
         />
       </section>
     </div>
@@ -512,37 +587,21 @@ async function loadDashboardData(
 
   const requests = (requestsResult.data ?? []) as RequestRow[]
   const requestIds = requests.map((request) => request.id)
-  const service = createServiceClient()
-  const [scoresResult, disbursementsResult] =
+
+  const scoresResult =
     requestIds.length > 0
-      ? await Promise.all([
-          supabase
-            .from("scores")
-            .select("request_id, value, suggested_limit")
-            .in("request_id", requestIds),
-          service
-            .from("audit_logs")
-            .select("entity_id, created_at, metadata")
-            .eq("entity_type", "credit_request")
-            .eq("action", DISBURSEMENT_ACTION)
-            .in("entity_id", requestIds)
-            .order("created_at", { ascending: false }),
-        ])
-      : [
-          { data: [], error: null },
-          { data: [], error: null },
-        ]
+      ? await supabase
+          .from("scores")
+          .select("request_id, value, suggested_limit")
+          .in("request_id", requestIds)
+      : { data: [], error: null }
 
   return {
     requests,
     scores: (scoresResult.data ?? []) as ScoreRow[],
     consents: (consentsResult.data ?? []) as ConsentRow[],
-    disbursements: (disbursementsResult.data ?? []) as DisbursementRow[],
     hasLoadIssue: Boolean(
-      requestsResult.error ||
-        consentsResult.error ||
-        scoresResult.error ||
-        disbursementsResult.error
+      requestsResult.error || consentsResult.error || scoresResult.error
     ),
   }
 }
@@ -558,10 +617,12 @@ function buildConfidenceState({
   latestRequest,
   latestScore,
   requests,
+  paymentSignals,
 }: {
   latestRequest: RequestRow | null
   latestScore: ScoreRow | undefined | null
   requests: RequestRow[]
+  paymentSignals: { completedCycles: number; onTimeCycles: number; lateCycles: number; defaultedCycles: number }
 }) {
   if (!latestRequest || !latestScore || !latestRequest.decision) {
     return {
@@ -571,6 +632,13 @@ function buildConfidenceState({
       summary:
         "Seu nível começa em entrada. A primeira análise e ciclos futuros ajudam a formar confiança.",
       progress: 25,
+      before: null,
+      after: null,
+      changed: false,
+      appliedCap: 0,
+      futureSignals: [
+        "Pagamentos em dia devem elevar seu nível de confiança nas próximas ofertas.",
+      ] as string[],
     }
   }
 
@@ -584,20 +652,57 @@ function buildConfidenceState({
       createdAt: request.created_at,
       decidedAt: request.decided_at,
     }))
-  const state = evaluateProgressiveCreditState({
+
+  const before = paymentSignals.completedCycles > 0
+    ? evaluateProgressiveCreditState({
+        requestedAmount: latestRequest.requested_amount,
+        score: latestScore.value,
+        baseDecision: latestRequest.decision,
+        baseSuggestedLimit: latestScore.suggested_limit,
+        requestHistory: history,
+        paymentSignals: {
+          completedCycles: Math.max(0, paymentSignals.completedCycles - 1),
+          onTimeCycles: Math.max(0, paymentSignals.onTimeCycles - (paymentSignals.onTimeCycles > 0 ? 1 : 0)),
+          lateCycles: paymentSignals.lateCycles,
+          defaultedCycles: paymentSignals.defaultedCycles,
+        },
+      })
+    : null
+
+  const after = evaluateProgressiveCreditState({
     requestedAmount: latestRequest.requested_amount,
     score: latestScore.value,
     baseDecision: latestRequest.decision,
     baseSuggestedLimit: latestScore.suggested_limit,
     requestHistory: history,
+    paymentSignals,
   })
 
+  const changed = before !== null && (
+    before.level !== after.level || before.appliedCap !== after.appliedCap
+  )
+
   return {
-    label: state.levelLabel,
-    badge: state.isFirstConcession ? "Primeiro ciclo" : "Em evolução",
-    description: state.levelDescription,
-    summary: state.progressionSummary,
-    progress: state.levelRank * 25,
+    label: after.levelLabel,
+    badge: after.isFirstConcession ? "Primeiro ciclo" : "Em evolução",
+    description: after.levelDescription,
+    summary: after.progressionSummary,
+    progress: after.levelRank * 25,
+    before: before
+      ? {
+          label: before.levelLabel,
+          progress: before.levelRank * 25,
+          appliedCap: before.appliedCap,
+        }
+      : null,
+    after: {
+      label: after.levelLabel,
+      progress: after.levelRank * 25,
+      appliedCap: after.appliedCap,
+    },
+    changed,
+    appliedCap: after.appliedCap,
+    futureSignals: after.futureSignals,
   }
 }
 
@@ -613,49 +718,6 @@ function maskCpf(cpf: string) {
 
 function formatNullableCurrency(value: number | null) {
   return value === null ? "Não definido" : currencyFormatter.format(value)
-}
-
-function buildActiveLoan({
-  disbursements,
-  requests,
-}: {
-  disbursements: DisbursementRow[]
-  requests: RequestRow[]
-}): ActiveLoan | null {
-  const disbursement = disbursements[0]
-
-  if (!disbursement) {
-    return null
-  }
-
-  const request = requests.find((item) => item.id === disbursement.entity_id)
-  const metadata =
-    disbursement.metadata &&
-    typeof disbursement.metadata === "object" &&
-    !Array.isArray(disbursement.metadata)
-      ? disbursement.metadata
-      : null
-  const amountFromMetadata = metadata?.approvedAmount
-  const destination =
-    typeof metadata?.destination === "string"
-      ? metadata.destination
-      : SIMULATED_DESTINATION
-  const amount =
-    typeof amountFromMetadata === "number"
-      ? amountFromMetadata
-      : (request?.approved_amount ?? 0)
-
-  if (amount <= 0) {
-    return null
-  }
-
-  return {
-    requestId: disbursement.entity_id,
-    amount,
-    destination,
-    disbursedAt: disbursement.created_at,
-    status: "active",
-  }
 }
 
 function SummaryCard({
