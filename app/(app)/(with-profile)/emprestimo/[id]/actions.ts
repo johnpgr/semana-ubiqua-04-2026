@@ -21,7 +21,8 @@ const RequestPayload = z.object({
 })
 
 const DISBURSEMENT_ACTION = "credit_disbursement_simulated"
-const REPAYMENT_ACTION = "loan_repayment_simulated"
+const REPAYMENT_ACTION = "loan_payment_registered"
+const LEGACY_REPAYMENT_ACTION = "loan_repayment_simulated"
 const CYCLE_CLOSED_ACTION = "credit_cycle_closed"
 const DUE_DAYS = 30
 
@@ -106,7 +107,7 @@ export async function simulateLoanRepayment(
     .select("created_at, metadata")
     .eq("entity_type", "credit_request")
     .eq("entity_id", request.id)
-    .eq("action", REPAYMENT_ACTION)
+    .in("action", [REPAYMENT_ACTION, LEGACY_REPAYMENT_ACTION])
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle()
@@ -125,15 +126,9 @@ export async function simulateLoanRepayment(
   }
 
   if (existingRepayment) {
-    const existingPayment = getRepaymentData({
-      approvedAmount: request.approved_amount ?? 0,
-      dueBaseDate: disbursement.created_at,
-      repayment: existingRepayment,
-    })
-
     return {
-      ok: true,
-      data: existingPayment,
+      ok: false,
+      formError: "Pagamento já registrado para este empréstimo.",
     }
   }
 
@@ -153,9 +148,12 @@ export async function simulateLoanRepayment(
       requestId: request.id,
       userId: request.user_id,
       paidAt,
+      amount: principal,
       principal,
       onTime,
       source: "user_action",
+      previousStatus: "active",
+      nextStatus: "paid",
     } satisfies Json,
   }
 
@@ -209,45 +207,12 @@ export async function simulateLoanRepayment(
   }
 }
 
-function getRepaymentData({
-  approvedAmount,
-  dueBaseDate,
-  repayment,
-}: {
-  approvedAmount: number
-  dueBaseDate: string
-  repayment: {
-    created_at: string
-    metadata: Json | null
-  }
-}) {
-  const metadata =
-    repayment.metadata &&
-    typeof repayment.metadata === "object" &&
-    !Array.isArray(repayment.metadata)
-      ? repayment.metadata
-      : null
-  const principal =
-    typeof metadata?.principal === "number" ? metadata.principal : approvedAmount
-  const dueAt = new Date(dueBaseDate)
-  dueAt.setDate(dueAt.getDate() + DUE_DAYS)
-  const onTime =
-    typeof metadata?.onTime === "boolean"
-      ? metadata.onTime
-      : new Date(repayment.created_at) <= dueAt
-
-  return {
-    paidAt: repayment.created_at,
-    principal,
-    onTime,
-  }
-}
-
 async function cleanupDuplicateRepaymentAudits(
   service: ReturnType<typeof createServiceClient>,
   requestId: string
 ) {
   await cleanupDuplicateAuditAction(service, requestId, REPAYMENT_ACTION)
+  await cleanupDuplicateAuditAction(service, requestId, LEGACY_REPAYMENT_ACTION)
   await cleanupDuplicateAuditAction(service, requestId, CYCLE_CLOSED_ACTION)
 }
 

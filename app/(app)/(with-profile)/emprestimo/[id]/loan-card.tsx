@@ -112,9 +112,9 @@ export function LoanCard({ loan }: LoanCardProps) {
           {isPaid ? (
             <Alert>
               <CheckCircle2Icon />
-              <AlertTitle>Ciclo concluído — confiança evoluída</AlertTitle>
+              <AlertTitle>Pagamento registrado</AlertTitle>
               <AlertDescription>
-                O pagamento foi registrado e seu histórico foi atualizado.
+                Empréstimo concluído. Seu relacionamento foi atualizado.
               </AlertDescription>
             </Alert>
           ) : (
@@ -221,7 +221,17 @@ export function LoanCard({ loan }: LoanCardProps) {
                 href="/solicitacao"
                 className={cn(buttonVariants(), "justify-center")}
               >
-                Pedir novo crédito
+                Solicitar novo crédito
+                <ArrowRightIcon data-icon="inline-end" />
+              </Link>
+              <Link
+                href="/minha-conta"
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "justify-center"
+                )}
+              >
+                Voltar para minha conta
                 <ArrowRightIcon data-icon="inline-end" />
               </Link>
               <Link

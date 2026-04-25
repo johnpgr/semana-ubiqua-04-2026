@@ -4,7 +4,8 @@ import type { PaymentCycleSignals } from "@/lib/creditProgression"
 import type { Database } from "@/lib/supabase/database.types"
 import { createServiceClient } from "@/lib/supabase/service"
 
-const REPAYMENT_ACTION = "loan_repayment_simulated"
+const REPAYMENT_ACTION = "loan_payment_registered"
+const LEGACY_REPAYMENT_ACTION = "loan_repayment_simulated"
 
 export async function buildPaymentSignals(
   service: ReturnType<typeof createServiceClient>,
@@ -24,7 +25,7 @@ export async function buildPaymentSignals(
     .select("metadata")
     .eq("entity_type", "credit_request")
     .in("entity_id", requestIds)
-    .eq("action", REPAYMENT_ACTION)
+    .in("action", [REPAYMENT_ACTION, LEGACY_REPAYMENT_ACTION])
 
   if (error || !rows) {
     return {
@@ -95,7 +96,7 @@ export async function loadRepaymentAudits(
     .select("entity_id, created_at, metadata")
     .eq("entity_type", "credit_request")
     .in("entity_id", requestIds)
-    .eq("action", REPAYMENT_ACTION)
+    .in("action", [REPAYMENT_ACTION, LEGACY_REPAYMENT_ACTION])
     .order("created_at", { ascending: false })
 
   if (error || !data) {

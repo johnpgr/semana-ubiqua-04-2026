@@ -169,7 +169,7 @@ export default async function MinhaContaPage() {
                   href="/solicitacao"
                   className={cn(buttonVariants(), "justify-center")}
                 >
-                  Pedir novo crédito
+                  Solicitar novo crédito
                   <ArrowRightIcon data-icon="inline-end" />
                 </Link>
               ) : (

@@ -17,7 +17,8 @@ export type Loan = {
 }
 
 const DISBURSEMENT_ACTION = "credit_disbursement_simulated"
-const REPAYMENT_ACTION = "loan_repayment_simulated"
+const REPAYMENT_ACTION = "loan_payment_registered"
+const LEGACY_REPAYMENT_ACTION = "loan_repayment_simulated"
 const SIMULATED_DESTINATION = "Banco Horizonte"
 const DUE_DAYS = 30
 
@@ -30,7 +31,11 @@ export async function loadLoanForRequest(
     .select("action, created_at, metadata")
     .eq("entity_type", "credit_request")
     .eq("entity_id", requestId)
-    .in("action", [DISBURSEMENT_ACTION, REPAYMENT_ACTION])
+    .in("action", [
+      DISBURSEMENT_ACTION,
+      REPAYMENT_ACTION,
+      LEGACY_REPAYMENT_ACTION,
+    ])
     .order("created_at", { ascending: false })
     .limit(20)
 
@@ -39,7 +44,10 @@ export async function loadLoanForRequest(
   }
 
   const disbursement = rows.find((row) => row.action === DISBURSEMENT_ACTION)
-  const repayment = rows.find((row) => row.action === REPAYMENT_ACTION)
+  const repayment = rows.find(
+    (row) =>
+      row.action === REPAYMENT_ACTION || row.action === LEGACY_REPAYMENT_ACTION
+  )
 
   if (!disbursement) {
     return null
@@ -61,7 +69,11 @@ export async function loadActiveLoanForUser(
     .select("action, created_at, metadata, entity_id")
     .eq("entity_type", "credit_request")
     .in("entity_id", requestIds)
-    .in("action", [DISBURSEMENT_ACTION, REPAYMENT_ACTION])
+    .in("action", [
+      DISBURSEMENT_ACTION,
+      REPAYMENT_ACTION,
+      LEGACY_REPAYMENT_ACTION,
+    ])
     .order("created_at", { ascending: false })
     .limit(200)
 
@@ -76,7 +88,10 @@ export async function loadActiveLoanForUser(
     if (row.action === DISBURSEMENT_ACTION && !entry.disbursement) {
       entry.disbursement = row
     }
-    if (row.action === REPAYMENT_ACTION && !entry.repayment) {
+    if (
+      (row.action === REPAYMENT_ACTION || row.action === LEGACY_REPAYMENT_ACTION) &&
+      !entry.repayment
+    ) {
       entry.repayment = row
     }
     byRequest.set(row.entity_id, entry)

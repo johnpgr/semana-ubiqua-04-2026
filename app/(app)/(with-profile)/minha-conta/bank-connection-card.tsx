@@ -314,7 +314,7 @@ export function BankConnectionActions({
             href="/solicitacao"
             className={cn(buttonVariants(), "justify-center")}
           >
-            Pedir novo crédito
+            Solicitar novo crédito
             <ArrowRightIcon data-icon="inline-end" />
           </Link>
         ) : isConnected ? (
@@ -375,7 +375,7 @@ export function BankConnectionActions({
         ) : null}
         {hasPaidLoan && !newLoanEligibility.allowed ? (
           <Button variant="outline" disabled>
-            {newLoanEligibility.label ?? "Pedir novo crédito"}
+            {newLoanEligibility.label ?? "Solicitar novo crédito"}
           </Button>
         ) : null}
       </CardContent>
