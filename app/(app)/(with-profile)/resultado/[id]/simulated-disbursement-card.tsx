@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useActionState } from "react"
 import {
   BanknoteIcon,
@@ -14,7 +15,7 @@ import {
   AlertTitle,
 } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -25,6 +26,7 @@ import {
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Spinner } from "@/components/ui/spinner"
+import { cn } from "@/lib/utils"
 
 import {
   simulateCreditDisbursement,
@@ -162,14 +164,25 @@ export function SimulatedDisbursementCard({
 
       <CardFooter className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
         {disbursement ? (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <LandmarkIcon data-icon="inline-start" />
-            Acompanhe o ciclo em Minha conta.
-          </div>
+          <>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <LandmarkIcon data-icon="inline-start" />
+              Acompanhe o ciclo em Minha conta ou abra o empréstimo ativo.
+            </div>
+            <Link
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "w-full justify-center sm:w-auto"
+              )}
+              href={`/emprestimo/${requestId}`}
+            >
+              Abrir empréstimo ativo
+            </Link>
+          </>
         ) : (
-          <form action={formAction} className="contents">
+          <form action={formAction} className="w-full sm:w-auto">
             <input name="request_id" type="hidden" value={requestId} />
-            <Button disabled={isPending} type="submit">
+            <Button className="w-full sm:w-auto" disabled={isPending} type="submit">
               {isPending ? (
                 <Spinner data-icon="inline-start" />
               ) : (

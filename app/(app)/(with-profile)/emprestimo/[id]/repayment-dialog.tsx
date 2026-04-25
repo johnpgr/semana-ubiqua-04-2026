@@ -7,7 +7,6 @@ import {
 
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -41,6 +40,8 @@ function TriggerButton() {
   )
 }
 
+const repaymentTrigger = <TriggerButton />
+
 export function RepaymentDialog({
   loan,
   formAction,
@@ -48,7 +49,7 @@ export function RepaymentDialog({
 }: RepaymentDialogProps) {
   return (
     <AlertDialog>
-      <AlertDialogTrigger render={<TriggerButton />} />
+      <AlertDialogTrigger render={repaymentTrigger} />
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogMedia>
@@ -64,9 +65,9 @@ export function RepaymentDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <form action={formAction} className="contents">
+          <form action={formAction} className="w-full sm:w-auto">
             <input name="request_id" type="hidden" value={loan.requestId} />
-            <AlertDialogAction
+            <Button
               type="submit"
               disabled={isPending}
               className="w-full sm:w-auto"
@@ -77,7 +78,7 @@ export function RepaymentDialog({
                 <BanknoteIcon data-icon="inline-start" />
               )}
               {isPending ? "Processando..." : "Confirmar pagamento simulado"}
-            </AlertDialogAction>
+            </Button>
           </form>
         </AlertDialogFooter>
       </AlertDialogContent>

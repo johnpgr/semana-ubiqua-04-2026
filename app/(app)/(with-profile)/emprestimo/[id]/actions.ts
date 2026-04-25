@@ -53,6 +53,12 @@ export async function simulateLoanRepayment(
     .maybeSingle()
 
   if (requestError) {
+    console.error("Failed to load request for simulated repayment", {
+      error: requestError,
+      requestId: parsed.data.request_id,
+      userId: profile.id,
+    })
+
     return {
       ok: false,
       formError: "Não foi possível carregar a solicitação.",
@@ -80,6 +86,14 @@ export async function simulateLoanRepayment(
     .maybeSingle()
 
   if (disbursementError || !disbursement) {
+    if (disbursementError) {
+      console.error("Failed to verify simulated disbursement before repayment", {
+        error: disbursementError,
+        requestId: request.id,
+        userId: profile.id,
+      })
+    }
+
     return {
       ok: false,
       formError: "Não há liberação de crédito para esta solicitação.",
@@ -89,7 +103,7 @@ export async function simulateLoanRepayment(
   // Confirm there is no prior repayment
   const { data: existingRepayment, error: existingError } = await service
     .from("audit_logs")
-    .select("created_at")
+    .select("created_at, metadata")
     .eq("entity_type", "credit_request")
     .eq("entity_id", request.id)
     .eq("action", REPAYMENT_ACTION)
@@ -98,6 +112,12 @@ export async function simulateLoanRepayment(
     .maybeSingle()
 
   if (existingError) {
+    console.error("Failed to verify existing simulated repayment", {
+      error: existingError,
+      requestId: request.id,
+      userId: profile.id,
+    })
+
     return {
       ok: false,
       formError: "Não foi possível verificar o pagamento simulado.",
@@ -105,9 +125,15 @@ export async function simulateLoanRepayment(
   }
 
   if (existingRepayment) {
+    const existingPayment = getRepaymentData({
+      approvedAmount: request.approved_amount ?? 0,
+      dueBaseDate: disbursement.created_at,
+      repayment: existingRepayment,
+    })
+
     return {
-      ok: false,
-      formError: "Este empréstimo já foi pago simuladamente.",
+      ok: true,
+      data: existingPayment,
     }
   }
 
@@ -154,11 +180,19 @@ export async function simulateLoanRepayment(
     .insert([repaymentAuditRow, cycleClosedAuditRow])
 
   if (insertError) {
+    console.error("Failed to insert simulated repayment audit logs", {
+      error: insertError,
+      requestId: request.id,
+      userId: profile.id,
+    })
+
     return {
       ok: false,
       formError: "Não foi possível registrar o pagamento simulado.",
     }
   }
+
+  await cleanupDuplicateRepaymentAudits(service, request.id)
 
   revalidatePath(`/emprestimo/${request.id}`)
   revalidatePath("/minha-conta")
@@ -172,5 +206,87 @@ export async function simulateLoanRepayment(
       principal,
       onTime,
     },
+  }
+}
+
+function getRepaymentData({
+  approvedAmount,
+  dueBaseDate,
+  repayment,
+}: {
+  approvedAmount: number
+  dueBaseDate: string
+  repayment: {
+    created_at: string
+    metadata: Json | null
+  }
+}) {
+  const metadata =
+    repayment.metadata &&
+    typeof repayment.metadata === "object" &&
+    !Array.isArray(repayment.metadata)
+      ? repayment.metadata
+      : null
+  const principal =
+    typeof metadata?.principal === "number" ? metadata.principal : approvedAmount
+  const dueAt = new Date(dueBaseDate)
+  dueAt.setDate(dueAt.getDate() + DUE_DAYS)
+  const onTime =
+    typeof metadata?.onTime === "boolean"
+      ? metadata.onTime
+      : new Date(repayment.created_at) <= dueAt
+
+  return {
+    paidAt: repayment.created_at,
+    principal,
+    onTime,
+  }
+}
+
+async function cleanupDuplicateRepaymentAudits(
+  service: ReturnType<typeof createServiceClient>,
+  requestId: string
+) {
+  await cleanupDuplicateAuditAction(service, requestId, REPAYMENT_ACTION)
+  await cleanupDuplicateAuditAction(service, requestId, CYCLE_CLOSED_ACTION)
+}
+
+async function cleanupDuplicateAuditAction(
+  service: ReturnType<typeof createServiceClient>,
+  requestId: string,
+  action: string
+) {
+  const { data: rows, error: loadError } = await service
+    .from("audit_logs")
+    .select("id")
+    .eq("entity_type", "credit_request")
+    .eq("entity_id", requestId)
+    .eq("action", action)
+    .order("created_at", { ascending: true })
+
+  if (loadError || !rows || rows.length <= 1) {
+    if (loadError) {
+      console.error("Failed to load duplicate simulated loan audit logs", {
+        action,
+        error: loadError,
+        requestId,
+      })
+    }
+
+    return
+  }
+
+  const duplicateIds = rows.slice(1).map((row) => row.id)
+  const { error: deleteError } = await service
+    .from("audit_logs")
+    .delete()
+    .in("id", duplicateIds)
+
+  if (deleteError) {
+    console.error("Failed to cleanup duplicate simulated loan audit logs", {
+      action,
+      error: deleteError,
+      requestId,
+    })
   }
 }

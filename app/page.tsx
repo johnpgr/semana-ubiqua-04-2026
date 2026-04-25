@@ -1,80 +1,406 @@
 import Link from "next/link"
+import {
+  ArrowRightIcon,
+  BadgeCheckIcon,
+  BanknoteIcon,
+  BriefcaseBusinessIcon,
+  CheckCircle2Icon,
+  GaugeIcon,
+  LandmarkIcon,
+  MailCheckIcon,
+  ScaleIcon,
+  ShieldCheckIcon,
+  TrendingUpIcon,
+  type LucideIcon,
+} from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
+
+const flowSteps = [
+  {
+    title: "Conecte sua conta simulada",
+    description: "O MVP demonstra uma leitura Open Finance sem banco real.",
+  },
+  {
+    title: "Solicite crédito",
+    description: "Escolha o valor e siga uma jornada clara, sem promessa opaca.",
+  },
+  {
+    title: "Autorize a análise",
+    description: "Consentimento explícito antes de usar dados simulados.",
+  },
+  {
+    title: "Receba decisão explicada",
+    description: "Resultado com score, antifraude e justificativa compreensível.",
+  },
+  {
+    title: "Evolua seu limite",
+    description: "Pagamentos simulados alimentam confiança para novos ciclos.",
+  },
+]
+
+const differentiators = [
+  {
+    icon: GaugeIcon,
+    title: "Score financeiro",
+    description: "Analisa estabilidade, capacidade e comportamento de fluxo.",
+  },
+  {
+    icon: TrendingUpIcon,
+    title: "Crédito progressivo",
+    description: "Começa conservador e evolui conforme o relacionamento melhora.",
+  },
+  {
+    icon: ShieldCheckIcon,
+    title: "Antifraude comportamental",
+    description: "Sinais de risco reduzem decisões frágeis sem expor regras sensíveis.",
+  },
+  {
+    icon: ScaleIcon,
+    title: "Explicabilidade jurídica",
+    description: "Motivos da decisão em linguagem clara e auditável.",
+  },
+  {
+    icon: BadgeCheckIcon,
+    title: "Monitoramento inicial",
+    description: "Acompanha o pós-crédito como leitura de risco, sem cobrança real.",
+  },
+  {
+    icon: MailCheckIcon,
+    title: "Comunicação oficial",
+    description: "Gera mensagens formais de decisão, transparência e segurança.",
+  },
+]
+
+const audiences = [
+  "Autônomos",
+  "Trabalhadores de aplicativo",
+  "Freelancers",
+  "Renda real com histórico tradicional limitado",
+]
+
+const demoSignals = [
+  "Open Finance simulado",
+  "Análise visual por etapas",
+  "Score, antifraude e parceiros",
+  "Oferta, empréstimo e pagamento simulados",
+]
 
 export default function Page() {
   return (
-    <main className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_color-mix(in_oklab,var(--primary)_18%,transparent),transparent_34%),radial-gradient(circle_at_bottom_right,_color-mix(in_oklab,var(--accent-foreground)_10%,transparent),transparent_32%),linear-gradient(180deg,color-mix(in_oklab,var(--muted)_45%,var(--background)),var(--background)_40%)]">
-      <div className="mx-auto flex min-h-svh w-full max-w-6xl flex-col justify-center gap-10 px-4 py-14 sm:px-6 lg:flex-row lg:items-center lg:gap-14">
-        <section className="max-w-3xl space-y-7">
-          <div className="space-y-4">
-            <h1 className="max-w-3xl text-4xl leading-tight font-semibold text-balance sm:text-5xl">
-              OpenCred — crédito justo com seus dados
-            </h1>
-            <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-              Uma jornada simples para mostrar onboarding, consentimento e
-              análise em processamento usando autenticação por email e Open
-              Finance mockado.
-            </p>
+    <main className="min-h-svh bg-background text-foreground">
+      <section className="border-b bg-[linear-gradient(180deg,color-mix(in_oklab,var(--muted)_70%,var(--background)),var(--background))]">
+        <div className="mx-auto grid min-h-[92svh] w-full max-w-7xl gap-10 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)] lg:items-center lg:py-12">
+          <div className="flex flex-col gap-7">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="secondary">OpenCred MVP</Badge>
+              <Badge variant="outline">Hackathon ready</Badge>
+            </div>
+
+            <div className="flex max-w-4xl flex-col gap-5">
+              <h1 className="text-4xl leading-tight font-semibold text-balance sm:text-5xl lg:text-6xl">
+                Crédito progressivo para autônomos, com análise inteligente e
+                transparente.
+              </h1>
+              <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
+                O OpenCred transforma dados simulados autorizados em uma jornada
+                completa: conta conectada, solicitação, análise explicada,
+                oferta, empréstimo ativo e evolução de confiança.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/minha-conta"
+                className={cn(buttonVariants({ size: "lg" }), "justify-center")}
+              >
+                Acessar minha conta
+                <ArrowRightIcon data-icon="inline-end" />
+              </Link>
+              <a
+                href="#como-funciona"
+                className={cn(
+                  buttonVariants({ size: "lg", variant: "outline" }),
+                  "justify-center"
+                )}
+              >
+                Conhecer funcionamento
+              </a>
+            </div>
+
+            <div className="grid gap-3 text-sm sm:grid-cols-3">
+              <Metric value="7+" label="módulos de decisão" />
+              <Metric value="0" label="integrações bancárias reais" />
+              <Metric value="1" label="ciclo completo demonstrável" />
+            </div>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="relative">
+            <div className="rounded-2xl border bg-card p-4 shadow-xl shadow-foreground/5">
+              <div className="flex items-center justify-between gap-3 border-b pb-4">
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-medium">Jornada OpenCred</span>
+                  <span className="text-xs text-muted-foreground">
+                    simulação de crédito explicável
+                  </span>
+                </div>
+                <Badge variant="default">Em demo</Badge>
+              </div>
+
+              <div className="grid gap-3 py-4">
+                <TimelineItem
+                  icon={LandmarkIcon}
+                  title="Conta simulada conectada"
+                  detail="Banco Horizonte Simulado"
+                  state="Pronto"
+                />
+                <TimelineItem
+                  icon={GaugeIcon}
+                  title="Score financeiro calculado"
+                  detail="capacidade, estabilidade e comportamento"
+                  state="Análise"
+                />
+                <TimelineItem
+                  icon={ShieldCheckIcon}
+                  title="Fraud Score aplicado"
+                  detail="sinais comportamentais e consistência"
+                  state="Risco baixo"
+                />
+                <TimelineItem
+                  icon={BanknoteIcon}
+                  title="Oferta liberada"
+                  detail="empréstimo ativo com pagamento simulado"
+                  state="Ciclo"
+                />
+              </div>
+
+              <Separator />
+
+              <div className="grid gap-3 pt-4 sm:grid-cols-2">
+                <PanelStat title="Limite sugerido" value="R$ 1.250" />
+                <PanelStat title="Confiança" value="Em evolução" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-14 sm:px-6" id="como-funciona">
+        <SectionHeader
+          eyebrow="Como funciona"
+          title="Uma jornada de crédito que o usuário entende."
+          description="Do login ao ciclo pago, cada etapa mostra o que está acontecendo e por que a decisão foi tomada."
+        />
+        <div className="grid gap-3 md:grid-cols-5">
+          {flowSteps.map((step, index) => (
+            <Card className="border-border/70 bg-background/85" key={step.title}>
+              <CardHeader className="gap-3">
+                <Badge variant="outline">{String(index + 1).padStart(2, "0")}</Badge>
+                <CardTitle className="text-base">{step.title}</CardTitle>
+                <CardDescription className="leading-6">
+                  {step.description}
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y bg-muted/35">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-14 sm:px-6">
+          <SectionHeader
+            eyebrow="Diferenciais"
+            title="Mais que uma aprovação: uma arquitetura de decisão."
+            description="O MVP combina análise financeira, risco, transparência e comunicação em uma experiência única."
+          />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {differentiators.map((item) => (
+              <FeatureCard key={item.title} {...item} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-14 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+        <SectionHeader
+          eyebrow="Público-alvo"
+          title="Feito para quem tem renda real, mas pouca leitura no crédito tradicional."
+          description="O OpenCred valoriza sinais de fluxo e comportamento para criar uma primeira concessão conservadora e evolutiva."
+        />
+        <div className="grid gap-3 sm:grid-cols-2">
+          {audiences.map((audience) => (
+            <div
+              className="flex items-center gap-3 rounded-xl border bg-card p-4 text-sm font-medium"
+              key={audience}
+            >
+              <BriefcaseBusinessIcon data-icon="inline-start" />
+              {audience}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-7xl px-4 pb-14 sm:px-6">
+        <div className="grid gap-8 rounded-2xl border bg-card p-5 sm:p-6 lg:grid-cols-[1fr_1fr] lg:p-8">
+          <div className="flex flex-col gap-4">
+            <Badge className="w-fit" variant="secondary">
+              Demonstração de hackathon
+            </Badge>
+            <h2 className="text-2xl font-semibold text-balance sm:text-3xl">
+              Realista na arquitetura, seguro na simulação.
+            </h2>
+            <p className="text-sm leading-6 text-muted-foreground sm:text-base">
+              O OpenCred não conecta banco real, não movimenta Pix e não libera
+              dinheiro. Ele simula a jornada completa para provar produto,
+              governança e explicabilidade.
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {demoSignals.map((signal) => (
+              <div
+                className="flex items-center gap-3 rounded-xl border bg-background/70 p-3 text-sm"
+                key={signal}
+              >
+                <CheckCircle2Icon data-icon="inline-start" />
+                {signal}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t bg-muted/35">
+        <div className="mx-auto flex w-full max-w-7xl flex-col items-start justify-between gap-6 px-4 py-12 sm:px-6 lg:flex-row lg:items-center">
+          <div className="flex max-w-2xl flex-col gap-2">
+            <Badge className="w-fit" variant="outline">
+              Próximo passo
+            </Badge>
+            <h2 className="text-2xl font-semibold text-balance sm:text-3xl">
+              Comece uma análise ou retome sua jornada.
+            </h2>
+            <p className="text-sm leading-6 text-muted-foreground sm:text-base">
+              A demo já cobre solicitação, análise visual, oferta, empréstimo
+              ativo e pagamento simulado.
+            </p>
+          </div>
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <Link
-              href="/login"
+              href="/minha-conta"
               className={cn(buttonVariants({ size: "lg" }), "justify-center")}
             >
-              Começar simulação
+              Ir para minha conta
+              <ArrowRightIcon data-icon="inline-end" />
             </Link>
-            <a
-              href="#como-funciona"
+            <Link
+              href="/login"
               className={cn(
                 buttonVariants({ size: "lg", variant: "outline" }),
                 "justify-center"
               )}
             >
-              Ver o fluxo
-            </a>
+              Começar análise
+            </Link>
           </div>
-        </section>
-
-        <section className="grid w-full max-w-xl gap-4" id="como-funciona">
-          <article className="rounded-2xl border border-border/70 bg-background/80 p-5 shadow-lg shadow-black/5 backdrop-blur">
-            <div className="text-xs font-semibold tracking-[0.2em] text-muted-foreground uppercase">
-              01
-            </div>
-            <h2 className="mt-2 text-xl font-semibold">Autenticação por OTP</h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              O usuário entra por email, valida o código de 6 dígitos e segue
-              autenticado sem redirect URL externo.
-            </p>
-          </article>
-          <article className="rounded-2xl border border-border/70 bg-background/80 p-5 shadow-lg shadow-black/5 backdrop-blur">
-            <div className="text-xs font-semibold tracking-[0.2em] text-muted-foreground uppercase">
-              02
-            </div>
-            <h2 className="mt-2 text-xl font-semibold">
-              Cadastro e solicitação
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Perfil mockado, CPF fictício e valor solicitado criam as linhas em
-              `profiles` e `credit_requests`.
-            </p>
-          </article>
-          <article className="rounded-2xl border border-border/70 bg-background/80 p-5 shadow-lg shadow-black/5 backdrop-blur">
-            <div className="text-xs font-semibold tracking-[0.2em] text-muted-foreground uppercase">
-              03
-            </div>
-            <h2 className="mt-2 text-xl font-semibold">
-              Consentimento registrado
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Os escopos selecionados vão para `consents` e a solicitação passa
-              a `collecting_data`, pronta para o score posterior.
-            </p>
-          </article>
-        </section>
-      </div>
+        </div>
+      </section>
     </main>
+  )
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border bg-background/80 p-3">
+      <div className="text-xl font-semibold">{value}</div>
+      <div className="text-muted-foreground">{label}</div>
+    </div>
+  )
+}
+
+function TimelineItem({
+  detail,
+  icon: Icon,
+  state,
+  title,
+}: {
+  detail: string
+  icon: LucideIcon
+  state: string
+  title: string
+}) {
+  return (
+    <div className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border bg-background/70 p-3">
+      <div className="flex size-8 items-center justify-center rounded-lg bg-muted">
+        <Icon data-icon="inline-start" />
+      </div>
+      <div className="min-w-0">
+        <div className="truncate text-sm font-medium">{title}</div>
+        <div className="truncate text-xs text-muted-foreground">{detail}</div>
+      </div>
+      <Badge variant="outline">{state}</Badge>
+    </div>
+  )
+}
+
+function PanelStat({ title, value }: { title: string; value: string }) {
+  return (
+    <div className="rounded-xl border bg-background/70 p-4">
+      <div className="text-xs text-muted-foreground">{title}</div>
+      <div className="mt-1 text-lg font-semibold">{value}</div>
+    </div>
+  )
+}
+
+function SectionHeader({
+  description,
+  eyebrow,
+  title,
+}: {
+  description: string
+  eyebrow: string
+  title: string
+}) {
+  return (
+    <div className="flex max-w-3xl flex-col gap-3">
+      <Badge className="w-fit" variant="outline">
+        {eyebrow}
+      </Badge>
+      <h2 className="text-2xl font-semibold text-balance sm:text-3xl">
+        {title}
+      </h2>
+      <p className="text-sm leading-6 text-muted-foreground sm:text-base">
+        {description}
+      </p>
+    </div>
+  )
+}
+
+function FeatureCard({
+  description,
+  icon: Icon,
+  title,
+}: {
+  description: string
+  icon: LucideIcon
+  title: string
+}) {
+  return (
+    <Card className="border-border/70 bg-background/85">
+      <CardHeader className="gap-3">
+        <div className="flex size-9 items-center justify-center rounded-lg bg-muted">
+          <Icon data-icon="inline-start" />
+        </div>
+        <CardTitle className="text-base">{title}</CardTitle>
+        <CardDescription className="leading-6">{description}</CardDescription>
+      </CardHeader>
+    </Card>
   )
 }
