@@ -37,7 +37,6 @@ import { RepaymentDialog } from "./repayment-dialog"
 
 type LoanCardProps = {
   loan: Loan
-  userId: string
 }
 
 const INITIAL_STATE: SimulateRepaymentState = {
@@ -70,8 +69,12 @@ export function LoanCard({ loan }: LoanCardProps) {
   )
   const [now] = useState(() => new Date())
 
-  const isPaid = loan.status === "paid" || (state.ok && state.data?.paidAt)
+  const isPaid = loan.status === "paid" || (state.ok && Boolean(state.data?.paidAt))
   const displayStatus: LoanStatus = isPaid ? "paid" : loan.status
+  const effectivePaidAt =
+    state.ok && state.data?.paidAt ? state.data.paidAt : loan.repaidAt
+  const effectiveOnTime =
+    state.ok && state.data ? state.data.onTime : loan.onTime
   const daysUntilDue = Math.ceil(
     (new Date(loan.dueAt).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
   )
@@ -141,8 +144,8 @@ export function LoanCard({ loan }: LoanCardProps) {
                 {isPaid ? "Pago em" : "Vencimento simulado"}
               </div>
               <div className="mt-1 text-2xl font-semibold">
-                {isPaid && loan.repaidAt
-                  ? dateFormatter.format(new Date(loan.repaidAt))
+                {isPaid && effectivePaidAt
+                  ? dateFormatter.format(new Date(effectivePaidAt))
                   : dateFormatter.format(new Date(loan.dueAt))}
               </div>
             </div>
@@ -180,23 +183,23 @@ export function LoanCard({ loan }: LoanCardProps) {
               label="Vencimento simulado"
               value={fullDateFormatter.format(new Date(loan.dueAt))}
             />
-            {isPaid && loan.repaidAt ? (
+            {isPaid && effectivePaidAt ? (
               <>
                 <Separator />
                 <InfoRow
                   label="Pagamento simulado"
-                  value={fullDateFormatter.format(new Date(loan.repaidAt))}
+                  value={fullDateFormatter.format(new Date(effectivePaidAt))}
                 />
                 <Separator />
                 <InfoRow
                   label="Em dia"
-                  value={loan.onTime ? "Sim" : "Não"}
+                  value={effectiveOnTime ? "Sim" : "Não"}
                 />
               </>
             ) : null}
           </div>
 
-          {!isPaid && loan.status === "active" ? (
+          {!isPaid ? (
             <div className="flex flex-col gap-3 sm:flex-row">
               <RepaymentDialog
                 loan={loan}

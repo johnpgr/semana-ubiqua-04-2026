@@ -39,7 +39,7 @@ export default async function EmprestimoPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <LoanCard loan={loan} userId={profile.id} />
+      <LoanCard loan={loan} />
     </div>
   )
 }

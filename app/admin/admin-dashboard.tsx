@@ -292,7 +292,7 @@ export function AdminDashboard({
   cycleStages,
 }: {
   initialRequests: AdminRequestRow[]
-  cycleStages: Map<string, CycleStage>
+  cycleStages: Record<string, CycleStage>
 }) {
   const [requests, setRequests] = useState<AdminRequestRow[]>(initialRequests)
   const [realtimeState, setRealtimeState] = useState<RealtimeState>("connecting")
@@ -313,7 +313,7 @@ export function AdminDashboard({
     const statusOk = statusFilter === "all" || request.status === statusFilter
     const decisionOk =
       decisionFilter === "all" || request.decision === decisionFilter
-    const stage = cycleStages.get(request.id) ?? "pending"
+    const stage = cycleStages[request.id] ?? "pending"
     const cycleStageOk = cycleStageFilter === "all" || stage === cycleStageFilter
     return statusOk && decisionOk && cycleStageOk
   })
@@ -463,7 +463,6 @@ export function AdminDashboard({
           <SelectContent>
             <SelectItem value="cycle:all">Todas as etapas</SelectItem>
             <SelectItem value="cycle:pending">Pendente</SelectItem>
-            <SelectItem value="cycle:decided">Decidido</SelectItem>
             <SelectItem value="cycle:active">Ativo</SelectItem>
             <SelectItem value="cycle:paid">Pago</SelectItem>
             <SelectItem value="cycle:cycle_closed">Ciclo fechado</SelectItem>
@@ -514,7 +513,7 @@ export function AdminDashboard({
               <TableBody>
                 {paged.map((row) => {
                   const highlightKind = highlightedIds[row.id]
-                  const cycleStage = cycleStages.get(row.id) ?? "pending"
+                  const cycleStage = cycleStages[row.id] ?? "pending"
 
                   return (
                     <TableRow
@@ -605,7 +604,7 @@ export function AdminDashboard({
           <div className="space-y-3 md:hidden">
             {paged.map((row) => {
               const highlightKind = highlightedIds[row.id]
-              const cycleStage = cycleStages.get(row.id) ?? "pending"
+              const cycleStage = cycleStages[row.id] ?? "pending"
 
               return (
                 <Card

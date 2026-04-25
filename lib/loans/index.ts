@@ -45,12 +45,11 @@ export async function loadLoanForRequest(
     return null
   }
 
-  return buildLoan({ disbursement, repayment })
+  return buildLoan({ disbursement, repayment, fallbackRequestId: requestId })
 }
 
 export async function loadActiveLoanForUser(
   service: ReturnType<typeof createServiceClient>,
-  userId: string,
   requestIds: string[]
 ): Promise<Loan | null> {
   if (requestIds.length === 0) {
@@ -70,7 +69,6 @@ export async function loadActiveLoanForUser(
     return null
   }
 
-  // Group by request, find the first request that has disbursement but no repayment
   const byRequest = new Map<string, { disbursement?: typeof rows[0]; repayment?: typeof rows[0] }>()
 
   for (const row of rows) {
@@ -84,19 +82,25 @@ export async function loadActiveLoanForUser(
     byRequest.set(row.entity_id, entry)
   }
 
-  // Return the most recent active loan (disbursed but not repaid)
   for (const requestId of requestIds) {
     const entry = byRequest.get(requestId)
     if (entry?.disbursement && !entry.repayment) {
-      return buildLoan({ disbursement: entry.disbursement, repayment: undefined })
+      return buildLoan({
+        disbursement: entry.disbursement,
+        repayment: undefined,
+        fallbackRequestId: requestId,
+      })
     }
   }
 
-  // If no active, return the most recent paid loan
   for (const requestId of requestIds) {
     const entry = byRequest.get(requestId)
     if (entry?.disbursement && entry.repayment) {
-      return buildLoan({ disbursement: entry.disbursement, repayment: entry.repayment })
+      return buildLoan({
+        disbursement: entry.disbursement,
+        repayment: entry.repayment,
+        fallbackRequestId: requestId,
+      })
     }
   }
 
@@ -106,9 +110,11 @@ export async function loadActiveLoanForUser(
 function buildLoan({
   disbursement,
   repayment,
+  fallbackRequestId,
 }: {
   disbursement: { created_at: string; metadata: Database["public"]["Tables"]["audit_logs"]["Row"]["metadata"] }
   repayment?: { created_at: string; metadata: Database["public"]["Tables"]["audit_logs"]["Row"]["metadata"] }
+  fallbackRequestId: string
 }): Loan {
   const disbursedAt = disbursement.created_at
   const dueAt = addDays(disbursedAt, DUE_DAYS)
@@ -131,7 +137,9 @@ function buildLoan({
       ? metadata.approvedAmount
       : 0
 
-  const onTime = repaidAt ? repaidAt <= dueAt : null
+  const onTime = repaidAt
+    ? new Date(repaidAt).getTime() <= new Date(dueAt).getTime()
+    : null
 
   let status: LoanStatus
   if (repaidAt) {
@@ -144,9 +152,9 @@ function buildLoan({
 
   return {
     requestId:
-      typeof metadata?.requestId === "string"
+      typeof metadata?.requestId === "string" && metadata.requestId.length > 0
         ? metadata.requestId
-        : "",
+        : fallbackRequestId,
     amount,
     destination,
     disbursedAt,

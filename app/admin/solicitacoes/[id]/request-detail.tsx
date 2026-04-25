@@ -1153,12 +1153,12 @@ export function RequestDetail({
                         </KeyValueRow>
                         <KeyValueRow label="Ação">{label}</KeyValueRow>
                         <KeyValueRow label="Ator">{log.actor ?? "—"}</KeyValueRow>
-                        {metadata?.approvedAmount ? (
+                        {typeof metadata?.approvedAmount === "number" ? (
                           <KeyValueRow label="Valor">
-                            {currencyFormatter.format(Number(metadata.approvedAmount))}
+                            {currencyFormatter.format(metadata.approvedAmount)}
                           </KeyValueRow>
                         ) : null}
-                        {metadata?.onTime != null ? (
+                        {typeof metadata?.onTime === "boolean" ? (
                           <KeyValueRow label="Em dia">
                             {metadata.onTime ? "Sim" : "Não"}
                           </KeyValueRow>

@@ -30,13 +30,7 @@ type AdminRequestRowJoin = Omit<AdminRequestRow, "profile" | "score"> & {
   score: ScoreJoin[] | ScoreJoin
 }
 
-export type CycleStage =
-  | "pending"
-  | "decided"
-  | "disbursed"
-  | "active"
-  | "paid"
-  | "cycle_closed"
+export type CycleStage = "pending" | "active" | "paid" | "cycle_closed"
 
 function normalizeJoin<T>(value: T[] | T) {
   return Array.isArray(value) ? (value[0] ?? null) : value
@@ -68,9 +62,9 @@ const CYCLE_ACTIONS = [
 
 async function loadCycleStages(
   requestIds: string[]
-): Promise<Map<string, CycleStage>> {
+): Promise<Record<string, CycleStage>> {
   if (requestIds.length === 0) {
-    return new Map()
+    return {}
   }
 
   const service = createServiceClient()
@@ -82,29 +76,29 @@ async function loadCycleStages(
     .in("action", CYCLE_ACTIONS)
 
   if (error || !data) {
-    return new Map()
+    return {}
   }
 
-  const map = new Map<string, CycleStage>()
+  const record: Record<string, CycleStage> = {}
 
   for (const row of data) {
-    const current = map.get(row.entity_id) ?? "pending"
+    const current = record[row.entity_id] ?? "pending"
     const action = row.action as string
 
     if (action === "credit_cycle_closed") {
-      map.set(row.entity_id, "cycle_closed")
+      record[row.entity_id] = "cycle_closed"
     } else if (action === "loan_repayment_simulated") {
       if (current !== "cycle_closed") {
-        map.set(row.entity_id, "paid")
+        record[row.entity_id] = "paid"
       }
     } else if (action === "credit_disbursement_simulated") {
       if (current !== "cycle_closed" && current !== "paid") {
-        map.set(row.entity_id, "active")
+        record[row.entity_id] = "active"
       }
     }
   }
 
-  return map
+  return record
 }
 
 export default async function AdminPage() {

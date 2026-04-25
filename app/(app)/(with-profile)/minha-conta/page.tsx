@@ -126,8 +126,8 @@ export default async function MinhaContaPage() {
 
   const requestIds = requests.map((r) => r.id)
   const [paymentSignals, activeLoan, newLoanEligibility] = await Promise.all([
-    buildPaymentSignals(service, profile.id, requestIds),
-    loadActiveLoanForUser(service, profile.id, requestIds),
+    buildPaymentSignals(service, requestIds),
+    loadActiveLoanForUser(service, requestIds),
     canRequestNewLoan(service, profile.id, requestIds),
   ])
 

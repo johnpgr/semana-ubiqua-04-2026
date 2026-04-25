@@ -1,3 +1,5 @@
+import "server-only"
+
 import type { PaymentCycleSignals } from "@/lib/creditProgression"
 import type { Database } from "@/lib/supabase/database.types"
 import { createServiceClient } from "@/lib/supabase/service"
@@ -6,7 +8,6 @@ const REPAYMENT_ACTION = "loan_repayment_simulated"
 
 export async function buildPaymentSignals(
   service: ReturnType<typeof createServiceClient>,
-  userId: string,
   requestIds: string[]
 ): Promise<PaymentCycleSignals> {
   if (requestIds.length === 0) {

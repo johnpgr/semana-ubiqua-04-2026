@@ -1,3 +1,5 @@
+import "server-only"
+
 import { createServiceClient } from "@/lib/supabase/service"
 import { loadActiveLoanForUser } from "./index"
 
@@ -14,14 +16,16 @@ export async function canRequestNewLoan(
   userId: string,
   requestIds: string[]
 ): Promise<NewLoanEligibility> {
-  // Check for active loan
-  const activeLoan = await loadActiveLoanForUser(service, userId, requestIds)
+  const activeLoan = await loadActiveLoanForUser(service, requestIds)
 
-  if (activeLoan && activeLoan.status === "active") {
+  if (activeLoan && (activeLoan.status === "active" || activeLoan.status === "overdue")) {
     return {
       allowed: false,
       reason: "active_loan",
-      label: "Você possui um empréstimo ativo. Conclua o pagamento para solicitar novo crédito.",
+      label:
+        activeLoan.status === "overdue"
+          ? "Você possui um empréstimo em aberto vencido. Conclua o pagamento para solicitar novo crédito."
+          : "Você possui um empréstimo ativo. Conclua o pagamento para solicitar novo crédito.",
     }
   }
 

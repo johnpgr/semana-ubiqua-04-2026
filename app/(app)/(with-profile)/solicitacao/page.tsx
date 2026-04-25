@@ -58,10 +58,11 @@ export default async function SolicitacaoPage() {
     .limit(50)
 
   const requestIds = (userRequests ?? []).map((r) => r.id)
-  const paidLoan = await loadActiveLoanForUser(service, profile.id, requestIds)
-  const previousRequest = paidLoan
-    ? (userRequests ?? []).find((r) => r.id === paidLoan.requestId)
-    : null
+  const lastLoan = await loadActiveLoanForUser(service, requestIds)
+  const previousRequest =
+    lastLoan?.status === "paid"
+      ? (userRequests ?? []).find((r) => r.id === lastLoan.requestId)
+      : null
 
   return (
     <div className="flex flex-col gap-6">
@@ -92,7 +93,7 @@ export default async function SolicitacaoPage() {
         </div>
       </section>
 
-      {previousRequest && paidLoan ? (
+      {previousRequest && lastLoan ? (
         <section>
           <Card className="border border-border/70 bg-muted/35">
             <CardHeader className="gap-2">
@@ -112,7 +113,7 @@ export default async function SolicitacaoPage() {
                     {currencyFormatter.format(previousRequest.approved_amount ?? previousRequest.requested_amount)} liberado
                   </div>
                   <div className="mt-1 text-muted-foreground">
-                    Pago em {paidLoan.repaidAt ? dateFormatter.format(new Date(paidLoan.repaidAt)) : "—"}
+                    Pago em {lastLoan.repaidAt ? dateFormatter.format(new Date(lastLoan.repaidAt)) : "—"}
                   </div>
                 </div>
                 <div className="rounded-xl border border-border/70 bg-background/70 p-3">
