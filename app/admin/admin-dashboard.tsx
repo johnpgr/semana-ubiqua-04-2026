@@ -42,7 +42,7 @@ import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 
 import { AdminCharts } from "./admin-charts"
-import type { AdminRequestRow } from "./page"
+import type { AdminRequestRow, CycleStage } from "./page"
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -67,6 +67,7 @@ type AdminRequestRealtimeRow = Omit<AdminRequestRow, "profile" | "score"> & {
 type AdminDashboardViewState = {
   statusFilter: string
   decisionFilter: string
+  cycleStageFilter: string
   page: number
 }
 
@@ -102,6 +103,14 @@ function adminDashboardViewReducer(
       return {
         ...state,
         decisionFilter: action.slice("decision:".length),
+        page: 1,
+      }
+    }
+
+    if (action.startsWith("cycle:")) {
+      return {
+        ...state,
+        cycleStageFilter: action.slice("cycle:".length),
         page: 1,
       }
     }
@@ -169,6 +178,24 @@ const DECISION_LABEL: Record<string, string> = {
   approved_reduced: "Aprovado reduzido",
   further_review: "Revisão manual",
   denied: "Negado",
+}
+
+const CYCLE_STAGE_VARIANT: Record<string, BadgeVariant> = {
+  pending: "secondary",
+  decided: "outline",
+  disbursed: "default",
+  active: "default",
+  paid: "secondary",
+  cycle_closed: "default",
+}
+
+const CYCLE_STAGE_LABEL: Record<string, string> = {
+  pending: "Pendente",
+  decided: "Decidido",
+  disbursed: "Liberado",
+  active: "Ativo",
+  paid: "Pago",
+  cycle_closed: "Ciclo fechado",
 }
 
 const REALTIME_BADGE: Record<RealtimeState, { label: string; variant: BadgeVariant }> = {
@@ -262,19 +289,22 @@ function DashboardEmptyState({
 
 export function AdminDashboard({
   initialRequests,
+  cycleStages,
 }: {
   initialRequests: AdminRequestRow[]
+  cycleStages: Map<string, CycleStage>
 }) {
   const [requests, setRequests] = useState<AdminRequestRow[]>(initialRequests)
   const [realtimeState, setRealtimeState] = useState<RealtimeState>("connecting")
   const [recentActivity, setRecentActivity] = useState<ActivityEntry[]>([])
   const [highlightedIds, setHighlightedIds] = useState<Record<string, ActivityKind>>({})
   const highlightTimeouts = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
-  const [{ statusFilter, decisionFilter, page }, dispatchView] = useReducer(
+  const [{ statusFilter, decisionFilter, cycleStageFilter, page }, dispatchView] = useReducer(
     adminDashboardViewReducer,
     {
       statusFilter: "all",
       decisionFilter: "all",
+      cycleStageFilter: "all",
       page: 1,
     }
   )
@@ -283,7 +313,9 @@ export function AdminDashboard({
     const statusOk = statusFilter === "all" || request.status === statusFilter
     const decisionOk =
       decisionFilter === "all" || request.decision === decisionFilter
-    return statusOk && decisionOk
+    const stage = cycleStages.get(request.id) ?? "pending"
+    const cycleStageOk = cycleStageFilter === "all" || stage === cycleStageFilter
+    return statusOk && decisionOk && cycleStageOk
   })
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
@@ -424,6 +456,20 @@ export function AdminDashboard({
           </SelectContent>
         </Select>
 
+        <Select value={`cycle:${cycleStageFilter}`} onValueChange={dispatchView}>
+          <SelectTrigger className="w-full sm:w-48">
+            <SelectValue placeholder="Etapa do ciclo" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="cycle:all">Todas as etapas</SelectItem>
+            <SelectItem value="cycle:pending">Pendente</SelectItem>
+            <SelectItem value="cycle:decided">Decidido</SelectItem>
+            <SelectItem value="cycle:active">Ativo</SelectItem>
+            <SelectItem value="cycle:paid">Pago</SelectItem>
+            <SelectItem value="cycle:cycle_closed">Ciclo fechado</SelectItem>
+          </SelectContent>
+        </Select>
+
         <div className="flex flex-col gap-2 sm:ml-auto sm:items-end">
           <Badge variant={realtimeBadge.variant} className="w-fit">
             <Radio aria-hidden="true" className="mr-1 size-3" />
@@ -458,6 +504,7 @@ export function AdminDashboard({
                   <TableHead>Perfil</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Decisão</TableHead>
+                  <TableHead>Etapa do ciclo</TableHead>
                   <TableHead className="text-right">Valor solicitado</TableHead>
                   <TableHead className="text-right">Valor aprovado</TableHead>
                   <TableHead>Score</TableHead>
@@ -467,6 +514,7 @@ export function AdminDashboard({
               <TableBody>
                 {paged.map((row) => {
                   const highlightKind = highlightedIds[row.id]
+                  const cycleStage = cycleStages.get(row.id) ?? "pending"
 
                   return (
                     <TableRow
@@ -520,6 +568,11 @@ export function AdminDashboard({
                           {row.decision ? (DECISION_LABEL[row.decision] ?? row.decision) : "—"}
                         </Badge>
                       </TableCell>
+                      <TableCell>
+                        <Badge variant={CYCLE_STAGE_VARIANT[cycleStage] ?? "secondary"}>
+                          {CYCLE_STAGE_LABEL[cycleStage] ?? cycleStage}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-right">
                         {currencyFormatter.format(row.requested_amount)}
                       </TableCell>
@@ -537,7 +590,7 @@ export function AdminDashboard({
                 })}
                 {paged.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="p-6">
+                    <TableCell colSpan={9} className="p-6">
                       <DashboardEmptyState
                         title="Nenhuma solicitação neste filtro"
                         description="Ajuste os filtros ou aguarde novas análises entrarem no painel."
@@ -552,6 +605,7 @@ export function AdminDashboard({
           <div className="space-y-3 md:hidden">
             {paged.map((row) => {
               const highlightKind = highlightedIds[row.id]
+              const cycleStage = cycleStages.get(row.id) ?? "pending"
 
               return (
                 <Card
@@ -597,6 +651,9 @@ export function AdminDashboard({
                         }
                       >
                         {row.decision ? (DECISION_LABEL[row.decision] ?? row.decision) : "Sem decisão"}
+                      </Badge>
+                      <Badge variant={CYCLE_STAGE_VARIANT[cycleStage] ?? "secondary"}>
+                        {CYCLE_STAGE_LABEL[cycleStage] ?? cycleStage}
                       </Badge>
                     </div>
 

@@ -1,3 +1,4 @@
+import { createServiceClient } from "@/lib/supabase/service"
 import { createClient } from "@/lib/supabase/server"
 import { AdminDashboard } from "./admin-dashboard"
 
@@ -29,6 +30,14 @@ type AdminRequestRowJoin = Omit<AdminRequestRow, "profile" | "score"> & {
   score: ScoreJoin[] | ScoreJoin
 }
 
+export type CycleStage =
+  | "pending"
+  | "decided"
+  | "disbursed"
+  | "active"
+  | "paid"
+  | "cycle_closed"
+
 function normalizeJoin<T>(value: T[] | T) {
   return Array.isArray(value) ? (value[0] ?? null) : value
 }
@@ -51,6 +60,53 @@ function normalizeRequestRows(rows: AdminRequestRowJoin[]) {
   return rows.map(normalizeRequestRow)
 }
 
+const CYCLE_ACTIONS = [
+  "credit_disbursement_simulated",
+  "loan_repayment_simulated",
+  "credit_cycle_closed",
+]
+
+async function loadCycleStages(
+  requestIds: string[]
+): Promise<Map<string, CycleStage>> {
+  if (requestIds.length === 0) {
+    return new Map()
+  }
+
+  const service = createServiceClient()
+  const { data, error } = await service
+    .from("audit_logs")
+    .select("entity_id, action")
+    .eq("entity_type", "credit_request")
+    .in("entity_id", requestIds)
+    .in("action", CYCLE_ACTIONS)
+
+  if (error || !data) {
+    return new Map()
+  }
+
+  const map = new Map<string, CycleStage>()
+
+  for (const row of data) {
+    const current = map.get(row.entity_id) ?? "pending"
+    const action = row.action as string
+
+    if (action === "credit_cycle_closed") {
+      map.set(row.entity_id, "cycle_closed")
+    } else if (action === "loan_repayment_simulated") {
+      if (current !== "cycle_closed") {
+        map.set(row.entity_id, "paid")
+      }
+    } else if (action === "credit_disbursement_simulated") {
+      if (current !== "cycle_closed" && current !== "paid") {
+        map.set(row.entity_id, "active")
+      }
+    }
+  }
+
+  return map
+}
+
 export default async function AdminPage() {
   const supabase = await createClient()
 
@@ -70,13 +126,15 @@ export default async function AdminPage() {
   }
 
   const requests = normalizeRequestRows((rawData ?? []) as AdminRequestRowJoin[])
+  const requestIds = requests.map((r) => r.id)
+  const cycleStages = await loadCycleStages(requestIds)
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-heading font-medium">
         Solicitações de Crédito
       </h1>
-      <AdminDashboard initialRequests={requests} />
+      <AdminDashboard initialRequests={requests} cycleStages={cycleStages} />
     </div>
   )
 }
