@@ -41,7 +41,7 @@ export function LoginForm() {
             <p className="text-sm text-destructive">{emailError}</p>
           ) : null}
           <p className="text-sm text-muted-foreground">
-            Enviaremos um código de 6 dígitos para continuar a simulação.
+            Enviaremos um código de 6 dígitos para continuar sua jornada.
           </p>
         </div>
         {state.formError ? (

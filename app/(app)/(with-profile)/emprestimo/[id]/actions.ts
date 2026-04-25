@@ -17,7 +17,7 @@ export type SimulateRepaymentState = FormActionState<
 type AuditLogInsert = TablesInsert<"audit_logs">
 
 const RequestPayload = z.object({
-  request_id: z.uuid("SolicitaÃ§Ã£o invÃ¡lida."),
+  request_id: z.uuid("Solicitação inválida."),
 })
 
 const DISBURSEMENT_ACTION = "credit_disbursement_simulated"
@@ -36,9 +36,9 @@ export async function simulateLoanRepayment(
   if (!parsed.success) {
     return {
       ok: false,
-      formError: "NÃ£o foi possÃ­vel identificar a solicitaÃ§Ã£o.",
+      formError: "Não foi possível identificar a solicitação.",
       fieldErrors: {
-        request_id: ["SolicitaÃ§Ã£o invÃ¡lida."],
+        request_id: ["Solicitação inválida."],
       },
     }
   }
@@ -61,14 +61,14 @@ export async function simulateLoanRepayment(
 
     return {
       ok: false,
-      formError: "NÃ£o foi possÃ­vel carregar a solicitaÃ§Ã£o.",
+      formError: "Não foi possível carregar a solicitação.",
     }
   }
 
   if (!request) {
     return {
       ok: false,
-      formError: "SolicitaÃ§Ã£o nÃ£o encontrada.",
+      formError: "Solicitação não encontrada.",
     }
   }
 
@@ -96,7 +96,7 @@ export async function simulateLoanRepayment(
 
     return {
       ok: false,
-      formError: "NÃ£o hÃ¡ liberaÃ§Ã£o de crÃ©dito para esta solicitaÃ§Ã£o.",
+      formError: "Não há liberação de crédito para esta solicitação.",
     }
   }
 
@@ -120,7 +120,7 @@ export async function simulateLoanRepayment(
 
     return {
       ok: false,
-      formError: "NÃ£o foi possÃ­vel verificar o pagamento.",
+      formError: "Não foi possível verificar o pagamento.",
     }
   }
 
@@ -188,7 +188,7 @@ export async function simulateLoanRepayment(
 
     return {
       ok: false,
-      formError: "NÃ£o foi possÃ­vel registrar o pagamento.",
+      formError: "Não foi possível registrar o pagamento.",
     }
   }
 

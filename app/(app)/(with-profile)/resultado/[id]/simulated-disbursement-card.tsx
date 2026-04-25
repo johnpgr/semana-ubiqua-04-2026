@@ -90,13 +90,13 @@ export function SimulatedDisbursementCard({
       <CardHeader className="gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={disbursement ? "default" : "secondary"}>
-            {disbursement ? "CrÃ©dito liberado" : "Oferta disponÃ­vel"}
+            {disbursement ? "Crédito liberado" : "Oferta disponível"}
           </Badge>
           <Badge variant="outline">Ativo</Badge>
         </div>
-        <CardTitle>Recebimento de crÃ©dito</CardTitle>
+        <CardTitle>Recebimento de crédito</CardTitle>
         <CardDescription>
-          Aceite a oferta para receber o crÃ©dito na conta financeira.
+          Aceite a oferta para receber o crédito na conta financeira.
         </CardDescription>
       </CardHeader>
 
@@ -104,7 +104,7 @@ export function SimulatedDisbursementCard({
         {state.formError ? (
           <Alert variant="destructive">
             <TriangleAlertIcon />
-            <AlertTitle>LiberaÃ§Ã£o nÃ£o concluÃ­da</AlertTitle>
+            <AlertTitle>Liberação não concluída</AlertTitle>
             <AlertDescription>{state.formError}</AlertDescription>
           </Alert>
         ) : null}
@@ -112,10 +112,10 @@ export function SimulatedDisbursementCard({
         {disbursement ? (
           <Alert>
             <CheckCircle2Icon />
-            <AlertTitle>CrÃ©dito liberado</AlertTitle>
+            <AlertTitle>Crédito liberado</AlertTitle>
             <AlertDescription>
-              O valor foi marcado como recebido e agora aparece como emprÃ©stimo
-              ativo na sua Ã¡rea do usuÃ¡rio.
+              O valor foi marcado como recebido e agora aparece como empréstimo
+              ativo na sua área do usuário.
             </AlertDescription>
           </Alert>
         ) : (
@@ -123,7 +123,7 @@ export function SimulatedDisbursementCard({
             <BanknoteIcon />
             <AlertTitle>Oferta pronta para recebimento</AlertTitle>
             <AlertDescription>
-              Esta aÃ§Ã£o registra o recebimento do crÃ©dito no OpenCred.
+              Esta ação registra o recebimento do crédito no OpenCred.
             </AlertDescription>
           </Alert>
         )}
@@ -148,7 +148,7 @@ export function SimulatedDisbursementCard({
               <Separator />
               <InfoRow
                 label="Status"
-                value="EmprÃ©stimo ativo"
+                value="Empréstimo ativo"
               />
               <Separator />
               <InfoRow
@@ -165,7 +165,7 @@ export function SimulatedDisbursementCard({
           <>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <LandmarkIcon data-icon="inline-start" />
-              Acompanhe o ciclo em Minha conta ou abra o emprÃ©stimo ativo.
+              Acompanhe o ciclo em Minha conta ou abra o empréstimo ativo.
             </div>
             <Link
               className={cn(
@@ -174,7 +174,7 @@ export function SimulatedDisbursementCard({
               )}
               href={`/emprestimo/${requestId}`}
             >
-              Abrir emprÃ©stimo ativo
+              Abrir empréstimo ativo
             </Link>
           </>
         ) : (
@@ -186,7 +186,7 @@ export function SimulatedDisbursementCard({
               ) : (
                 <BanknoteIcon data-icon="inline-start" />
               )}
-              {isPending ? "Liberando..." : "Receber crÃ©dito"}
+              {isPending ? "Liberando..." : "Receber crédito"}
             </Button>
           </form>
         )}

@@ -24,7 +24,7 @@ export type SimulateDisbursementState = FormActionState<
 type AuditLogInsert = TablesInsert<"audit_logs">
 
 const RequestPayload = z.object({
-  request_id: z.uuid("SolicitaÃ§Ã£o invÃ¡lida."),
+  request_id: z.uuid("Solicitação inválida."),
 })
 
 const DISBURSEMENT_ACTION = "credit_disbursement_simulated"
@@ -41,9 +41,9 @@ export async function simulateCreditDisbursement(
   if (!parsed.success) {
     return {
       ok: false,
-      formError: "NÃ£o foi possÃ­vel identificar a solicitaÃ§Ã£o.",
+      formError: "Não foi possível identificar a solicitação.",
       fieldErrors: {
-        request_id: ["SolicitaÃ§Ã£o invÃ¡lida."],
+        request_id: ["Solicitação inválida."],
       },
     }
   }
@@ -60,14 +60,14 @@ export async function simulateCreditDisbursement(
   if (requestError) {
     return {
       ok: false,
-      formError: "NÃ£o foi possÃ­vel carregar a solicitaÃ§Ã£o.",
+      formError: "Não foi possível carregar a solicitação.",
     }
   }
 
   if (!request) {
     return {
       ok: false,
-      formError: "SolicitaÃ§Ã£o nÃ£o encontrada.",
+      formError: "Solicitação não encontrada.",
     }
   }
 
@@ -77,14 +77,14 @@ export async function simulateCreditDisbursement(
   ) {
     return {
       ok: false,
-      formError: "Esta decisÃ£o nÃ£o permite liberaÃ§Ã£o de crÃ©dito.",
+      formError: "Esta decisão não permite liberação de crédito.",
     }
   }
 
   if (!request.approved_amount || request.approved_amount <= 0) {
     return {
       ok: false,
-      formError: "A solicitaÃ§Ã£o aprovada nÃ£o possui valor liberÃ¡vel.",
+      formError: "A solicitação aprovada não possui valor liberável.",
     }
   }
 
@@ -102,7 +102,7 @@ export async function simulateCreditDisbursement(
   if (existingError) {
     return {
       ok: false,
-      formError: "NÃ£o foi possÃ­vel verificar a liberaÃ§Ã£o autorizada.",
+      formError: "Não foi possível verificar a liberação autorizada.",
     }
   }
 
@@ -133,7 +133,7 @@ export async function simulateCreditDisbursement(
     if (auditError) {
       return {
         ok: false,
-        formError: "NÃ£o foi possÃ­vel registrar a liberaÃ§Ã£o autorizada.",
+        formError: "Não foi possível registrar a liberação autorizada.",
       }
     }
   }

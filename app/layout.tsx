@@ -1,6 +1,7 @@
 import { Space_Grotesk } from "next/font/google"
 
 import { Toaster } from "@/components/ui/sonner"
+import { OpenCredAiWidget } from "@/components/opencred-ai-widget"
 import { cn } from "@/lib/utils"
 
 import "./globals.css"
@@ -30,6 +31,7 @@ export default function RootLayout({
       <body className="min-h-svh bg-background text-foreground">
         <Providers>
           {children}
+          <OpenCredAiWidget />
           <Toaster position="top-right" richColors />
         </Providers>
       </body>

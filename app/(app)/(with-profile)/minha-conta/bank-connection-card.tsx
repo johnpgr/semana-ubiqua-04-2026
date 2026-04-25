@@ -86,7 +86,7 @@ function buildInitialState(
       connectedAt: initialConnection.connectedAt,
       institution: SIMULATED_INSTITUTION,
       scopes: SIMULATED_SCOPES,
-      message: "ConexÃ£o derivada do consentimento mais recente.",
+      message: "Conexão derivada do consentimento mais recente.",
     }
   }
 
@@ -193,10 +193,10 @@ export function BankConnectionPanel({
           <Badge variant={presentation.badgeVariant}>{presentation.badge}</Badge>
           <Badge variant="outline">Análise financeira autorizada</Badge>
         </div>
-        <CardTitle>ConexÃ£o bancÃ¡ria autorizada</CardTitle>
+        <CardTitle>Conexão bancária autorizada</CardTitle>
         <CardDescription>
           Autorize uma conta financeira para mostrar como dados financeiros
-          ajudam a contextualizar a anÃ¡lise de crÃ©dito.
+          ajudam a contextualizar a análise de crédito.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
@@ -208,22 +208,22 @@ export function BankConnectionPanel({
 
         <div className="grid gap-3 sm:grid-cols-2">
           <InfoTile
-            label="InstituiÃ§Ã£o"
+            label="Instituição"
             value={isConnected ? state.institution : "Nenhuma conta conectada"}
           />
           <InfoTile
-            label="Ãšltima atualizaÃ§Ã£o"
+            label="Última atualização"
             value={
               state.connectedAt
                 ? dateFormatter.format(new Date(state.connectedAt))
-                : "Aguardando conexÃ£o"
+                : "Aguardando conexão"
             }
           />
         </div>
 
         <div className="flex flex-col gap-3">
           <h2 className="text-sm font-semibold">
-            Dados usados na anÃ¡lise
+            Dados usados na análise
           </h2>
           <div className="grid gap-2 sm:grid-cols-2">
             {SIMULATED_SCOPES.map((scope) => (
@@ -247,11 +247,11 @@ export function BankConnectionPanel({
                 href="/solicitacao"
                 className={cn(buttonVariants(), "justify-center")}
               >
-                Solicitar crÃ©dito
+                Solicitar crédito
                 <ArrowRightIcon data-icon="inline-end" />
               </Link>
               <Button type="button" variant="outline" onClick={disconnect}>
-                Desconectar simulaÃ§Ã£o
+                Desconectar conta
               </Button>
             </>
           ) : (
@@ -295,9 +295,9 @@ export function BankConnectionActions({
   return (
     <Card className="border-border/70 bg-muted/35">
       <CardHeader className="gap-2">
-        <CardTitle>AÃ§Ãµes principais</CardTitle>
+        <CardTitle>Ações principais</CardTitle>
         <CardDescription>
-          Caminhos disponÃ­veis para continuar a jornada.
+          Caminhos disponíveis para continuar a jornada.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
@@ -306,7 +306,7 @@ export function BankConnectionActions({
             href={`/emprestimo/${activeLoan.requestId}`}
             className={cn(buttonVariants(), "justify-center")}
           >
-            Ver emprÃ©stimo ativo
+            Ver empréstimo ativo
             <ArrowRightIcon data-icon="inline-end" />
           </Link>
         ) : hasPaidLoan && newLoanEligibility.allowed ? (
@@ -314,7 +314,7 @@ export function BankConnectionActions({
             href="/solicitacao"
             className={cn(buttonVariants(), "justify-center")}
           >
-            Pedir novo crÃ©dito
+            Pedir novo crédito
             <ArrowRightIcon data-icon="inline-end" />
           </Link>
         ) : isConnected ? (
@@ -322,7 +322,7 @@ export function BankConnectionActions({
             href="/solicitacao"
             className={cn(buttonVariants(), "justify-center")}
           >
-            Solicitar crÃ©dito
+            Solicitar crédito
             <ArrowRightIcon data-icon="inline-end" />
           </Link>
         ) : (
@@ -349,7 +349,7 @@ export function BankConnectionActions({
             "justify-center"
           )}
         >
-          {isConnected ? "Nova solicitaÃ§Ã£o" : "Solicitar mesmo assim"}
+          {isConnected ? "Nova solicitação" : "Solicitar mesmo assim"}
         </Link>
         <Link
           href={latestResultHref ?? "#"}
@@ -375,7 +375,7 @@ export function BankConnectionActions({
         ) : null}
         {hasPaidLoan && !newLoanEligibility.allowed ? (
           <Button variant="outline" disabled>
-            {newLoanEligibility.label ?? "Pedir novo crÃ©dito"}
+            {newLoanEligibility.label ?? "Pedir novo crédito"}
           </Button>
         ) : null}
       </CardContent>
@@ -417,13 +417,13 @@ function useBankConnection({
           connectedAt: storedConnection.connectedAt,
           institution: storedConnection.institution,
           scopes: storedConnection.scopes,
-          message: "ConexÃ£o salva neste navegador.",
+          message: "Conexão salva neste navegador.",
         })
       } catch {
         setState({
           ...buildInitialState(initialConnection),
           status: "error",
-          message: "NÃ£o foi possÃ­vel carregar a conexÃ£o autorizada.",
+          message: "Não foi possível carregar a conexão autorizada.",
         })
       }
     }
@@ -440,7 +440,7 @@ function useBankConnection({
     setState((currentState) => ({
       ...currentState,
       status: "connecting",
-      message: "Validando instituiÃ§Ã£o autorizada e escopos autorizados.",
+      message: "Validando instituição autorizada e escopos autorizados.",
     }))
 
     window.setTimeout(() => {
@@ -467,7 +467,7 @@ function useBankConnection({
         setState((currentState) => ({
           ...currentState,
           status: "error",
-          message: "NÃ£o foi possÃ­vel salvar a conexÃ£o autorizada neste navegador.",
+          message: "Não foi possível salvar a conexão autorizada neste navegador.",
         }))
       }
     }, 900)
@@ -498,9 +498,9 @@ function getConnectionPresentation(state: BankConnectionState) {
       label: "Carregando",
       badge: "Verificando",
       badgeVariant: "secondary" as const,
-      description: "Verificando conexÃ£o autorizada salva.",
-      alertTitle: "Verificando estado da conexÃ£o",
-      alertDescription: "A Ã¡rea do usuÃ¡rio estÃ¡ carregando os dados da simulaÃ§Ã£o.",
+      description: "Verificando conexão autorizada salva.",
+      alertTitle: "Verificando estado da conexão",
+      alertDescription: "A área do usuário está carregando os dados da conta.",
     }
   }
 
@@ -508,12 +508,12 @@ function getConnectionPresentation(state: BankConnectionState) {
     return {
       icon: SignalIcon,
       label: "Conectando",
-      badge: "Em anÃ¡lise",
+      badge: "Em análise",
       badgeVariant: "outline" as const,
-      description: "Validando instituiÃ§Ã£o e escopos registrados.",
+      description: "Validando instituição e escopos registrados.",
       alertTitle: "Conectando conta financeira",
       alertDescription:
-        "Estamos simulando autorizaÃ§Ã£o, escopos e leitura inicial de dados financeiros.",
+        "Estamos validando autorização, escopos e leitura inicial de dados financeiros.",
     }
   }
 
@@ -524,12 +524,12 @@ function getConnectionPresentation(state: BankConnectionState) {
       badge: "Autorizada",
       badgeVariant: "default" as const,
       description: state.connectedAt
-        ? `${state.institution} Â· ${dateFormatter.format(new Date(state.connectedAt))}`
-        : `${state.institution} Â· conexÃ£o ativa`,
+        ? `${state.institution} · ${dateFormatter.format(new Date(state.connectedAt))}`
+        : `${state.institution} · conexão ativa`,
       alertTitle: "Conta conectada",
       alertDescription:
         state.message ??
-        "A anÃ¡lise pode usar sinais financeiros autorizados na jornada.",
+        "A análise pode usar sinais financeiros autorizados na jornada.",
     }
   }
 
@@ -537,22 +537,22 @@ function getConnectionPresentation(state: BankConnectionState) {
     return {
       icon: AlertCircleIcon,
       label: "Erro",
-      badge: "AtenÃ§Ã£o",
+      badge: "Atenção",
       badgeVariant: "destructive" as const,
-      description: state.message ?? "NÃ£o foi possÃ­vel conectar agora.",
-      alertTitle: "Falha na conexÃ£o autorizada",
+      description: state.message ?? "Não foi possível conectar agora.",
+      alertTitle: "Falha na conexão autorizada",
       alertDescription:
         state.message ??
-        "Tente novamente. A conexÃ£o permaneceu protegida.",
+        "Tente novamente. A conexão permaneceu protegida.",
     }
   }
 
   return {
     icon: LandmarkIcon,
-    label: "NÃ£o conectada",
+    label: "Não conectada",
     badge: "Pendente",
     badgeVariant: "secondary" as const,
-    description: "Conecte uma conta fictÃ­cia para enriquecer a simulaÃ§Ã£o.",
+    description: "Conecte uma conta financeira para enriquecer a análise.",
     alertTitle: "Nenhuma conta financeira conectada",
     alertDescription:
       "O OpenCred usa dados financeiros autorizados conforme os escopos escolhidos.",

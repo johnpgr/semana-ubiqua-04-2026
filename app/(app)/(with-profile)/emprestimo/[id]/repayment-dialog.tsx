@@ -57,9 +57,9 @@ export function RepaymentDialog({
           </AlertDialogMedia>
           <AlertDialogTitle>Confirmar pagamento</AlertDialogTitle>
           <AlertDialogDescription>
-            VocÃª vai registrar o pagamento de{" "}
+            Você vai registrar o pagamento de{" "}
             <strong>{currencyFormatter.format(loan.amount)}</strong> referente
-            ao emprÃ©stimo ativo. Esta aÃ§Ã£o registra o pagamento no OpenCred.
+            ao empréstimo ativo. Esta ação registra o pagamento no OpenCred.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

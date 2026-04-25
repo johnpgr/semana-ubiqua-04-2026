@@ -73,12 +73,12 @@ export default async function SolicitacaoPage() {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div className="flex max-w-3xl flex-col gap-2">
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              SolicitaÃ§Ã£o de crÃ©dito
+              Solicitação de crédito
             </h1>
             <p className="text-sm leading-6 text-muted-foreground sm:text-base">
               Perfil atual: <strong>{profile.name}</strong>. Escolha o valor
-              desejado e siga para consentimento para liberar a anÃ¡lise
-              financeira, antifraude, crÃ©dito progressivo e explicabilidade.
+              desejado e siga para consentimento para liberar a análise
+              financeira, antifraude, crédito progressivo e explicabilidade.
             </p>
           </div>
           <Link
@@ -98,11 +98,11 @@ export default async function SolicitacaoPage() {
           <Card className="border border-border/70 bg-muted/35">
             <CardHeader className="gap-2">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="default">Ciclo anterior concluÃ­do</Badge>
+                <Badge variant="default">Ciclo anterior concluído</Badge>
               </div>
               <CardTitle>Continuidade do ciclo</CardTitle>
               <CardDescription>
-                Seu histÃ³rico anterior serÃ¡ considerado nesta nova anÃ¡lise.
+                Seu histórico anterior será considerado nesta nova análise.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 text-sm leading-6">
@@ -113,7 +113,7 @@ export default async function SolicitacaoPage() {
                     {currencyFormatter.format(previousRequest.approved_amount ?? previousRequest.requested_amount)} liberado
                   </div>
                   <div className="mt-1 text-muted-foreground">
-                    Pago em {lastLoan.repaidAt ? dateFormatter.format(new Date(lastLoan.repaidAt)) : "â€”"}
+                    Pago em {lastLoan.repaidAt ? dateFormatter.format(new Date(lastLoan.repaidAt)) : "—"}
                   </div>
                 </div>
                 <div className="rounded-xl border border-border/70 bg-background/70 p-3">
@@ -122,7 +122,7 @@ export default async function SolicitacaoPage() {
                     Limite potencial pode crescer
                   </div>
                   <div className="mt-1 text-muted-foreground">
-                    Ciclos pagos em dia ampliam confianÃ§a progressiva.
+                    Ciclos pagos em dia ampliam confiança progressiva.
                   </div>
                 </div>
               </div>
@@ -136,8 +136,8 @@ export default async function SolicitacaoPage() {
           <CardHeader className="gap-2">
             <CardTitle>Valor desejado</CardTitle>
             <CardDescription className="max-w-2xl text-sm leading-6">
-              Informe quanto vocÃª quer solicitar. O OpenCred pode aprovar um valor
-              menor quando a primeira concessÃ£o precisar ser mais conservadora.
+              Informe quanto você quer solicitar. O OpenCred pode aprovar um valor
+              menor quando a primeira concessão precisar ser mais conservadora.
             </CardDescription>
           </CardHeader>
           <CreditRequestForm />
@@ -152,10 +152,10 @@ export default async function SolicitacaoPage() {
 
           <Card className="border border-border/70 bg-muted/35">
             <CardHeader className="gap-2">
-              <CardTitle>PrÃ³ximo passo: consentimento</CardTitle>
+              <CardTitle>Próximo passo: consentimento</CardTitle>
               <CardDescription>
-                Ao continuar, vocÃª vai autorizar os dados usados nesta
-                solicitaÃ§Ã£o especÃ­fica.
+                Ao continuar, você vai autorizar os dados usados nesta
+                solicitação específica.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 text-sm leading-6">
@@ -169,11 +169,11 @@ export default async function SolicitacaoPage() {
               />
               <JourneyPoint
                 icon={ScaleIcon}
-                text="A decisÃ£o pode ser aprovada, reduzida, enviada para revisÃ£o ou negada de forma explicÃ¡vel."
+                text="A decisão pode ser aprovada, reduzida, enviada para revisão ou negada de forma explicável."
               />
               <JourneyPoint
                 icon={TrendingUpIcon}
-                text="CrÃ©dito progressivo mantÃ©m a primeira oferta prudente e considera novos ciclos futuros."
+                text="Crédito progressivo mantém a primeira oferta prudente e considera novos ciclos futuros."
               />
             </CardContent>
           </Card>
@@ -184,17 +184,17 @@ export default async function SolicitacaoPage() {
         <InfoCard
           icon={BanknoteIcon}
           title="Valor solicitado"
-          text="VocÃª escolhe o valor desejado; o limite aprovado pode ser menor conforme risco e histÃ³rico."
+          text="Você escolhe o valor desejado; o limite aprovado pode ser menor conforme risco e histórico."
         />
         <InfoCard
           icon={ShieldCheckIcon}
-          title="Consentimento obrigatÃ³rio"
-          text="A anÃ¡lise sÃ³ avanÃ§a depois que os escopos forem autorizados no passo seguinte."
+          title="Consentimento obrigatório"
+          text="A análise só avança depois que os escopos forem autorizados no passo seguinte."
         />
         <InfoCard
           icon={TrendingUpIcon}
-          title="EvoluÃ§Ã£o futura"
-          text="Pagamentos futuros em dia poderÃ£o melhorar confianÃ§a e limite potencial em novas anÃ¡lises."
+          title="Evolução futura"
+          text="Pagamentos futuros em dia poderão melhorar confiança e limite potencial em novas análises."
         />
       </section>
     </div>

@@ -16,6 +16,7 @@
   "include": [
     "tests/**/*.ts",
     "validation/cpf.ts",
+    "lib/assistant/**/*.ts",
     "lib/mockData/**/*.ts",
     "lib/scoreEngine/**/*.ts"
   ],

@@ -31,20 +31,20 @@ const flowSteps = [
     description: "O OpenCred realiza uma leitura financeira autorizada para apoiar a análise.",
   },
   {
-    title: "Solicite crÃ©dito",
+    title: "Solicite crédito",
     description: "Escolha o valor e siga uma jornada clara, sem promessa opaca.",
   },
   {
-    title: "Autorize a anÃ¡lise",
-    description: "Consentimento explÃ­cito antes de usar dados financeiros.",
+    title: "Autorize a análise",
+    description: "Consentimento explícito antes de usar dados financeiros.",
   },
   {
-    title: "Receba decisÃ£o explicada",
-    description: "Resultado com score, antifraude e justificativa compreensÃ­vel.",
+    title: "Receba decisão explicada",
+    description: "Resultado com score, antifraude e justificativa compreensível.",
   },
   {
     title: "Evolua seu limite",
-    description: "Pagamentos em dia alimentam confianÃ§a para novos ciclos.",
+    description: "Pagamentos em dia alimentam confiança para novos ciclos.",
   },
 ]
 
@@ -56,43 +56,43 @@ const differentiators = [
   },
   {
     icon: TrendingUpIcon,
-    title: "CrÃ©dito progressivo",
-    description: "ComeÃ§a conservador e evolui conforme o relacionamento melhora.",
+    title: "Crédito progressivo",
+    description: "Começa conservador e evolui conforme o relacionamento melhora.",
   },
   {
     icon: ShieldCheckIcon,
     title: "Antifraude comportamental",
-    description: "Sinais de risco reduzem decisÃµes frÃ¡geis sem expor regras sensÃ­veis.",
+    description: "Sinais de risco reduzem decisões frágeis sem expor regras sensíveis.",
   },
   {
     icon: ScaleIcon,
-    title: "Explicabilidade jurÃ­dica",
-    description: "Motivos da decisÃ£o em linguagem clara e auditÃ¡vel.",
+    title: "Explicabilidade jurídica",
+    description: "Motivos da decisão em linguagem clara e auditável.",
   },
   {
     icon: BadgeCheckIcon,
     title: "Monitoramento inicial",
-    description: "Acompanha o pÃ³s-crÃ©dito como leitura de risco, com acompanhamento inicial.",
+    description: "Acompanha o pós-crédito como leitura de risco, com acompanhamento inicial.",
   },
   {
     icon: MailCheckIcon,
-    title: "ComunicaÃ§Ã£o oficial",
-    description: "Gera mensagens formais de decisÃ£o, transparÃªncia e seguranÃ§a.",
+    title: "Comunicação oficial",
+    description: "Gera mensagens formais de decisão, transparência e segurança.",
   },
 ]
 
 const audiences = [
-  "AutÃ´nomos",
+  "Autônomos",
   "Trabalhadores de aplicativo",
   "Freelancers",
-  "Renda real com histÃ³rico tradicional limitado",
+  "Renda real com histórico tradicional limitado",
 ]
 
 const journeySignals = [
   "Análise financeira autorizada",
-  "AnÃ¡lise visual por etapas",
+  "Análise visual por etapas",
   "Score, antifraude e parceiros",
-  "Oferta, emprÃ©stimo e pagamentos",
+  "Oferta, empréstimo e pagamentos",
 ]
 
 export default function Page() {
@@ -108,13 +108,13 @@ export default function Page() {
 
             <div className="flex max-w-4xl flex-col gap-5">
               <h1 className="text-4xl leading-tight font-semibold text-balance sm:text-5xl lg:text-6xl">
-                CrÃ©dito progressivo para autÃ´nomos, com anÃ¡lise inteligente e
+                Crédito progressivo para autônomos, com análise inteligente e
                 transparente.
               </h1>
               <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
                 O OpenCred transforma dados financeiros autorizados em uma jornada
-                completa: conta conectada, solicitaÃ§Ã£o, anÃ¡lise explicada,
-                oferta, emprÃ©stimo ativo e evoluÃ§Ã£o de confianÃ§a.
+                completa: conta conectada, solicitação, análise explicada,
+                oferta, empréstimo ativo e evolução de confiança.
               </p>
             </div>
 
@@ -138,7 +138,7 @@ export default function Page() {
             </div>
 
             <div className="grid gap-3 text-sm sm:grid-cols-3">
-              <Metric value="7+" label="mÃ³dulos de decisÃ£o" />
+              <Metric value="7+" label="módulos de decisão" />
               <Metric value="0" label="fontes financeiras conectadas" />
               <Metric value="1" label="ciclo completo" />
             </div>
@@ -150,7 +150,7 @@ export default function Page() {
                 <div className="flex flex-col gap-1">
                   <span className="text-sm font-medium">Jornada OpenCred</span>
                   <span className="text-xs text-muted-foreground">
-                    jornada de crÃ©dito explicÃ¡vel
+                    jornada de crédito explicável
                   </span>
                 </div>
                 <Badge variant="default">Em uso</Badge>
@@ -167,18 +167,18 @@ export default function Page() {
                   icon={GaugeIcon}
                   title="Score financeiro calculado"
                   detail="capacidade, estabilidade e comportamento"
-                  state="AnÃ¡lise"
+                  state="Análise"
                 />
                 <TimelineItem
                   icon={ShieldCheckIcon}
                   title="Fraud Score aplicado"
-                  detail="sinais comportamentais e consistÃªncia"
+                  detail="sinais comportamentais e consistência"
                   state="Risco baixo"
                 />
                 <TimelineItem
                   icon={BanknoteIcon}
                   title="Oferta liberada"
-                  detail="emprÃ©stimo ativo com pagamento"
+                  detail="empréstimo ativo com pagamento"
                   state="Ciclo"
                 />
               </div>
@@ -187,7 +187,7 @@ export default function Page() {
 
               <div className="grid gap-3 pt-4 sm:grid-cols-2">
                 <PanelStat title="Limite sugerido" value="R$ 1.250" />
-                <PanelStat title="ConfianÃ§a" value="Em evoluÃ§Ã£o" />
+                <PanelStat title="Confiança" value="Em evolução" />
               </div>
             </div>
           </div>
@@ -197,8 +197,8 @@ export default function Page() {
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-14 sm:px-6" id="como-funciona">
         <SectionHeader
           eyebrow="Como funciona"
-          title="Uma jornada de crÃ©dito que o usuÃ¡rio entende."
-          description="Do login ao ciclo pago, cada etapa mostra o que estÃ¡ acontecendo e por que a decisÃ£o foi tomada."
+          title="Uma jornada de crédito que o usuário entende."
+          description="Do login ao ciclo pago, cada etapa mostra o que está acontecendo e por que a decisão foi tomada."
         />
         <div className="grid gap-3 md:grid-cols-5">
           {flowSteps.map((step, index) => (
@@ -219,8 +219,8 @@ export default function Page() {
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-14 sm:px-6">
           <SectionHeader
             eyebrow="Diferenciais"
-            title="Mais que uma aprovaÃ§Ã£o: uma arquitetura de decisÃ£o."
-            description="O OpenCred combina anÃ¡lise financeira, risco, transparÃªncia e comunicaÃ§Ã£o em uma experiÃªncia Ãºnica."
+            title="Mais que uma aprovação: uma arquitetura de decisão."
+            description="O OpenCred combina análise financeira, risco, transparência e comunicação em uma experiência única."
           />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {differentiators.map((item) => (
@@ -232,9 +232,9 @@ export default function Page() {
 
       <section className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-14 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
         <SectionHeader
-          eyebrow="PÃºblico-alvo"
-          title="Feito para quem tem renda real, mas pouca leitura no crÃ©dito tradicional."
-          description="O OpenCred valoriza sinais de fluxo e comportamento para criar uma primeira concessÃ£o conservadora e evolutiva."
+          eyebrow="Público-alvo"
+          title="Feito para quem tem renda real, mas pouca leitura no crédito tradicional."
+          description="O OpenCred valoriza sinais de fluxo e comportamento para criar uma primeira concessão conservadora e evolutiva."
         />
         <div className="grid gap-3 sm:grid-cols-2">
           {audiences.map((audience) => (
@@ -253,14 +253,14 @@ export default function Page() {
         <div className="grid gap-8 rounded-2xl border bg-card p-5 sm:p-6 lg:grid-cols-[1fr_1fr] lg:p-8">
           <div className="flex flex-col gap-4">
             <Badge className="w-fit" variant="secondary">
-              OperaÃ§Ã£o transparente
+              Operação transparente
             </Badge>
             <h2 className="text-2xl font-semibold text-balance sm:text-3xl">
-              Arquitetura robusta, experiÃªncia clara.
+              Arquitetura robusta, experiência clara.
             </h2>
             <p className="text-sm leading-6 text-muted-foreground sm:text-base">
-              O OpenCred organiza a jornada de crÃ©dito com consentimento,
-              anÃ¡lise, acompanhamento pÃ³s-concessÃ£o, governanÃ§a e
+              O OpenCred organiza a jornada de crédito com consentimento,
+              análise, acompanhamento pós-concessão, governança e
               explicabilidade.
             </p>
           </div>
@@ -282,13 +282,13 @@ export default function Page() {
         <div className="mx-auto flex w-full max-w-7xl flex-col items-start justify-between gap-6 px-4 py-12 sm:px-6 lg:flex-row lg:items-center">
           <div className="flex max-w-2xl flex-col gap-2">
             <Badge className="w-fit" variant="outline">
-              PrÃ³ximo passo
+              Próximo passo
             </Badge>
             <h2 className="text-2xl font-semibold text-balance sm:text-3xl">
-              Comece uma anÃ¡lise ou retome sua jornada.
+              Comece uma análise ou retome sua jornada.
             </h2>
             <p className="text-sm leading-6 text-muted-foreground sm:text-base">
-              A jornada jÃ¡ cobre solicitaÃ§Ã£o, anÃ¡lise visual, oferta, emprÃ©stimo
+              A jornada já cobre solicitação, análise visual, oferta, empréstimo
               ativo e pagamento.
             </p>
           </div>
@@ -307,7 +307,7 @@ export default function Page() {
                 "justify-center"
               )}
             >
-              ComeÃ§ar anÃ¡lise
+              Começar análise
             </Link>
           </div>
         </div>

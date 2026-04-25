@@ -59,10 +59,10 @@ export function SimulatedBankStatus({
   if (status === "error") {
     return (
       <StatusCard
-        badge="AtenÃ§Ã£o"
-        description="NÃ£o foi possÃ­vel ler a conexÃ£o salva neste navegador. VocÃª ainda pode continuar para consentimento."
+        badge="Atenção"
+        description="Não foi possível ler a conexão salva neste navegador. Você ainda pode continuar para consentimento."
         icon={AlertCircleIcon}
-        title="ConexÃ£o indisponÃ­vel"
+        title="Conexão indisponível"
       />
     )
   }
@@ -82,7 +82,7 @@ export function SimulatedBankStatus({
         title="Conta financeira pronta"
       >
         <p className="text-sm leading-6 text-muted-foreground">
-          Sua conta financeira serÃ¡ usada como contexto visual para entradas
+          Sua conta financeira será usada como contexto visual para entradas
           recorrentes, estabilidade e comportamento financeiro autorizado.
         </p>
       </StatusCard>
@@ -92,9 +92,9 @@ export function SimulatedBankStatus({
   return (
     <StatusCard
       badge="Pendente"
-      description="Conectar a conta financeira antes do pedido ajuda a deixar a anÃ¡lise mais clara."
+      description="Conectar a conta financeira antes do pedido ajuda a deixar a análise mais clara."
       icon={LandmarkIcon}
-      title="Conta financeira nÃ£o conectada"
+      title="Conta financeira não conectada"
     >
       <Link
         href="/minha-conta"

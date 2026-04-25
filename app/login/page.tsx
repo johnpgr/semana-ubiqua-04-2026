@@ -25,7 +25,7 @@ export default async function LoginPage() {
           <div className="text-xs font-semibold tracking-[0.24em] text-muted-foreground uppercase">
             OpenCred
           </div>
-          <CardTitle className="text-2xl">Entrar na simulação</CardTitle>
+          <CardTitle className="text-2xl">Entrar no OpenCred</CardTitle>
           <CardDescription className="text-sm leading-6">
             Autentique com OTP por email para criar seu perfil e iniciar a
             solicitação de crédito.

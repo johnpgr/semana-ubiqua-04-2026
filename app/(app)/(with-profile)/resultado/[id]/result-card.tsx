@@ -146,7 +146,7 @@ export function ResultCard({
           scoreResult.error ||
           transactionsResult.error
         ) {
-          setPollError("NÃ£o foi possÃ­vel atualizar o resultado agora.")
+          setPollError("Não foi possível atualizar o resultado agora.")
           return
         }
 
@@ -241,7 +241,7 @@ export function ResultCard({
                   <div className="mt-1 text-base font-semibold">
                     {request.decision
                       ? getCreditDecisionLabel(request.decision)
-                      : "Em anÃ¡lise"}
+                      : "Em análise"}
                   </div>
                 </div>
                 <div className="rounded-xl border border-border/70 bg-muted/40 p-4">
@@ -628,10 +628,10 @@ export function ResultCard({
       <div className="flex flex-col gap-4 self-start">
         <Card className="border border-border/70 bg-muted/40">
           <CardHeader className="space-y-3">
-            <CardTitle>Resumo da anÃ¡lise</CardTitle>
+            <CardTitle>Resumo da análise</CardTitle>
             <CardDescription className="space-y-3 text-sm leading-6">
               <p>
-                NÃºmero da solicitaÃ§Ã£o: <strong>{request.id}</strong>
+                Número da solicitação: <strong>{request.id}</strong>
               </p>
               <p>
                 Valor pedido:{" "}
@@ -644,7 +644,7 @@ export function ResultCard({
               </p>
               {progressiveCredit ? (
                 <p>
-                  NÃ­vel de confianÃ§a:{" "}
+                  Nível de confiança:{" "}
                   <strong>{progressiveCredit.levelLabel}</strong>
                 </p>
               ) : null}

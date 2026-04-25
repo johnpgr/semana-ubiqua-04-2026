@@ -143,16 +143,16 @@ export default async function MinhaContaPage() {
       <section className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
           <Badge variant="outline" className="w-fit">
-            Ãrea do usuÃ¡rio
+            Área do usuário
           </Badge>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div className="flex max-w-3xl flex-col gap-2">
               <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                OlÃ¡, {profile.name.split(" ")[0] ?? profile.name}
+                Olá, {profile.name.split(" ")[0] ?? profile.name}
               </h1>
               <p className="text-sm leading-6 text-muted-foreground sm:text-base">
-                Acompanhe seu perfil, conexÃ£o autorizada, histÃ³rico de crÃ©dito e
-                prÃ³ximo passo da jornada OpenCred.
+                Acompanhe seu perfil, conexão autorizada, histórico de crédito e
+                próximo passo da jornada OpenCred.
               </p>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row">
@@ -161,7 +161,7 @@ export default async function MinhaContaPage() {
                   href={`/emprestimo/${activeLoan.requestId}`}
                   className={cn(buttonVariants(), "justify-center")}
                 >
-                  Ver emprÃ©stimo ativo
+                  Ver empréstimo ativo
                   <ArrowRightIcon data-icon="inline-end" />
                 </Link>
               ) : activeLoan && activeLoan.status === "paid" && newLoanEligibility.allowed ? (
@@ -169,7 +169,7 @@ export default async function MinhaContaPage() {
                   href="/solicitacao"
                   className={cn(buttonVariants(), "justify-center")}
                 >
-                  Pedir novo crÃ©dito
+                  Pedir novo crédito
                   <ArrowRightIcon data-icon="inline-end" />
                 </Link>
               ) : (
@@ -177,7 +177,7 @@ export default async function MinhaContaPage() {
                   href="/solicitacao"
                   className={cn(buttonVariants(), "justify-center")}
                 >
-                  Solicitar crÃ©dito
+                  Solicitar crédito
                   <ArrowRightIcon data-icon="inline-end" />
                 </Link>
               )}
@@ -191,10 +191,10 @@ export default async function MinhaContaPage() {
         {hasLoadIssue ? (
           <Alert variant="destructive">
             <ShieldCheckIcon />
-            <AlertTitle>Dados parcialmente indisponÃ­veis</AlertTitle>
+            <AlertTitle>Dados parcialmente indisponíveis</AlertTitle>
             <AlertDescription>
-              Algumas informaÃ§Ãµes auxiliares nÃ£o carregaram agora. O perfil
-              continua acessÃ­vel e vocÃª pode tentar atualizar a pÃ¡gina.
+              Algumas informações auxiliares não carregaram agora. O perfil
+              continua acessível e você pode tentar atualizar a página.
             </AlertDescription>
           </Alert>
         ) : null}
@@ -205,7 +205,7 @@ export default async function MinhaContaPage() {
           icon={BadgeCheckIcon}
           title="Perfil"
           value="Completo"
-          description={`${user.email ?? "Email indisponÃ­vel"} Â· ${maskCpf(profile.cpf)} Â· ${MOCK_PROFILE_LABELS[profile.mock_profile]}`}
+          description={`${user.email ?? "Email indisponível"} · ${maskCpf(profile.cpf)} · ${MOCK_PROFILE_LABELS[profile.mock_profile]}`}
           badge="Pronto"
         />
         <BankConnectionSummary
@@ -218,18 +218,18 @@ export default async function MinhaContaPage() {
           value={
             latestAnalysis
               ? currencyFormatter.format(latestAnalysis.score.suggested_limit)
-              : "Sem anÃ¡lise"
+              : "Sem análise"
           }
           description={
             latestAnalysis
-              ? "Estimativa da anÃ¡lise mais recente."
-              : "Solicite crÃ©dito para gerar o primeiro limite estimado."
+              ? "Estimativa da análise mais recente."
+              : "Solicite crédito para gerar o primeiro limite estimado."
           }
           badge={latestAnalysis ? "Estimado" : "Inicial"}
         />
         <SummaryCard
           icon={SparklesIcon}
-          title="ConfianÃ§a"
+          title="Confiança"
           value={confidence.label}
           description={confidence.description}
           badge={confidence.badge}
@@ -244,7 +244,7 @@ export default async function MinhaContaPage() {
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
         <Card className="border-border/70 bg-background/85">
           <CardHeader className="gap-2">
-            <CardTitle>Ãšltimo resultado de anÃ¡lise</CardTitle>
+            <CardTitle>Último resultado de análise</CardTitle>
             <CardDescription>
               A leitura mais recente do seu pedido, score e valor aprovado.
             </CardDescription>
@@ -254,7 +254,7 @@ export default async function MinhaContaPage() {
               <div className="flex flex-col gap-5">
                 <div className="grid gap-3 sm:grid-cols-3">
                   <MetricTile
-                    label="DecisÃ£o"
+                    label="Decisão"
                     value={getCreditDecisionLabel(latestAnalysis.decision)}
                   />
                   <MetricTile
@@ -302,9 +302,9 @@ export default async function MinhaContaPage() {
                   <EmptyMedia variant="icon">
                     <CreditCardIcon />
                   </EmptyMedia>
-                  <EmptyTitle>Nenhuma anÃ¡lise concluÃ­da</EmptyTitle>
+                  <EmptyTitle>Nenhuma análise concluída</EmptyTitle>
                   <EmptyDescription>
-                    Quando vocÃª concluir consentimento e anÃ¡lise, o resultado
+                    Quando você concluir consentimento e análise, o resultado
                     mais recente aparece aqui.
                   </EmptyDescription>
                 </EmptyHeader>
@@ -313,7 +313,7 @@ export default async function MinhaContaPage() {
                     href="/solicitacao"
                     className={cn(buttonVariants(), "justify-center")}
                   >
-                    ComeÃ§ar solicitaÃ§Ã£o
+                    Começar solicitação
                   </Link>
                 </EmptyContent>
               </Empty>
@@ -324,10 +324,10 @@ export default async function MinhaContaPage() {
         <div className="grid gap-6">
           <Card className="border-border/70 bg-background/85">
             <CardHeader className="gap-2">
-              <CardTitle>NÃ­vel de confianÃ§a</CardTitle>
+              <CardTitle>Nível de confiança</CardTitle>
               <CardDescription>
-                Uma leitura do crÃ©dito progressivo com base no histÃ³rico
-                disponÃ­vel.
+                Uma leitura do crédito progressivo com base no histórico
+                disponível.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
@@ -352,7 +352,7 @@ export default async function MinhaContaPage() {
                     </Progress>
                   </div>
                   <Badge variant="default" className="w-fit">
-                    ConfianÃ§a evoluiu â€” {confidence.before.label} â†’ {confidence.after.label}
+                    Confiança evoluiu — {confidence.before.label} → {confidence.after.label}
                   </Badge>
                   <div className="rounded-xl border border-border/70 bg-muted/30 p-3">
                     <div className="text-sm text-muted-foreground">Limite potencial estimado</div>
@@ -376,7 +376,7 @@ export default async function MinhaContaPage() {
               )}
               {confidence.futureSignals.length > 0 ? (
                 <p className="text-sm leading-6 text-muted-foreground">
-                  <strong>PrÃ³ximo passo:</strong> {confidence.futureSignals[0]}
+                  <strong>Próximo passo:</strong> {confidence.futureSignals[0]}
                 </p>
               ) : null}
             </CardContent>
@@ -384,9 +384,9 @@ export default async function MinhaContaPage() {
 
           <Card className="border-border/70 bg-background/85">
             <CardHeader className="gap-2">
-              <CardTitle>EmprÃ©stimo ativo</CardTitle>
+              <CardTitle>Empréstimo ativo</CardTitle>
               <CardDescription>
-                Acompanhe o emprÃ©stimo liberado e a aÃ§Ã£o de pagamento.
+                Acompanhe o empréstimo liberado e a ação de pagamento.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -443,8 +443,8 @@ export default async function MinhaContaPage() {
                     )}
                   >
                     {activeLoan.status === "paid"
-                      ? "Ver ciclo concluÃ­do"
-                      : "Ver emprÃ©stimo ativo"}
+                      ? "Ver ciclo concluído"
+                      : "Ver empréstimo ativo"}
                     <ArrowRightIcon data-icon="inline-end" />
                   </Link>
                 </div>
@@ -454,10 +454,10 @@ export default async function MinhaContaPage() {
                     <EmptyMedia variant="icon">
                       <BanknoteIcon />
                     </EmptyMedia>
-                    <EmptyTitle>Nenhum emprÃ©stimo ativo</EmptyTitle>
+                    <EmptyTitle>Nenhum empréstimo ativo</EmptyTitle>
                     <EmptyDescription>
-                      Quando houver crÃ©dito liberado, ele aparecerÃ¡
-                      nesta Ã¡rea com vencimento e aÃ§Ã£o de pagamento.
+                      Quando houver crédito liberado, ele aparecerá
+                      nesta área com vencimento e ação de pagamento.
                     </EmptyDescription>
                   </EmptyHeader>
                 </Empty>
@@ -470,9 +470,9 @@ export default async function MinhaContaPage() {
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <Card className="border-border/70 bg-background/85">
           <CardHeader className="gap-2">
-            <CardTitle>HistÃ³rico resumido</CardTitle>
+            <CardTitle>Histórico resumido</CardTitle>
             <CardDescription>
-              Ãšltimas solicitaÃ§Ãµes feitas com sua conta OpenCred.
+              Últimas solicitações feitas com sua conta OpenCred.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -482,9 +482,9 @@ export default async function MinhaContaPage() {
                   <TableRow>
                     <TableHead>Data</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>DecisÃ£o</TableHead>
+                    <TableHead>Decisão</TableHead>
                     <TableHead className="text-right">Valor</TableHead>
-                    <TableHead className="text-right">AÃ§Ã£o</TableHead>
+                    <TableHead className="text-right">Ação</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -535,10 +535,10 @@ export default async function MinhaContaPage() {
                   <EmptyMedia variant="icon">
                     <WalletCardsIcon />
                   </EmptyMedia>
-                  <EmptyTitle>Sem solicitaÃ§Ãµes ainda</EmptyTitle>
+                  <EmptyTitle>Sem solicitações ainda</EmptyTitle>
                   <EmptyDescription>
-                    O histÃ³rico serÃ¡ preenchido depois da primeira solicitaÃ§Ã£o
-                    de crÃ©dito.
+                    O histórico será preenchido depois da primeira solicitação
+                    de crédito.
                   </EmptyDescription>
                 </EmptyHeader>
               </Empty>
@@ -628,16 +628,16 @@ function buildConfidenceState({
     return {
       label: "Entrada",
       badge: "Inicial",
-      description: "Sem anÃ¡lise concluÃ­da ainda.",
+      description: "Sem análise concluída ainda.",
       summary:
-        "Seu nÃ­vel comeÃ§a em entrada. A primeira anÃ¡lise e ciclos futuros ajudam a formar confianÃ§a.",
+        "Seu nível começa em entrada. A primeira análise e ciclos futuros ajudam a formar confiança.",
       progress: 25,
       before: null,
       after: null,
       changed: false,
       appliedCap: 0,
       futureSignals: [
-        "Pagamentos em dia devem elevar seu nÃ­vel de confianÃ§a nas prÃ³ximas ofertas.",
+        "Pagamentos em dia devem elevar seu nível de confiança nas próximas ofertas.",
       ] as string[],
     }
   }
@@ -684,7 +684,7 @@ function buildConfidenceState({
 
   return {
     label: after.levelLabel,
-    badge: after.isFirstConcession ? "Primeiro ciclo" : "Em evoluÃ§Ã£o",
+    badge: after.isFirstConcession ? "Primeiro ciclo" : "Em evolução",
     description: after.levelDescription,
     summary: after.progressionSummary,
     progress: after.levelRank * 25,
@@ -717,7 +717,7 @@ function maskCpf(cpf: string) {
 }
 
 function formatNullableCurrency(value: number | null) {
-  return value === null ? "NÃ£o definido" : currencyFormatter.format(value)
+  return value === null ? "Não definido" : currencyFormatter.format(value)
 }
 
 function SummaryCard({
